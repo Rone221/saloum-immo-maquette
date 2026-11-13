@@ -1,112 +1,113 @@
-import type { Metadata } from "next";
-import { Suspense } from "react";
-import { ArrowUpRightIcon, EnvelopeIcon, MapPinIcon, PhoneIcon, WhatsappLogoIcon } from "@phosphor-icons/react/dist/ssr";
-import { ContactForm } from "@/components/contact-form";
-import { container } from "@/components/ui";
-import { CONTACT, WA_DEFAULT } from "@/lib/site";
+// Contact (spécification 7.8). Ouverture « sur le bleu » : la section contact
+// complète, en page entière, titre en H1. Puis, sur le papier, trois messages
+// prêts : acheter, faire aménager, depuis l'étranger, chacun avec le message
+// qu'il enverra. Pas de formulaire (export statique, pas de serveur), pas de
+// carte (adresse à valider), pas d'horaires (inconnus). Pas de bande de contact
+// en pied : la page en est une.
+//
+// Le bouton WhatsApp du bloc bleu n'a pas de texte pré-rempli (comme celui de
+// l'en-tête) : le message « question » est déjà le premier des trois messages prêts.
+//
+// Faits à valider avec le client, affichés sur cette page :
+// - fixe 33 805 87 18 : 33 807 87 18 circule aussi (c'est celui de l'affiche de la
+//   vitrine de l'agence ; la photo montrée, 2352-haut, est coupée au-dessus) ;
+// - agence « Sicap Keur Massar, Sangalkam, Dakar. Sur rendez-vous. » (plusieurs
+//   adresses circulent, horaires inconnus) ; même adresse dans le cartouche ;
+// - chiffres des réseaux, relevés le 13.11.2026 (à mettre à jour ou à retirer).
 
-export const metadata: Metadata = {
-  title: "Contact",
-  description: "Écrivez à Saloum Immo sur WhatsApp, appelez-nous ou passez à notre bureau de Sangalkam.",
+import type { Metadata } from "next";
+import { ContactSection } from "@/components/contact-section";
+import { Section } from "@/components/section";
+import { SectionHead } from "@/components/section-head";
+import { TextLink } from "@/components/text-link";
+import { WhatsAppButton } from "@/components/whatsapp-button";
+import { MESSAGES, type Message } from "@/content/messages";
+import { PROGRAMMES } from "@/content/programmes";
+import { AGENCE, EMAIL, FIXE, MOBILE } from "@/content/site";
+import { enLettres, typo } from "@/lib/format";
+import { metaPage } from "@/lib/meta";
+
+type Situation = {
+  titre: string;
+  texte: string;
+  bouton: string;
+  message: Message;
+  lien: { href: string; libelle: string };
 };
 
-const CANAUX = [
+/** Les trois messages de 7.8, dans l'ordre des publics : acheter, faire aménager, depuis l'étranger. */
+const SITUATIONS: Situation[] = [
   {
-    Icon: WhatsappLogoIcon,
-    title: "WhatsApp",
-    value: CONTACT.phoneDisplay,
-    note: "Le plus rapide, y compris depuis l'étranger.",
-    href: WA_DEFAULT,
-    external: true,
-    primary: true,
+    titre: "Acheter un terrain",
+    texte: `${PROGRAMMES.map((p) => p.nom).join(", ")}. Prix sur demande.`,
+    bouton: "Écrire sur WhatsApp",
+    message: MESSAGES.question,
+    lien: { href: "/terrains/", libelle: "Tous les terrains" },
   },
   {
-    Icon: PhoneIcon,
-    title: "Téléphone",
-    value: CONTACT.landlineDisplay,
-    note: `Ou ${CONTACT.phone2Display}`,
-    href: CONTACT.landlineHref,
+    titre: "Faire aménager mon terrain",
+    texte: "Vous avez une parcelle ou des hectares. Dites-nous où se trouve le terrain et sa surface.",
+    bouton: "Décrire mon terrain sur WhatsApp",
+    message: MESSAGES.proprietaire,
+    lien: { href: "/amenager/", libelle: "Tout sur l’aménagement" },
   },
   {
-    Icon: EnvelopeIcon,
-    title: "Email",
-    value: CONTACT.email,
-    note: "Pour les dossiers et documents.",
-    href: `mailto:${CONTACT.email}`,
+    titre: "Acheter depuis l’étranger",
+    texte: "Vous vivez hors du Sénégal. Tout commence à distance, sur WhatsApp, avec des vidéos et des documents.",
+    bouton: "Commencer sur WhatsApp",
+    message: MESSAGES.diaspora,
+    lien: { href: "/diaspora/", libelle: "Acheter à distance, pas à pas" },
   },
 ];
 
-export default function ContactPage() {
+const TITRE = "Contact";
+const DESCRIPTION = `WhatsApp et mobile ${MOBILE.long}, fixe ${FIXE.court}, e-mail ${EMAIL.adresse}. Agence : ${AGENCE.texte} ${enLettres(SITUATIONS.length)} messages prêts à envoyer sur WhatsApp.`;
+
+export const metadata: Metadata = metaPage(TITRE, DESCRIPTION);
+
+export default function Contact() {
   return (
-    <div className={`${container} pb-24 pt-10 md:pt-16`}>
-      <h1 className="max-w-3xl font-display text-[2.6rem] font-extrabold leading-[1.03] tracking-tight text-balance text-ink sm:text-5xl">
-        Parlons de votre projet.
-      </h1>
-      <p className="mt-5 max-w-[52ch] text-lg leading-relaxed text-muted">
-        Achat, visite, construction ou partenariat : choisissez le canal qui vous arrange.
-      </p>
+    <>
+      {/* 06 Parlons de votre terrain : sur le bleu */}
+      <ContactSection niveau={1} titreId="t-page" message={null} />
 
-      <ul className="mt-12 grid gap-4 md:grid-cols-3">
-        {CANAUX.map(({ Icon, title, value, note, href, external, primary }) => (
-          <li key={title}>
-            <a
-              href={href}
-              target={external ? "_blank" : undefined}
-              rel={external ? "noopener" : undefined}
-              className={`group flex h-full flex-col justify-between gap-10 rounded-2xl p-6 transition-colors ${
-                primary ? "bg-accent text-accent-ink hover:bg-accent-hover" : "border border-line bg-surface text-ink hover:border-ink/25"
-              }`}
+      {/* Trois messages prêts : une ligne par public, filet encre en tête, filets fins
+          entre les lignes. Le texte sous le titre (col. 2 à 6), le bouton et son
+          message sous l'intro (col. 8 à 12). Sur mobile : titre, bouton, message, lien. */}
+      <Section id="messages" labelledBy="t-messages">
+        <SectionHead
+          titre={`${enLettres(SITUATIONS.length)} messages prêts à envoyer`}
+          titreId="t-messages"
+          intro="Choisissez votre situation. WhatsApp s’ouvre avec le message déjà écrit : relisez-le, complétez ce qui est entre crochets, puis envoyez-le."
+        />
+        <ul className="border-t-[1.5px] border-ink">
+          {SITUATIONS.map((s) => (
+            <li
+              key={s.titre}
+              className="grid gap-y-4 border-b border-rule py-6 tab:grid-cols-12 tab:grid-rows-[auto_1fr] tab:gap-x-6 tab:gap-y-1 tab:py-7"
             >
-              <div className="flex items-start justify-between">
-                <Icon size={28} weight={primary ? "fill" : "regular"} aria-hidden />
-                <ArrowUpRightIcon size={18} aria-hidden className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              <div className="tab:col-[1/span_6] tab:row-start-1 desk:col-[2/span_5]">
+                <h3 className="text-4 leading-snug font-650 stretch-sub">
+                  {typo(s.titre)}
+                </h3>
+                <p className="mt-1.5 max-w-[30em] text-2 leading-caption text-ink-2">{typo(s.texte)}</p>
               </div>
-              <div>
-                <p className={`text-sm ${primary ? "opacity-85" : "text-muted"}`}>{title}</p>
-                <p className="mt-1 font-display text-xl font-bold tracking-tight tnum">{value}</p>
-                <p className={`mt-2 text-sm ${primary ? "opacity-85" : "text-muted"}`}>{note}</p>
-              </div>
-            </a>
-          </li>
-        ))}
-      </ul>
-
-      <div className="mt-20 grid gap-12 lg:grid-cols-[1.3fr_1fr] lg:gap-14">
-        <section aria-labelledby="formulaire">
-          <h2 id="formulaire" className="font-display text-2xl font-bold tracking-tight text-ink md:text-3xl">
-            Nous écrire
-          </h2>
-          <div className="mt-6">
-            <Suspense fallback={<div className="h-[520px] animate-pulse rounded-2xl bg-surface-2" />}>
-              <ContactForm />
-            </Suspense>
-          </div>
-        </section>
-        <section aria-labelledby="bureau">
-          <h2 id="bureau" className="font-display text-2xl font-bold tracking-tight text-ink md:text-3xl">
-            Notre bureau
-          </h2>
-          <p className="mt-6 flex items-start gap-3 text-[15px] leading-relaxed text-ink-2">
-            <MapPinIcon size={20} aria-hidden className="mt-0.5 shrink-0 text-accent" />
-            <span>
-              {CONTACT.address}
-              <br />
-              {CONTACT.city}
-              <br />
-              <span className="text-muted">{CONTACT.hours}</span>
-            </span>
-          </p>
-          <div className="mt-6 overflow-hidden rounded-2xl border border-line bg-surface-2">
-            <iframe
-              title="Carte du bureau de Saloum Immo à Sangalkam"
-              src="https://www.google.com/maps?q=Sangalkam%2C%20S%C3%A9n%C3%A9gal&z=13&output=embed"
-              className="block h-[380px] w-full"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          </div>
-        </section>
-      </div>
-    </div>
+              <WhatsAppButton
+                label={s.bouton}
+                message={s.message.texte}
+                template={s.message.gabarit}
+                className="tab:col-[7/span_6] tab:row-[1/span_2] desk:col-[8/span_5]"
+              />
+              <TextLink
+                href={s.lien.href}
+                className="-mt-2 self-start justify-self-start tab:col-[1/span_6] tab:row-start-2 tab:mt-0 desk:col-[2/span_5]"
+              >
+                {s.lien.libelle}
+              </TextLink>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    </>
   );
 }

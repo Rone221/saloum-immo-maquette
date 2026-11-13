@@ -1,177 +1,95 @@
+// Diaspora (spécification 7.5) : acheter depuis l'étranger. Ouverture « appel
+// et vidéo » (bande paper-2, comme la section 04 de l'accueil), cheminement en
+// quatre stations, les deux listes du foncier, les six vidéos (#videos), les
+// programmes en bref, puis la bande de contact.
+//
+// Ne jamais écrire « EXCLUSIF DIASPORA ». Ne rien promettre qui n'est pas publié :
+// ni paiement à distance, ni échéancier, ni procuration, ni visite vidéo en direct.
+//
+// Faits à valider avec le client, affichés sur cette page :
+// - vignette du reel du 27.10.2026 : droit à l'image de la collaboratrice
+//   (personne n'est nommé) ;
+// - station 3 : « Un notaire agréé suit chaque étape. » (TikTok du 15.10.2025),
+//   présenté comme un accompagnement, pas comme une garantie ;
+// - formulation des deux listes « Ce que nous faisons » et « Avant d'acheter,
+//   vérifiez avec nous » ;
+// - « Sicap Keur Massar, les lots » : vidéo titrée « Paradise City » par le client
+//   (nom à valider) ;
+// - Lac Town : statut foncier non publié, écrit « à demander ».
+
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
-import {
-  CameraIcon,
-  ChatsCircleIcon,
-  FileMagnifyingGlassIcon,
-  HandCoinsIcon,
-  SignatureIcon,
-  VideoCameraIcon,
-} from "@phosphor-icons/react/dist/ssr";
-import { Faq } from "@/components/faq";
-import { LeadForm } from "@/components/lead-form";
-import { Reveal } from "@/components/reveal";
-import { btnPrimary, container, h2, lead } from "@/components/ui";
-import { IMG, IMG_ALT } from "@/lib/data";
-import { unsplash } from "@/lib/site";
+import { ContactBand } from "@/components/contact-band";
+import { ListeProgrammes, versLien } from "@/components/liste-programmes";
+import { OuvertureAppel } from "@/components/ouverture-appel";
+import { PathSteps } from "@/components/path-steps";
+import { Section } from "@/components/section";
+import { TextLink } from "@/components/text-link";
+import { Ticks } from "@/components/ticks";
+import { WatchList } from "@/components/watch-list";
+import { AVANT_D_ACHETER, CE_QUE_NOUS_FAISONS } from "@/content/foncier";
+import { PROGRAMMES } from "@/content/programmes";
+import { APPEL_DIASPORA } from "@/content/services";
+import { VIDEOS } from "@/content/videos";
+import { metaPage } from "@/lib/meta";
 
-export const metadata: Metadata = {
-  title: "Acheter depuis l'étranger",
-  description:
-    "Achetez un terrain au Sénégal depuis la France, l'Italie, l'Espagne ou les États-Unis : visite vidéo, vérification par votre notaire, paiements tracés, suivi photo.",
-};
+const DESCRIPTION =
+  "Vous vivez hors du Sénégal : écrivez à Saloum Immo sur WhatsApp, regardez les terrains en vidéo, vérifiez les documents avec nous, visitez sur place sur rendez-vous.";
 
-const PARCOURS = [
-  { Icon: ChatsCircleIcon, title: "Échanger", text: "Un premier appel WhatsApp pour cerner votre projet, votre budget et vos délais, à l'heure de votre pays." },
-  { Icon: VideoCameraIcon, title: "Visiter en vidéo", text: "Un conseiller filme la parcelle en direct : bornes, accès, voisinage. Vous posez toutes vos questions." },
-  { Icon: FileMagnifyingGlassIcon, title: "Vérifier", text: "Nous vous envoyons les documents. Le notaire de votre choix contrôle l'état des droits." },
-  { Icon: HandCoinsIcon, title: "Réserver", text: "Apport par virement international. Chaque versement donne lieu à un reçu au nom de la société." },
-  { Icon: SignatureIcon, title: "Signer", text: "Chez le notaire pendant votre séjour, ou à distance par procuration notariée." },
-  { Icon: CameraIcon, title: "Suivre", text: "Photos et vidéos datées à chaque étape : bornage, aménagement, puis construction si vous le souhaitez." },
-];
+export const metadata: Metadata = metaPage(APPEL_DIASPORA.titre, DESCRIPTION);
 
-const FAQ_DIASPORA = [
-  {
-    q: "Puis-je acheter sans venir au Sénégal ?",
-    a: "Oui. La visite se fait en vidéo, la vérification des documents par votre notaire, et la signature par procuration notariée. Vous venez quand vous le souhaitez.",
-  },
-  {
-    q: "Comment payer depuis l'étranger ?",
-    a: "Par virement bancaire international sur le compte de la société. Jamais sur un compte personnel. Chaque versement est confirmé par un reçu.",
-  },
-  {
-    q: "Qui veille sur mon terrain pendant mon absence ?",
-    a: "Nous restons votre contact sur place. Vous recevez des photos datées après chaque intervention et pouvez demander une nouvelle visite vidéo à tout moment.",
-  },
-  {
-    q: "Puis-je faire construire à distance ?",
-    a: "Oui. Plans, devis, construction et suivi de chantier avec un interlocuteur unique. Les paiements sont échelonnés selon l'avancement.",
-  },
-];
-
-export default function DiasporaPage() {
+export default function Diaspora() {
   return (
     <>
-      <section className={`${container} pt-10 md:pt-16`}>
-        <div className="grid gap-8 lg:grid-cols-[1.25fr_1fr] lg:items-end">
-          <h1 className="font-display text-[2.6rem] font-extrabold leading-[1.03] tracking-tight text-balance text-ink sm:text-5xl lg:text-[3.5rem]">
-            Achetez au Sénégal depuis l&apos;étranger, en gardant le contrôle.
-          </h1>
-          <div>
-            <p className="max-w-[44ch] text-lg leading-relaxed text-muted">
-              Visite vidéo en direct, documents vérifiés par votre notaire, paiements tracés et suivi photo du terrain.
-            </p>
-            <a href="#visio" className={`${btnPrimary} mt-6`}>
-              <VideoCameraIcon size={18} aria-hidden />
-              Réserver une visite vidéo
-            </a>
-          </div>
-        </div>
-        <div className="relative mt-12 aspect-[16/9] overflow-hidden rounded-2xl md:aspect-[21/9]">
-          <Image
-            src={unsplash(IMG.ouakam, 2000)}
-            alt={IMG_ALT[IMG.ouakam]}
-            fill
-            preload
-            sizes="100vw"
-            className="object-cover"
-          />
-        </div>
-      </section>
+      {/* 04 Acheter depuis l'étranger : ouverture appel et vidéo. La vignette du reel
+          est l'image d'ouverture : préchargée (4.2). Les stations sont des H2. */}
+      <Section labelledBy="t-diaspora" surface="paper-2">
+        <OuvertureAppel {...APPEL_DIASPORA} numero="04" titreId="t-diaspora" niveau={1} preload />
+        <PathSteps avecSuite niveau={2} />
+      </Section>
 
-      <section className={`${container} grid gap-12 py-20 md:py-28 lg:grid-cols-[1fr_1.5fr] lg:gap-20`}>
-        <Reveal className="lg:sticky lg:top-28 lg:self-start">
-          <h2 className={h2}>Six étapes, un seul interlocuteur</h2>
-          <p className={`${lead} mt-4`}>
-            Le parcours est le même pour tous nos clients de la diaspora, que vous soyez à Paris, Milan, Madrid ou New York.
-          </p>
-        </Reveal>
-        <ol className="relative space-y-10 border-l border-line pl-8 md:pl-10">
-          {PARCOURS.map(({ Icon, title, text }, i) => (
-            <li key={title} className="relative">
-              <span className="absolute -left-[calc(2rem+21px)] grid size-10 place-items-center rounded-full border border-line bg-bg text-accent md:-left-[calc(2.5rem+21px)]">
-                <Icon size={20} aria-hidden />
-              </span>
-              <Reveal delay={0.04 * i}>
-                <h3 className="font-display text-xl font-bold tracking-tight text-ink">{title}</h3>
-                <p className="mt-2 max-w-[56ch] text-[15px] leading-relaxed text-muted">{text}</p>
-              </Reveal>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="bg-surface py-20 md:py-28">
-        <div className={container}>
-          <Reveal className="max-w-3xl">
-            <h2 className={h2}>Ce qui vous protège quand vous êtes loin</h2>
-          </Reveal>
-          <div className="mt-12 grid gap-4 md:grid-cols-6 md:grid-rows-[auto_auto]">
-            <Reveal className="md:col-span-4">
-              <div className="relative h-full min-h-[300px] overflow-hidden rounded-2xl">
-                <Image src={unsplash(IMG.geometre, 1400)} alt={IMG_ALT[IMG.geometre]} fill sizes="(min-width: 768px) 66vw, 100vw" className="object-cover" />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-panel/90 via-panel/40 to-transparent p-6 pt-20 sm:p-8 sm:pt-24">
-                  <h3 className="font-display text-2xl font-bold tracking-tight text-panel-ink">Un bornage que vous voyez</h3>
-                  <p className="mt-2 max-w-[48ch] text-[15px] leading-relaxed text-panel-muted">
-                    Le géomètre pose les bornes devant la caméra. Le plan signé vous est envoyé le jour même.
-                  </p>
-                </div>
-              </div>
-            </Reveal>
-            <Reveal className="md:col-span-2" delay={0.06}>
-              <div className="flex h-full flex-col justify-between rounded-2xl bg-accent p-6 text-accent-ink sm:p-8">
-                <p className="font-display text-5xl font-extrabold tracking-tight">0</p>
-                <div>
-                  <h3 className="mt-8 font-display text-xl font-bold tracking-tight">paiement en espèces</h3>
-                  <p className="mt-2 text-[15px] leading-relaxed opacity-85">Virements sur le compte de la société, avec reçu à chaque versement.</p>
-                </div>
-              </div>
-            </Reveal>
-            <Reveal className="md:col-span-3" delay={0.04}>
-              <div className="h-full rounded-2xl border border-line bg-bg p-6 sm:p-8">
-                <h3 className="font-display text-xl font-bold tracking-tight text-ink">Votre notaire, pas le nôtre</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-muted">
-                  Vous choisissez librement le notaire qui vérifie le titre et rédige l&apos;acte. Nous lui transmettons le dossier complet.
-                </p>
-              </div>
-            </Reveal>
-            <Reveal className="md:col-span-3" delay={0.08}>
-              <div className="h-full rounded-2xl border border-line bg-bg p-6 sm:p-8">
-                <h3 className="font-display text-xl font-bold tracking-tight text-ink">Un dossier partagé</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-muted">
-                  Documents, reçus et photos de chantier réunis au même endroit, consultables depuis votre téléphone.
-                </p>
-              </div>
-            </Reveal>
-          </div>
+      {/* Les deux listes du foncier, sans en-tête (7.5, point 3) : le titre et l'intro de la
+          page Foncier, repris ici, faisaient la troisième occurrence du même bloc sur le site.
+          Les titres de colonne sont des H2. */}
+      <div id="documents" className="wrap pt-14 tab:pt-28">
+        <div className="grid gap-y-9 tab:grid-cols-12 tab:gap-x-6 tab:gap-y-10">
+          <Ticks
+            titre={CE_QUE_NOUS_FAISONS.titre}
+            lignes={CE_QUE_NOUS_FAISONS.lignes}
+            niveau={2}
+            className="tab:col-[1/span_6] desk:col-[2/span_5]"
+          >
+            <TextLink href="/foncier/" className="mt-1.5">
+              Délibération, bail, titre foncier : la différence
+            </TextLink>
+          </Ticks>
+          <Ticks
+            titre={AVANT_D_ACHETER.titre}
+            lignes={AVANT_D_ACHETER.lignes}
+            niveau={2}
+            className="tab:col-[7/span_6] desk:col-[8/span_5]"
+          >
+            <TextLink href={VIDEOS.nicad.href} className="mt-1.5">
+              {`${VIDEOS.nicad.titre}, ${VIDEOS.nicad.duree}`}
+            </TextLink>
+          </Ticks>
         </div>
-      </section>
+      </div>
 
-      <section id="visio" className={`${container} grid gap-12 py-20 md:py-28 lg:grid-cols-[1fr_1.3fr] lg:gap-16`}>
-        <Reveal>
-          <h2 className={h2}>Réserver une visite vidéo</h2>
-          <p className={`${lead} mt-4`}>
-            Indiquez votre pays et vos disponibilités. Un conseiller vous propose un créneau et vous appelle en vidéo depuis le terrain.
-          </p>
-          <p className="mt-6 text-[15px] text-muted">
-            Vous préférez commencer par les offres ?{" "}
-            <Link href="/terrains" className="font-semibold text-accent underline-offset-4 hover:underline">
-              Voir les terrains
-            </Link>
-          </p>
-        </Reveal>
-        <Reveal delay={0.06}>
-          <LeadForm variant="diaspora" />
-        </Reveal>
-      </section>
+      {/* À regarder avant d'appeler (#videos), puis les programmes en bref */}
+      <Section labelledBy="t-videos" rythme="aucun" className="pt-14 tab:pt-24">
+        <WatchList marge="" />
+      </Section>
+      <Section id="programmes" labelledBy="t-programmes" rythme="aucun" className="pt-9 pb-16 tab:pt-16 tab:pb-30">
+        {/* Au gabarit de la liste des vidéos qu'elle suit : titre à gauche, lignes à droite. */}
+        <ListeProgrammes
+          titre="Les programmes en bref"
+          titreId="t-programmes"
+          liens={PROGRAMMES.map((p) => versLien(p, { lieu: true }))}
+          variante="gauche"
+        />
+      </Section>
 
-      <section className={`${container} pb-24`}>
-        <div className="grid gap-12 lg:grid-cols-[1fr_1.5fr] lg:gap-20">
-          <h2 className={h2}>Vos questions</h2>
-          <Faq items={FAQ_DIASPORA} />
-        </div>
-      </section>
+      <ContactBand message={APPEL_DIASPORA.message} bouton={APPEL_DIASPORA.bouton} />
     </>
   );
 }

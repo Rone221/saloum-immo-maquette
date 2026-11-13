@@ -28,6 +28,8 @@ jobs:
         env:
           # Le site est servi sous https://<compte>.github.io/<dépôt>/
           NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+          # Origine des adresses absolues des cartes de partage (og:image).
+          NEXT_PUBLIC_SITE_ORIGIN: https://${{ github.repository_owner }}.github.io
       - uses: actions/upload-pages-artifact@v4
         with:
           path: out

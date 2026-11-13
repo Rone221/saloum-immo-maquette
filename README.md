@@ -1,6 +1,6 @@
 # Saloum Immo : maquette du nouveau site
 
-Maquette cliquable présentée au client. Prix, disponibilités et photos sont indicatifs.
+Proposition de site, direction « Relevé » : le site se lit comme un plan de lotissement, et chaque dessin porte une donnée publiée par Saloum Immo.
 
 En ligne : https://rone221.github.io/saloum-immo-maquette/
 
@@ -13,26 +13,25 @@ npm run dev
 
 Puis ouvrir http://localhost:3000.
 
-## Déploiement
+## Construire
 
-Chaque push sur `main` lance `.github/workflows/deploy.yml` : build en export statique, puis publication sur GitHub Pages.
+```bash
+npm run build
+```
 
-- Le site est servi sous `/<nom du dépôt>/`. Le workflow passe ce chemin via `NEXT_PUBLIC_BASE_PATH`.
-- Pour tester l'export en local : `NEXT_PUBLIC_BASE_PATH=/saloum-immo-maquette npm run build`, puis servir le dossier parent de `out/` sous ce chemin.
-- `scripts/flatten-rsc.mjs` recopie à plat les fichiers de préchargement de Next. Sans ça, GitHub Pages renvoie des 404 sur la navigation entre pages.
-- Pas de `cacheComponents` : incompatible avec l'export statique.
+Le build enchaîne trois étapes : `next build` (export statique dans `out/`), `scripts/flatten-rsc.mjs` (copie à plat des fichiers de préchargement, sans quoi GitHub Pages renvoie des 404 entre les pages), puis `scripts/garde-fous.mjs`, qui échoue sur une couleur, une police, une classe, un mot ou une photo interdits.
+
+Pour tester le sous-chemin de GitHub Pages : `NEXT_PUBLIC_BASE_PATH=/saloum-immo-maquette npm run build`. Sous Git Bash (Windows), préfixer par `MSYS_NO_PATHCONV=1`, sinon le chemin est converti en chemin Windows et le build s'arrête.
+
+Après un build, `npm run liens` (avec le même `NEXT_PUBLIC_BASE_PATH`) vérifie que chaque lien, image, script, feuille de style et police des pages d'`out/` mène à un fichier existant, que chaque ancre existe, que le sous-chemin est partout, et liste les liens externes avec leur forme.
 
 ## Où modifier quoi
 
-- `src/lib/data.ts` : programmes, offres, statuts fonciers, photos, actualités, FAQ.
-- `src/lib/site.ts` : coordonnées, navigation, lien WhatsApp.
-- `src/app/globals.css` : couleurs (clair et sombre), rayons, animations.
-- `src/components/` : plan de lotissement, simulateur, catalogue, formulaires.
+- `src/content/` : tous les faits affichés, chacun avec sa source et son statut (`ok` ou `a-valider`). Rien n'est écrit en dur dans les composants.
+- `src/components/` : les composants, dont les dessins dans `src/components/dessins/`.
+- `src/app/globals.css` : les jetons (couleurs, tailles, rayons, points de rupture).
+- `public/photos/` : variantes WebP des photos du client, produites par `npm run photos` à partir des originaux (hors dépôt). Le résultat est versionné.
 
-## À remplacer avant la mise en ligne réelle
+## Déploiement
 
-- Photos Unsplash par les photos et vidéos drone du client.
-- Wordmark provisoire par le logo officiel en SVG.
-- Prix, lots et statuts par les données réelles.
-- Formulaires simulés par un vrai envoi (email ou CRM).
-- `robots: noindex` dans `src/app/layout.tsx`.
+Chaque push sur `main` lance `.github/workflows/deploy.yml` : build en export statique, puis publication sur GitHub Pages. Le workflow passe le sous-chemin via `NEXT_PUBLIC_BASE_PATH`.

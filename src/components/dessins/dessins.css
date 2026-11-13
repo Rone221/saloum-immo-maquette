@@ -1,0 +1,507 @@
+/* Dessins faits à la main : cotes, planche des lots, coupe, tuile TF, frise.
+   Ce sont des dessins, pas des icônes. Importé par globals.css dans @layer components.
+   Points de rupture : 47.5625rem = 761 px (tab), 68.8125rem = 1 101 px (desk). */
+
+/* ------------------------------------------------------------------ Cotes */
+
+.cote,
+.cotes {
+  --u: 15px;
+}
+@media (width >= 47.5625rem) {
+  .cote, .cotes { --u: 20px; }
+}
+@media (width >= 68.8125rem) {
+  .cote, .cotes { --u: 22px; }
+}
+
+/* Une cote pleine garde sa longueur (mesure × --u) : si la place manque, la
+   destination passe sous la ligne plutôt que de déborder (320 px).
+   Écart : 14 px (16 dès 761 px), soit 8 px (10) entre le bout des obliques, qui
+   dépassent de 6 px, et le texte. */
+.cote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 6px;
+  font-family: var(--font-mono);
+  font-size: var(--text-1);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+}
+@media (width >= 47.5625rem) {
+  .cote { gap: 16px; }
+}
+.cote-end { white-space: nowrap; }
+.cote-dim {
+  position: relative;
+  flex: none;
+  width: calc(var(--len) * var(--u));
+  max-width: 100%;
+  height: 26px;
+  border-left: 1.5px solid var(--color-trait);
+  border-right: 1.5px solid var(--color-trait);
+}
+.cote-dim::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1.5px solid var(--color-trait);
+}
+/* Les deux obliques de 12 px aux extrémités (convention de cotation). */
+.cote-dim::after {
+  content: "";
+  position: absolute;
+  inset: 7px -6px;
+  background:
+    linear-gradient(135deg, transparent 42%, var(--color-trait) 42% 58%, transparent 58%) left center / 12px 12px no-repeat,
+    linear-gradient(135deg, transparent 42%, var(--color-trait) 42% 58%, transparent 58%) right center / 12px 12px no-repeat;
+}
+.cote-val {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  padding: 0 8px;
+  background: var(--bg, var(--color-paper));
+  color: var(--color-trait);
+  font-weight: 600;
+  white-space: nowrap;
+}
+/* Valeur au-dessus de la ligne quand la ligne est trop courte pour la porter
+   (data-haut, calculé dans components/dessins/cote.tsx) : Sakina City, 3 km sur
+   3 unités ; la cote ouverte de Lac Town sur mobile. La rangée réserve sa hauteur. */
+.cote[data-haut="toujours"] { padding-top: 17px; }
+.cote[data-haut="toujours"] .cote-val {
+  top: auto;
+  bottom: 100%;
+  transform: translateX(-50%);
+  padding: 0 0 2px;
+  background: none;
+}
+@media (width < 68.8125rem) {
+  .cote[data-haut="tab"] { padding-top: 17px; }
+  .cote[data-haut="tab"] .cote-val {
+    top: auto;
+    bottom: 100%;
+    transform: translateX(-50%);
+    padding: 0 0 2px;
+    background: none;
+  }
+}
+@media (width < 47.5625rem) {
+  .cote[data-haut="mobile"] { padding-top: 17px; }
+  .cote[data-haut="mobile"] .cote-val {
+    top: auto;
+    bottom: 100%;
+    transform: translateX(-50%);
+    padding: 0 0 2px;
+    background: none;
+  }
+}
+
+/* Cote ouverte : distance non chiffrée. Tirets, ni traits d'extrémité ni obliques.
+   Sa longueur est arbitraire : elle raccourcit plutôt que de pousser la plaque
+   hors de la colonne (Lac Town entre 1 101 et 1 280 px, et à 320 px), sans passer
+   sous son libellé quand il est posé dessus. */
+.cote-open { flex-wrap: nowrap; }
+.cote-open .cote-dim { flex: 0 1 auto; min-width: 5rem; border: 0; }
+@media (width >= 47.5625rem) {
+  .cote-open .cote-dim { min-width: 7.5rem; }
+}
+.cote-open .cote-dim::before {
+  border: 0;
+  height: 1.5px;
+  margin-top: -0.75px;
+  background: repeating-linear-gradient(90deg, var(--color-trait) 0 4px, transparent 4px 9px);
+}
+.cote-open .cote-dim::after { display: none; }
+.cote-open .cote-val { color: var(--color-ink-2); font-weight: 500; }
+
+/* Plusieurs cotes depuis la même origine, à la même échelle. */
+.cotes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 8px;
+  font-family: var(--font-mono);
+  font-size: var(--text-1);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+}
+@media (width >= 47.5625rem) {
+  .cotes {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 16px;
+  }
+}
+.cotes-o { white-space: nowrap; padding-right: 2px; }
+.cotes-rows { display: flex; flex-direction: column; gap: 8px; }
+.cotes-rows .cote { margin: 0; }
+
+/* ------------------------------------------------------ Planche des lots */
+
+.plate {
+  --m: 5.4px;
+  margin: 0;
+  padding: 16px 12px 12px;
+  border: 1px solid var(--color-ink);
+}
+@media (width >= 47.5625rem) {
+  .plate { --m: 8px; padding: 26px 28px 22px; }
+}
+@media (width >= 68.8125rem) {
+  .plate { --m: 10px; }
+}
+.plate-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 26px;
+}
+@media (width >= 47.5625rem) {
+  .plate-head { flex-direction: row; justify-content: space-between; gap: 24px; margin-bottom: 34px; }
+}
+.plate-t {
+  margin: 0;
+  padding: 4px 8px;
+  background: var(--color-paper);
+  font-family: var(--font-mono);
+  font-size: var(--text-1);
+  font-weight: 500;
+  line-height: var(--leading-label);
+}
+.scalebar {
+  position: relative;
+  flex: none;
+  width: calc(10 * var(--m));
+  height: 32px;
+  margin-right: 30px;
+  background: var(--color-paper);
+}
+.sb-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 7px;
+  border: 1px solid var(--color-ink);
+  background: linear-gradient(90deg, var(--color-ink) 0 50%, var(--color-paper) 50%);
+}
+.sb-l, .sb-m, .sb-r {
+  position: absolute;
+  top: 12px;
+  font-family: var(--font-mono);
+  font-size: var(--text-1);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+}
+.sb-l { left: 0; transform: translateX(-50%); }
+.sb-m { left: 50%; transform: translateX(-50%); }
+.sb-r { left: 100%; transform: translateX(-3px); white-space: nowrap; }
+
+.lots {
+  --note: 140px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 22px 12px;
+  margin: 0;
+  padding: 0 0 72px;
+  list-style: none;
+}
+@media (width >= 47.5625rem) {
+  .lots { --note: 200px; gap: 56px 26px; padding: 0 0 58px 2px; }
+}
+.lot {
+  --p: 7px;
+  position: relative;
+  flex: none;
+  width: calc(var(--s) * var(--m));
+  height: calc(var(--s) * var(--m));
+  border: 1.5px solid var(--color-trait);
+}
+.lot-tag {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  display: flex;
+  flex-direction: column;
+  padding: 3px 5px 4px;
+  background: var(--color-paper);
+  font-family: var(--font-mono);
+  line-height: var(--leading-snug);
+}
+@media (width >= 47.5625rem) {
+  .lot-tag { left: 10px; top: 10px; padding: 6px 8px 7px; }
+}
+.lot-k { font-size: var(--text-1); font-weight: 500; color: var(--color-ink-2); }
+.lot-n { font-size: var(--text-3); font-weight: 600; letter-spacing: var(--tracking-lot); }
+@media (width >= 47.5625rem) {
+  .lot-n { font-size: var(--text-4); }
+}
+.lot-m { margin-top: 3px; font-size: var(--text-1); font-weight: 600; color: var(--color-trait); }
+.lot-note {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 12px);
+  width: var(--note);
+  font-family: var(--font-mono);
+  font-size: var(--text-1);
+  font-weight: 500;
+  line-height: var(--leading-label);
+  color: var(--color-ink);
+}
+/* Un lot qui porte une note réserve à sa droite la place qui manque à la note
+   (sa largeur moins le côté du lot). La rangée en tient compte au moment de
+   passer à la ligne : la note reste dans le cadre, que le lot finisse ou ouvre
+   sa rangée (lot 2175 à 390 et à 1 100 px, la note touchait le filet). */
+.lot-a-note { margin-right: max(0px, var(--note) - var(--s) * var(--m)); }
+.plate-cap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 32px;
+  margin: 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--color-ink);
+  background: var(--color-paper);
+  font-size: var(--text-2);
+  line-height: var(--leading-caption);
+  color: var(--color-ink-2);
+}
+.plate-cap strong { color: var(--color-ink); font-weight: 600; }
+
+/* ------------------------------------------------------------------ Coupe */
+
+.coupe {
+  position: relative;
+  margin: 0;
+  background: var(--color-paper);
+  border: 1px solid var(--color-ink);
+}
+.coupe-head { padding: 22px 16px 0; }
+@media (width >= 47.5625rem) {
+  .coupe-head { padding: 32px 28px 0; }
+}
+@media (width >= 68.8125rem) {
+  .coupe-head { position: absolute; left: 0; top: 0; width: 44%; padding: 36px 0 0 40px; }
+}
+.coupe svg { display: block; width: 100%; height: auto; margin-top: 8px; }
+@media (width >= 47.5625rem) {
+  .coupe svg { margin-top: 0; }
+}
+.coupe .p-fond { fill: var(--color-paper); }
+.coupe .hatch { stroke: var(--color-trait); stroke-width: 1.4; }
+.coupe .dot { fill: var(--color-sol); }
+.coupe .tn { fill: none; stroke: var(--color-ink-2); stroke-width: 1.5; stroke-dasharray: 6 6; }
+.coupe .ground { stroke: var(--color-ink); stroke-width: 2.2; }
+.coupe .cable { fill: none; stroke: var(--color-ink); stroke-width: 1.6; }
+.coupe .obj { fill: var(--color-paper); stroke: var(--color-ink); stroke-width: 1.6; }
+.coupe .obj-line { stroke: var(--color-ink); stroke-width: 3; }
+.coupe .road { stroke: var(--color-ink); stroke-width: 1.6; }
+.coupe .trench { fill: var(--color-paper); stroke: var(--color-ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.coupe .pipe { fill: var(--color-paper); stroke: var(--color-trait); stroke-width: 4; }
+.coupe .borne { fill: var(--color-borne); stroke: var(--color-ink); stroke-width: 1.6; }
+.coupe .leads path { fill: none; stroke: var(--color-ink); stroke-width: 1.2; }
+.coupe .tags rect { fill: var(--color-ink); }
+.coupe .tags text {
+  fill: var(--color-white);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 20px;
+  text-anchor: middle;
+}
+.coupe .tags rect, .coupe .tags text { transform-box: fill-box; transform-origin: center; }
+.coupe .clbl text { font-family: var(--font-sans); font-size: 17px; font-weight: 600; fill: var(--color-ink); }
+.coupe .clbl .small { font-family: var(--font-mono); font-size: 13px; font-weight: 500; fill: var(--color-ink-2); }
+/* Sous 1 101 px : les étiquettes du dessin disparaissent (à 761 px, elles ne
+   faisaient plus que 10 px, « terrain naturel » 7,6 px) et une légende en liste
+   prend le relais sous le dessin. Sous 761 px, les numéros grossissent en plus. */
+@media (width < 68.8125rem) {
+  .coupe .clbl { display: none; }
+}
+@media (width < 47.5625rem) {
+  .coupe .tags rect, .coupe .tags text { transform: scale(1.9); }
+}
+
+/* -------------------------------------------------------------- Tuile TF */
+
+.tf-tile {
+  --p: 9px;
+  position: relative;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1.5px solid var(--color-trait);
+}
+@media (width >= 47.5625rem) {
+  .tf-tile { padding: 18px 20px; }
+}
+.tf-big {
+  margin: 0;
+  align-self: flex-start;
+  padding: 0 10px;
+  background: var(--color-paper);
+  font-size: var(--text-7);
+  font-stretch: 72%;
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  color: var(--color-trait);
+}
+.tf-ref {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  align-self: flex-start;
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-trait);
+  font-family: var(--font-mono);
+}
+.tf-ref-k { font-size: var(--text-1); font-weight: 500; line-height: var(--leading-label); color: var(--color-ink-2); }
+.tf-ref-v { font-size: var(--text-4); font-weight: 600; line-height: var(--leading-snug); color: var(--color-ink); }
+
+/* ------------------------------------------------------- Frise (chaînage) */
+
+.chain {
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1.5px solid var(--color-ink);
+}
+@media (width >= 68.8125rem) {
+  .chain { margin-top: auto; }
+}
+.chain-rows { margin: 0; padding: 0; list-style: none; }
+.chain-rows li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-rule);
+  font-size: var(--text-2);
+  line-height: var(--leading-snug);
+}
+.ch-lab { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 10px; }
+.ch-y {
+  padding-top: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--text-1);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+  color: var(--color-trait);
+}
+/* Mobile : les années imprécises sont soulignées en pointillés. */
+.chain-rows li[data-imprecise] .ch-y {
+  align-self: start;
+  justify-self: start;
+  border-bottom: 2px dotted var(--color-trait);
+}
+.chain-axis { display: none; }
+.chain-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-1);
+  font-weight: 500;
+  line-height: var(--leading-label);
+  color: var(--color-ink-2);
+}
+.chain-note .dots-x { width: 34px; color: var(--color-ink); }
+
+@media (width >= 47.5625rem) {
+  .chain-rows {
+    display: grid;
+    grid-template-columns: repeat(24, minmax(0, 1fr));
+    row-gap: 12px;
+  }
+  .chain-rows li {
+    position: relative;
+    grid-column: var(--a) / var(--b);
+    grid-row: var(--r);
+    padding: 0;
+    border: 0;
+    white-space: nowrap;
+  }
+  .ch-lab { display: block; }
+  .ch-y { margin-right: 10px; padding-top: 0; }
+  .chain-rows li[data-imprecise] .ch-y { border-bottom: 0; }
+  /* Le trait sous l'étiquette. */
+  .chain-rows li::after {
+    content: "";
+    display: block;
+    height: 6px;
+    margin-top: 6px;
+    background: var(--color-ink);
+  }
+  .chain-rows li[data-trace="point"]::after { width: 10px; height: 10px; }
+  .chain-rows li[data-trace="pointilles"]::after {
+    height: 2px;
+    margin-top: 8px;
+    background: repeating-linear-gradient(90deg, var(--color-ink) 0 3px, transparent 3px 7px);
+  }
+  .chain-rows li[data-trace="ouvert"]::after {
+    background:
+      linear-gradient(90deg, var(--color-ink) 0 30%, transparent 30%) 0 0 / 100% 6px no-repeat,
+      repeating-linear-gradient(90deg, var(--color-ink) 0 3px, transparent 3px 7px) 0 2px / 100% 2px no-repeat;
+  }
+  .chain-rows li[data-trace="saloum"]::after { height: 8px; background: var(--color-trait); }
+  /* Repère 2022 : le seul orange de la frise. */
+  .chain-rows li[data-trace="saloum"]::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    bottom: -3px;
+    width: 13px;
+    height: 13px;
+    background: var(--color-borne);
+    outline: 1.5px solid var(--color-ink);
+  }
+  .chain-rows li[data-trace="ouvert"] .ch-lab,
+  .chain-rows li[data-trace="saloum"] .ch-lab {
+    margin-left: -260px;
+    text-align: right;
+  }
+  .chain-axis {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(24, minmax(0, 1fr));
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-ink);
+    background: repeating-linear-gradient(90deg, var(--color-ink) 0 1px, transparent 1px calc(100% / 24)) top left / 100% 6px no-repeat;
+    font-family: var(--font-mono);
+    font-size: var(--text-1);
+    font-weight: 500;
+    line-height: var(--leading-tight);
+    color: var(--color-ink-2);
+  }
+  .chain-axis span { grid-column: var(--a); grid-row: 1; white-space: nowrap; }
+  .chain-axis .end { justify-self: end; }
+}
+
+/* ------------------------------------------------ Plan de l'ouverture */
+
+.plan-svg .axes-case path { stroke: var(--color-white); stroke-opacity: 0.75; stroke-width: 16; }
+.plan-svg .axes path { stroke: var(--color-trait); stroke-width: 9; stroke-dasharray: 64 16 12 16; }
+.plan-svg .lbl { display: none; }
+@media (width >= 47.5625rem) {
+  .plan-svg .axes-case path { stroke-width: 9; }
+  .plan-svg .axes path { stroke-width: 5; stroke-dasharray: 48 12 8 12; }
+  .plan-svg .lbl { display: inline; }
+}
+.plan-svg .lbl rect { fill: var(--color-white); }
+.plan-svg .lbl text { font-family: var(--font-mono); font-size: 27px; font-weight: 500; fill: var(--color-ink); }
+.plan-svg .lbl .lead { fill: none; stroke: var(--color-white); stroke-width: 3; }
+.lg-axe {
+  width: 46px;
+  height: 4px;
+  background: repeating-linear-gradient(90deg, var(--color-trait) 0 16px, transparent 16px 20px, var(--color-trait) 20px 23px, transparent 23px 27px);
+}

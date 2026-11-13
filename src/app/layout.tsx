@@ -1,50 +1,58 @@
-import type { Metadata } from "next";
-import { Geist, Schibsted_Grotesk } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { archivo, plexMono } from "./fonts";
+import { Cartouche } from "@/components/cartouche";
 import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
-import { MobileActionBar } from "@/components/mobile-action-bar";
+import { asset } from "@/lib/base";
+import { typo } from "@/lib/format";
+import { IMAGE_PARTAGE, ORIGINE } from "@/lib/meta";
 
-const geist = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const display = Schibsted_Grotesk({
-  variable: "--font-schibsted",
-  subsets: ["latin"],
-});
+const DESCRIPTION = typo(
+  "Saloum Immo vend des terrains et les aménage : terrassement, voies en latérite, eau avec SEN’EAU, électricité, bornage. Lac Town, Sakina City, Sicap Keur Massar.",
+);
 
 export const metadata: Metadata = {
+  // Adresses absolues des cartes de partage (og:image).
+  metadataBase: new URL(ORIGINE),
   title: {
-    default: "Saloum Immo | Terrains sécurisés au Sénégal",
-    template: "%s | Saloum Immo",
+    default: "Saloum Immo · Terrains et aménagement, région de Dakar",
+    template: "%s · Saloum Immo",
   },
-  description:
-    "Parcelles bornées et viabilisées en titre foncier ou en bail, à Kounoune, Diass, Niague et Bayakh. Visite sur place ou en vidéo, accompagnement jusqu'à la construction.",
+  description: DESCRIPTION,
+  // Maquette de présentation : on ne l'indexe pas.
   robots: { index: false, follow: false },
+  // Icônes : le logo officiel au centre d'un carré blanc (scripts/photos.mjs), à valider.
+  icons: {
+    icon: [{ url: asset("/2269-icone-32.png"), sizes: "32x32", type: "image/png" }],
+    apple: [{ url: asset("/2269-icone-180.png"), sizes: "180x180", type: "image/png" }],
+  },
+  openGraph: {
+    title: "Saloum Immo · Terrains et aménagement, région de Dakar",
+    description: DESCRIPTION,
+    locale: "fr_SN",
+    type: "website",
+    images: [IMAGE_PARTAGE],
+  },
+};
+
+export const viewport: Viewport = {
+  colorScheme: "light",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${geist.variable} ${display.variable} antialiased`}>
-      <body className="flex min-h-dvh flex-col bg-bg font-sans text-ink">
-        <a
-          href="#contenu"
-          className="sr-only z-50 rounded-full bg-accent px-4 py-2 text-accent-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
-        >
+    // data-scroll-behavior : Next 16 ne neutralise plus le défilement doux pendant un
+    // changement de page sans cet attribut. Sans lui, un lien interne cliqué en haut
+    // d'une page arrivait loin sous le H1 de la suivante (les scrollIntoView de Next
+    // s'enchaînaient en défilement doux). Le défilement doux reste pour les ancres (5).
+    <html lang="fr" data-scroll-behavior="smooth" className={`${archivo.variable} ${plexMono.variable}`}>
+      <body>
+        <a href="#contenu" className="skip">
           Aller au contenu
         </a>
-        <p className="bg-panel px-4 py-1.5 text-center text-xs text-panel-muted">
-          <span className="sm:hidden">Maquette : contenus indicatifs.</span>
-          <span className="hidden sm:inline">Maquette de présentation. Prix, disponibilités et photos sont indicatifs.</span>
-        </p>
         <SiteHeader />
-        <main id="contenu" className="flex-1 pb-20 md:pb-0">
-          {children}
-        </main>
-        <SiteFooter />
-        <MobileActionBar />
+        <main id="contenu">{children}</main>
+        <Cartouche />
       </body>
     </html>
   );
