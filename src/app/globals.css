@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+/*
+  Saloum Immo, système visuel de la maquette
+  - Un seul accent : le cobalt, modernisé à partir du bleu du logo.
+  - La chaleur vient de la photographie (latérite, vues aériennes).
+  - Rayons : boutons et puces en pilule, cartes et images 16px (rounded-2xl), champs 12px (rounded-xl).
+  - Couleurs sémantiques réservées aux statuts : réservé (ambre), vendu (gris).
+*/
+:root {
+  --bg: #f4f6f9;
+  --surface: #fcfcfd;
+  --surface-2: #e9edf3;
+  --ink: #0d1a2b;
+  --ink-2: #344155;
+  --muted: #586374;
+  --line: #d9dfe7;
+  --accent: #1d55d0;
+  --accent-hover: #1747b3;
+  --accent-ink: #fcfcfd;
+  --accent-soft: #e3ebfb;
+  --reserved: #a86a12;
+  --reserved-soft: #f7ecd9;
+  --sold: #a3abb7;
+  --panel: #0b1730;
+  --panel-ink: #eef2f8;
+  --panel-muted: #a9b5c7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a111d;
+    --surface: #0f1928;
+    --surface-2: #172337;
+    --ink: #e8edf4;
+    --ink-2: #c4cdd9;
+    --muted: #96a2b4;
+    --line: #233149;
+    --accent: #5f8ff2;
+    --accent-hover: #7aa3f6;
+    --accent-ink: #0a111d;
+    --accent-soft: #15284b;
+    --reserved: #e2a650;
+    --reserved-soft: #33261a;
+    --sold: #46526a;
+    --panel: #111e36;
+    --panel-ink: #eef2f8;
+    --panel-muted: #a9b5c7;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-reserved: var(--reserved);
+  --color-reserved-soft: var(--reserved-soft);
+  --color-sold: var(--sold);
+  --color-panel: var(--panel);
+  --color-panel-ink: var(--panel-ink);
+  --color-panel-muted: var(--panel-muted);
+  --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-schibsted);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 88px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-feature-settings: "ss01", "cv11";
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(1.015);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
