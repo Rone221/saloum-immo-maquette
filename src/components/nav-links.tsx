@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAVIGATION, NOMS_DE_PAGE, type Rubrique } from "@/content/coordonnees";
+import type { ReactNode } from "react";
+import { NAVIGATION, type Rubrique } from "@/content/coordonnees";
 import { cx } from "@/lib/base";
 
 /** Chemin courant, toujours terminé par « / » (trailingSlash). */
@@ -21,14 +22,19 @@ export function etatRubrique(chemin: string, r: Rubrique): "page" | "rubrique" |
   return null;
 }
 
+/** aria-current d'un lien de rubrique : « page » sur la page même, « true » dans la rubrique. */
+export function ariaCourant(etat: ReturnType<typeof etatRubrique>) {
+  return etat === "page" ? "page" : etat === "rubrique" ? "true" : undefined;
+}
+
 /**
- * Navigation en ligne de l'en-tête (≥ 1 101 px). Six liens, ordre fixe.
- * Page courante : trait souligné (1,5 px, décalage 6 px), en permanence.
+ * Navigation en ligne de l'en-tête (≥ 1 101 px). Six liens, ordre fixe, sans numéro.
+ * Page courante : bleu souligné, en permanence.
  */
 export function NavLinks() {
   const chemin = useChemin();
   return (
-    <ol className="flex gap-4.5 wide:gap-6.5">
+    <ul className="flex gap-5 wide:gap-7">
       {NAVIGATION.map((r) => {
         const etat = etatRubrique(chemin, r);
         return (
@@ -37,7 +43,7 @@ export function NavLinks() {
               href={r.href}
               aria-current={ariaCourant(etat)}
               className={cx(
-                "inline-flex min-h-11 items-center text-2 font-medium whitespace-nowrap decoration-[1.5px] underline-offset-6 hover:text-trait hover:underline",
+                "inline-flex min-h-11 items-center font-medium whitespace-nowrap decoration-[1.5px] underline-offset-8 hover:text-trait hover:underline",
                 etat && "text-trait underline",
               )}
             >
@@ -46,22 +52,11 @@ export function NavLinks() {
           </li>
         );
       })}
-    </ol>
+    </ul>
   );
 }
 
-/** aria-current d'un lien de rubrique : « page » sur la page même, « true » dans la rubrique. */
-function ariaCourant(etat: ReturnType<typeof etatRubrique>) {
-  return etat === "page" ? "page" : etat === "rubrique" ? "true" : undefined;
-}
-
-/** Nom de la page courante, pour la case « Page » du cartouche. */
-export function PageCourante() {
-  const chemin = useChemin();
-  return <>{NOMS_DE_PAGE[chemin] ?? "Page introuvable"}</>;
-}
-
-/** Les six rubriques du cartouche, page courante en trait (3.0), comme dans l'en-tête. */
+/** Les six rubriques du pied de page, page courante en bleu. */
 export function LiensRubriques({ className }: { className?: string }) {
   const chemin = useChemin();
   return (
@@ -69,28 +64,19 @@ export function LiensRubriques({ className }: { className?: string }) {
       {NAVIGATION.map((r) => {
         const etat = etatRubrique(chemin, r);
         return (
-          <Link key={r.href} href={r.href} aria-current={ariaCourant(etat)} className={cx(className, etat && "text-trait")}>
-            {r.libelle}
-          </Link>
+          <li key={r.href}>
+            <Link href={r.href} aria-current={ariaCourant(etat)} className={cx(className, etat && "text-trait")}>
+              {r.libelle}
+            </Link>
+          </li>
         );
       })}
     </>
   );
 }
 
-/**
- * « · Mentions légales » dans la case « Page » du cartouche, sauf sur cette page :
- * la case y dit déjà son nom, le lien mènerait à la page elle-même.
- */
-export function LienMentions({ className }: { className?: string }) {
+/** Rend ses enfants partout sauf sur la page Contact (le bloc bleu du pied y est l'ouverture). */
+export function SaufSurContact({ children }: { children: ReactNode }) {
   const chemin = useChemin();
-  if (chemin === "/mentions-legales/") return null;
-  return (
-    <>
-      {" · "}
-      <Link href="/mentions-legales/" className={className}>
-        Mentions légales
-      </Link>
-    </>
-  );
+  return chemin === "/contact/" ? null : <>{children}</>;
 }

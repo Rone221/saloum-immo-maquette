@@ -1,95 +1,138 @@
-// Diaspora (spécification 7.5) : acheter depuis l'étranger. Ouverture « appel
-// et vidéo » (bande paper-2, comme la section 04 de l'accueil), cheminement en
-// quatre stations, les deux listes du foncier, les six vidéos (#videos), les
-// programmes en bref, puis la bande de contact.
+// Diaspora (recherche/allegement.md, partie 3) : acheter depuis l'étranger.
+// Ouverture avec la collaboratrice en grand, quatre étapes, trois vidéos, une
+// ligne sur les programmes. Les listes du foncier vivent sur la page Foncier.
 //
 // Ne jamais écrire « EXCLUSIF DIASPORA ». Ne rien promettre qui n'est pas publié :
 // ni paiement à distance, ni échéancier, ni procuration, ni visite vidéo en direct.
-//
-// Faits à valider avec le client, affichés sur cette page :
-// - vignette du reel du 27.10.2026 : droit à l'image de la collaboratrice
-//   (personne n'est nommé) ;
-// - station 3 : « Un notaire agréé suit chaque étape. » (TikTok du 15.10.2025),
-//   présenté comme un accompagnement, pas comme une garantie ;
-// - formulation des deux listes « Ce que nous faisons » et « Avant d'acheter,
-//   vérifiez avec nous » ;
-// - « Sicap Keur Massar, les lots » : vidéo titrée « Paradise City » par le client
-//   (nom à valider) ;
-// - Lac Town : statut foncier non publié, écrit « à demander ».
+// Personne n'est nommé. Le notaire est un accompagnement, pas une garantie.
 
 import type { Metadata } from "next";
-import { ContactBand } from "@/components/contact-band";
-import { ListeProgrammes, versLien } from "@/components/liste-programmes";
-import { OuvertureAppel } from "@/components/ouverture-appel";
-import { PathSteps } from "@/components/path-steps";
+import Link from "next/link";
+import { Fragment, type ReactNode } from "react";
+import { BoutonWhatsApp } from "@/components/boutons";
+import { Cadre } from "@/components/photo";
 import { Section } from "@/components/section";
 import { TextLink } from "@/components/text-link";
-import { Ticks } from "@/components/ticks";
-import { WatchList } from "@/components/watch-list";
-import { AVANT_D_ACHETER, CE_QUE_NOUS_FAISONS } from "@/content/foncier";
+import { Videos } from "@/components/videos";
+import { NOTAIRE } from "@/content/foncier";
+import { LIBELLES } from "@/content/messages";
 import { PROGRAMMES } from "@/content/programmes";
-import { APPEL_DIASPORA } from "@/content/services";
-import { VIDEOS } from "@/content/videos";
+import { DIASPORA, PARCOURS_DIASPORA } from "@/content/services";
+import { MOBILE } from "@/content/site";
+import { A_REGARDER } from "@/content/videos";
+import { cx } from "@/lib/base";
+import { CHAPEAU, COLONNE, ENTRE_BLOCS, T1, T2 } from "@/lib/classes";
+import { typo } from "@/lib/format";
 import { metaPage } from "@/lib/meta";
+import { waHref } from "@/lib/whatsapp";
 
-const DESCRIPTION =
-  "Vous vivez hors du Sénégal : écrivez à Saloum Immo sur WhatsApp, regardez les terrains en vidéo, vérifiez les documents avec nous, visitez sur place sur rendez-vous.";
+export const metadata: Metadata = metaPage(
+  DIASPORA.titre,
+  "Vous vivez hors du Sénégal : écrivez à Saloum Immo sur WhatsApp, regardez les terrains en vidéo, vérifiez les documents avec nous, visitez sur place sur rendez-vous.",
+);
 
-export const metadata: Metadata = metaPage(APPEL_DIASPORA.titre, DESCRIPTION);
+const LIEN = "font-semibold text-trait underline decoration-1 underline-offset-4 hover:decoration-2";
+
+/**
+ * Le texte d'une étape : {whatsapp} devient un lien vers WhatsApp, avec le numéro ;
+ * {appel:texte} un lien tel: vers le même numéro.
+ */
+function rendre(texte: string): ReactNode {
+  return texte.split(/(\{whatsapp\}|\{appel:[^}]+\})/).map((m, i) => {
+    if (m === "{whatsapp}") {
+      return (
+        <a key={i} href={waHref()} className={LIEN}>
+          {typo(`WhatsApp au ${MOBILE.long}`)}
+        </a>
+      );
+    }
+    if (m.startsWith("{appel:")) {
+      return (
+        <a key={i} href={MOBILE.href} className={LIEN}>
+          {typo(m.slice(7, -1))}
+        </a>
+      );
+    }
+    return <Fragment key={i}>{typo(m)}</Fragment>;
+  });
+}
+
+/** « Sakina City, titres fonciers individuels. » : le nom en lien, le statut en minuscules. */
+function statutEnPhrase(texte: string): string {
+  return texte.charAt(0).toLowerCase() + texte.slice(1);
+}
 
 export default function Diaspora() {
   return (
     <>
-      {/* 04 Acheter depuis l'étranger : ouverture appel et vidéo. La vignette du reel
-          est l'image d'ouverture : préchargée (4.2). Les stations sont des H2. */}
-      <Section labelledBy="t-diaspora" surface="paper-2">
-        <OuvertureAppel {...APPEL_DIASPORA} numero="04" titreId="t-diaspora" niveau={1} preload />
-        <PathSteps avecSuite niveau={2} />
-      </Section>
-
-      {/* Les deux listes du foncier, sans en-tête (7.5, point 3) : le titre et l'intro de la
-          page Foncier, repris ici, faisaient la troisième occurrence du même bloc sur le site.
-          Les titres de colonne sont des H2. */}
-      <div id="documents" className="wrap pt-14 tab:pt-28">
-        <div className="grid gap-y-9 tab:grid-cols-12 tab:gap-x-6 tab:gap-y-10">
-          <Ticks
-            titre={CE_QUE_NOUS_FAISONS.titre}
-            lignes={CE_QUE_NOUS_FAISONS.lignes}
-            niveau={2}
-            className="tab:col-[1/span_6] desk:col-[2/span_5]"
-          >
-            <TextLink href="/foncier/" className="mt-1.5">
-              Délibération, bail, titre foncier : la différence
-            </TextLink>
-          </Ticks>
-          <Ticks
-            titre={AVANT_D_ACHETER.titre}
-            lignes={AVANT_D_ACHETER.lignes}
-            niveau={2}
-            className="tab:col-[7/span_6] desk:col-[8/span_5]"
-          >
-            <TextLink href={VIDEOS.nicad.href} className="mt-1.5">
-              {`${VIDEOS.nicad.titre}, ${VIDEOS.nicad.duree}`}
-            </TextLink>
-          </Ticks>
+      {/* 1. Ouverture : le titre, WhatsApp, le notaire ; la collaboratrice en grand. */}
+      <Section labelledBy="t-page" rythme="ouverture">
+        <div className="grid gap-y-10 tab:grid-cols-12 tab:items-center tab:gap-x-6">
+          <div className="tab:col-span-6">
+            <h1 id="t-page" className={T1}>
+              {typo(DIASPORA.titre)}
+            </h1>
+            <p className={cx(CHAPEAU, "mt-5 max-w-[30em] desk:mt-7")}>{typo(DIASPORA.chapeau)}</p>
+            <BoutonWhatsApp label={LIBELLES.diaspora} message={DIASPORA.message} className="mt-8 desk:mt-10" />
+            <p className="mt-4 text-ink-2">{typo(NOTAIRE.texte)}</p>
+          </div>
+          {/* Capture de 899 px dans un cadre 4:3 : dessinée par sa hauteur, 674 px de
+              cadre au plus pour ne jamais l'agrandir. */}
+          <Cadre
+            id={DIASPORA.photo}
+            preload
+            legende
+            sizes="(min-width: 1101px) 890px, (min-width: 761px) 63vw, 133vw"
+            bord
+            className="tab:col-span-6 tab:col-start-7"
+          />
         </div>
-      </div>
-
-      {/* À regarder avant d'appeler (#videos), puis les programmes en bref */}
-      <Section labelledBy="t-videos" rythme="aucun" className="pt-14 tab:pt-24">
-        <WatchList marge="" />
-      </Section>
-      <Section id="programmes" labelledBy="t-programmes" rythme="aucun" className="pt-9 pb-16 tab:pt-16 tab:pb-30">
-        {/* Au gabarit de la liste des vidéos qu'elle suit : titre à gauche, lignes à droite. */}
-        <ListeProgrammes
-          titre="Les programmes en bref"
-          titreId="t-programmes"
-          liens={PROGRAMMES.map((p) => versLien(p, { lieu: true }))}
-          variante="gauche"
-        />
       </Section>
 
-      <ContactBand message={APPEL_DIASPORA.message} bouton={APPEL_DIASPORA.bouton} />
+      {/* 2. Quatre étapes, en liste numérotée simple : une colonne, le numéro en gras
+          devant le titre, sans couleur. */}
+      <Section labelledBy="t-etapes" surface="paper-2">
+        <div className={COLONNE}>
+          <h2 id="t-etapes" className={T2}>
+            Quatre étapes
+          </h2>
+          <ol className={cx(ENTRE_BLOCS, "flex flex-col gap-7")}>
+            {PARCOURS_DIASPORA.map((s, i) => (
+              <li key={s.titre}>
+                <h3 className="font-bold">
+                  <span aria-hidden="true" className="inline-block w-6 tabular-nums">
+                    {i + 1}
+                  </span>
+                  {typo(s.titre)}
+                </h3>
+                <p className="mt-1 pl-6 text-ink-2">{rendre(s.texte)}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </Section>
+
+      {/* 3. À regarder avant d'appeler, en une colonne : trois vidéos, le lien vers la
+          chaîne, puis une ligne sur les programmes et le lien vers le foncier. */}
+      <Section labelledBy="t-videos">
+        <div className={COLONNE}>
+          <Videos cles={A_REGARDER} titre="À regarder avant d’appeler" tous grand />
+          <p className={ENTRE_BLOCS}>
+            {PROGRAMMES.map((p, i) => (
+              <Fragment key={p.slug}>
+                {i > 0 ? " " : null}
+                <Link href={p.href} className={cx(LIEN, "whitespace-nowrap")}>
+                  {p.nom}
+                </Link>
+                {typo(`, ${statutEnPhrase(p.statut.texte)}`)}
+              </Fragment>
+            ))}
+          </p>
+          <p className="mt-2">
+            <TextLink href="/foncier/">Avant d’acheter, vérifiez avec nous</TextLink>
+          </p>
+        </div>
+      </Section>
     </>
   );
 }

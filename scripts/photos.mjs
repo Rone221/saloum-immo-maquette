@@ -5,10 +5,8 @@
 // Les originaux ne sont pas dans le dépôt : ce script se lance à la main quand la
 // liste change (npm run photos), et son résultat est versionné.
 //
-// Seules les photos que la spécification attribue à une page sont traitées
-// (table 4.3). Aucune photo interdite (4.4) ne figure dans la liste.
-// Les photos de visites avec clients (2333, 2369, 2388, 2491, 2509) n'y entrent
-// qu'une fois l'accord des personnes obtenu et une page prête à les montrer.
+// Seules les photos publiées sont traitées (recherche/allegement.md, « Photos par
+// page »). Aucune photo interdite ne figure dans la liste.
 
 import sharp from "sharp";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -22,51 +20,30 @@ const LARGEURS = [320, 480, 800, 1200, 1600, 2000];
 const QUALITE = 80;
 
 // id publié, fichier source, recadrage éventuel en pixels de l'original.
+// Une entrée par photo publiée (src/content/photos.ts). 2538 et 2421 ne servent
+// plus : même lotissement que 2580 (allegement.md, 2.8).
 const PHOTOS = [
-  // Ouverture : zone x 360 à 1 740, y 90 à 1 330 (spécification 3.20).
-  { id: "2538-plan", fichier: "2538.jpg", recadrage: { left: 360, top: 90, width: 1380, height: 1240 } },
-  { id: "2580", fichier: "2580.jpg" },
-  { id: "2421", fichier: "2421.jpg" },
-  { id: "2534", fichier: "2534.jpg" },
-  // Planche Sakina City : la photo de droite seule, sans logo ni titre incrusté.
-  { id: "2413-droite", fichier: "2413.jpg", recadrage: { left: 962, top: 278, width: 846, height: 458 } },
-  { id: "2616", fichier: "2616.jpg" },
-  { id: "ig-DfnIRfvPSRi", fichier: "ig/2026-11-11_DfnIRfvPSRi.jpg" },
-  { id: "ig-DfAoxMkAbKR", fichier: "ig/2026-10-27_DfAoxMkAbKR.jpg" },
-  { id: "ig-DZUeyGKPdj_", fichier: "ig/2026-06-08_DZUeyGKPdj_.jpg" },
-  // Étape 1
+  // Accueil : ouverture, puis les cartes des programmes.
   { id: "2493", fichier: "2493.jpg" },
-  { id: "2500", fichier: "2500.jpg" },
-  { id: "2495", fichier: "2495.jpg" },
-  { id: "2494", fichier: "2494.jpg" },
-  // Étape 2. 2528 n'y est plus : en 4:3, aucun cadrage ne garde à la fois la tête
-  // et la borne numérotée (il faudrait 670 px de haut sur les 607 du cadre).
-  { id: "2505", fichier: "2505.jpg" },
-  { id: "2502", fichier: "2502.jpg" },
-  // Étape 3
-  // 2501 n'y est plus : calée sur les bordures, elle coupait les deux ouvriers au cou.
+  { id: "2534", fichier: "2534.jpg" },
+  { id: "2616", fichier: "2616.jpg" },
+  { id: "2580", fichier: "2580.jpg" },
   { id: "2542", fichier: "2542.jpg" },
+  // Fiche Sakina City : la photo de droite de la planche, sans logo ni titre incrusté.
+  { id: "2413-droite", fichier: "2413.jpg", recadrage: { left: 962, top: 278, width: 846, height: 458 } },
+  // Captures : interview du DG (accueil, À propos), collaboratrice (Diaspora).
+  { id: "ig-DZUeyGKPdj_", fichier: "ig/2026-06-08_DZUeyGKPdj_.jpg" },
+  { id: "ig-DfAoxMkAbKR", fichier: "ig/2026-10-27_DfAoxMkAbKR.jpg" },
+  // Aménager : les étapes (2493 plus haut).
+  { id: "2502", fichier: "2502.jpg" },
   { id: "2529", fichier: "2529.jpg" },
-  // Étape 4 : 2327 coupée au-dessus du bandeau incrusté (qui commence à y 705).
   { id: "2355", fichier: "2355.jpg" },
-  { id: "2327-haut", fichier: "2327.jpg", recadrage: { left: 0, top: 0, width: 1280, height: 700 } },
-  // Étape 5
   { id: "2516", fichier: "2516.jpg" },
-  { id: "2517", fichier: "2517.jpg" },
-  { id: "2519", fichier: "2519.jpg" },
   // À propos
   { id: "2499", fichier: "2499.jpg" },
   { id: "2537", fichier: "2537.jpg" },
-  // Diaspora (optionnelle)
-  { id: "2364", fichier: "2364.jpg" },
-  // Visites avec clients : accord des personnes à obtenir (voir l'en-tête).
-  // { id: "2333", fichier: "2333.jpg" },
-  // { id: "2369", fichier: "2369.jpg" },
-  // { id: "2388", fichier: "2388.jpg" },
-  // { id: "2491", fichier: "2491.jpg" },
-  // { id: "2509", fichier: "2509.jpg" },
-  // Contact, À propos : 2352 coupée au-dessus des numéros de l'affiche de la vitrine
-  // (qui commencent à y 670). L'affiche donne le fixe 33 807 87 18, le site 33 805 87 18.
+  // Accueil et Contact : 2352 coupée au-dessus de l'affiche de la vitrine (y 670) :
+  // ses numéros ne sont pas publiés.
   { id: "2352-haut", fichier: "2352.jpg", recadrage: { left: 0, top: 0, width: 1080, height: 650 } },
 ];
 

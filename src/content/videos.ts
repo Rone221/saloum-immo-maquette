@@ -1,21 +1,14 @@
 // Vidéos publiées par Saloum Immo (contenu-maquette §9 ; dates et durées
 // retrouvées dans l'inventaire). Toute vidéo s'ouvre sur sa plateforme, dans
 // le même onglet : pas de lecteur intégré, pas de vignette tirée de YouTube.
-//
-// À valider avec le client :
-// - nom « Paradise City » dans le titre de SG020Z9tq3o (titré ici « Sicap Keur Massar ») ;
-// - droit à l'image de la collaboratrice du reel du 27.10.2026.
-
-export type Plateforme = "YouTube" | "Instagram" | "TikTok";
+// Un seul bloc « Vidéos » par page, trois entrées au plus (allegement.md, 2.9).
 
 export type Video = {
   id: string;
-  plateforme: Plateforme;
-  /** Titre de lien par défaut. */
+  plateforme: "YouTube" | "Instagram";
+  /** Titre du lien. La durée s'ajoute entre parenthèses quand elle est connue. */
   titre: string;
-  /** Libellé court dans la liste « À regarder avant d'appeler ». */
-  titreListe?: string;
-  /** AAAA-MM-JJ, date de publication. */
+  /** AAAA-MM-JJ, date de publication. Jamais affichée sous le lien. */
   date?: string;
   /** « 7 min 26 » */
   duree?: string;
@@ -30,7 +23,6 @@ export const VIDEOS = {
     id: "CSF130Y_hRc",
     plateforme: "YouTube",
     titre: "Saloum Immo en quelques minutes",
-    titreListe: "Saloum Immo en quelques minutes",
     date: "2026-07-24",
     duree: "1 min 58",
     href: yt("CSF130Y_hRc"),
@@ -48,7 +40,6 @@ export const VIDEOS = {
     id: "qtAHrgDQd4U",
     plateforme: "YouTube",
     titre: "Lancement de Lac Town",
-    titreListe: "Lancement de Lac Town",
     date: "2026-03-30",
     href: yt("qtAHrgDQd4U"),
     source: "contenu-maquette §5 et §9",
@@ -57,7 +48,6 @@ export const VIDEOS = {
     id: "Wq8pwLDb4L0",
     plateforme: "YouTube",
     titre: "Visite commentée de Lac Town",
-    titreListe: "Lac Town, visite commentée",
     date: "2026-05-21",
     href: yt("Wq8pwLDb4L0"),
     source: "contenu-maquette §9",
@@ -66,7 +56,6 @@ export const VIDEOS = {
     id: "HFnSMeaCXNI",
     plateforme: "YouTube",
     titre: "Visite virtuelle de Sakina City",
-    titreListe: "Sakina City, visite virtuelle",
     href: yt("HFnSMeaCXNI"),
     source: "contenu-maquette §9",
   },
@@ -74,16 +63,22 @@ export const VIDEOS = {
     id: "SG020Z9tq3o",
     plateforme: "YouTube",
     titre: "Les lots de Sicap Keur Massar",
-    titreListe: "Sicap Keur Massar, les lots",
     date: "2026-06-10",
     href: yt("SG020Z9tq3o"),
     source: "contenu-maquette §9 (titrée « Paradise City » par le client)",
+  },
+  reelLotsSKM: {
+    id: "DfAoxMkAbKR",
+    plateforme: "Instagram",
+    titre: "Une collaboratrice présente un lot de Sicap Keur Massar",
+    date: "2026-10-27",
+    href: "https://www.instagram.com/saloum_immo/reel/DfAoxMkAbKR/",
+    source: "contenu-maquette §5 ; Instagram",
   },
   realisations2026: {
     id: "oj5Z_z2O1_k",
     plateforme: "YouTube",
     titre: "Nos réalisations 2026",
-    titreListe: "Nos réalisations 2026",
     date: "2026-06-24",
     duree: "2 min 37",
     href: yt("oj5Z_z2O1_k"),
@@ -100,45 +95,30 @@ export const VIDEOS = {
   terrassementKounoune: {
     id: "Hi1DiDoX_zA",
     plateforme: "YouTube",
-    // « Lancement » : le 07.09.2024, le terrassement est lancé sur 3 hectares, pas fini.
+    // « Lancement » : le 7 septembre 2024, le terrassement est lancé sur 3 hectares, pas fini.
     titre: "Lancement du terrassement sur 3 hectares à Kounoune",
     date: "2024-09-07",
     href: yt("Hi1DiDoX_zA"),
     source: "contenu-maquette §5",
   },
-  reelLotsSKM: {
-    id: "DfAoxMkAbKR",
-    plateforme: "Instagram",
-    titre: "Une collaboratrice présente un lot de Sicap Keur Massar",
-    date: "2026-10-27",
-    href: "https://www.instagram.com/saloum_immo/reel/DfAoxMkAbKR/",
-    source: "contenu-maquette §5 ; Instagram",
-  },
-  reelDroneSKM: {
-    id: "DfnIRfvPSRi",
-    plateforme: "Instagram",
-    titre: "Vue drone du quartier de Sicap Keur Massar",
-    date: "2026-11-11",
-    href: "https://www.instagram.com/saloum_immo/reel/DfnIRfvPSRi/",
-    source: "contenu-maquette §5 ; Instagram",
-  },
 } satisfies Record<string, Video>;
 
 export type CleVideo = keyof typeof VIDEOS;
 
-/** « À regarder avant d'appeler » (page Diaspora, #videos), dans cet ordre. */
-export const A_REGARDER: CleVideo[] = [
-  "presentation",
-  "lancementLacTown",
-  "visiteLacTown",
-  "visiteSakina",
-  "lotsSKM",
-  "realisations2026",
-];
+/** « Saloum Immo en quelques minutes (1 min 58) » */
+export function titreVideo(cle: CleVideo): string {
+  const v: Video = VIDEOS[cle];
+  return v.duree ? `${v.titre} (${v.duree})` : v.titre;
+}
 
-/** Publications TikTok citées comme sources (registre, offre aux propriétaires). */
+/** « À regarder avant d'appeler » (page Diaspora), dans cet ordre. */
+export const A_REGARDER: CleVideo[] = ["presentation", "interviewDG", "lotsSKM"];
+
+/** La chaîne, pour le lien « Toutes nos vidéos sur YouTube ». */
+export const CHAINE_YOUTUBE = "https://www.youtube.com/@saloumimobat";
+
+/** Publications TikTok citées comme sources des travaux datés. */
 export const TIKTOK = {
-  offreProprietaires: "https://www.tiktok.com/@saloum_immo/video/7641206920111475975",
   electrification: "https://www.tiktok.com/@saloum_immo/video/7556624709337566475",
   adductionEau: "https://www.tiktok.com/@saloum_immo/video/7574024112855731467",
   controleSenEau: "https://www.tiktok.com/@saloum_immo/video/7574833892834708748",

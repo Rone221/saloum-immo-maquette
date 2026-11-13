@@ -1,14 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { archivo, plexMono } from "./fonts";
-import { Cartouche } from "@/components/cartouche";
+import { archivo } from "./fonts";
+import { Pied } from "@/components/pied";
 import { SiteHeader } from "@/components/site-header";
 import { asset } from "@/lib/base";
 import { typo } from "@/lib/format";
 import { IMAGE_PARTAGE, ORIGINE } from "@/lib/meta";
 
 const DESCRIPTION = typo(
-  "Saloum Immo vend des terrains et les aménage : terrassement, voies en latérite, eau avec SEN’EAU, électricité, bornage. Lac Town, Sakina City, Sicap Keur Massar.",
+  "Saloum Immo vend des terrains et les aménage : terrassement, voies en latérite, eau avec SEN’EAU, électricité, bornage. Sakina City, Sicap Keur Massar, Lac Town.",
 );
 
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   // Maquette de présentation : on ne l'indexe pas.
   robots: { index: false, follow: false },
-  // Icônes : le logo officiel au centre d'un carré blanc (scripts/photos.mjs), à valider.
+  // Icônes : le logo officiel au centre d'un carré blanc (scripts/photos.mjs).
   icons: {
     icon: [{ url: asset("/2269-icone-32.png"), sizes: "32x32", type: "image/png" }],
     apple: [{ url: asset("/2269-icone-180.png"), sizes: "180x180", type: "image/png" }],
@@ -45,14 +45,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     // changement de page sans cet attribut. Sans lui, un lien interne cliqué en haut
     // d'une page arrivait loin sous le H1 de la suivante (les scrollIntoView de Next
     // s'enchaînaient en défilement doux). Le défilement doux reste pour les ancres (5).
-    <html lang="fr" data-scroll-behavior="smooth" className={`${archivo.variable} ${plexMono.variable}`}>
+    <html lang="fr" data-scroll-behavior="smooth" className={archivo.variable}>
       <body>
         <a href="#contenu" className="skip">
           Aller au contenu
         </a>
         <SiteHeader />
         <main id="contenu">{children}</main>
-        <Cartouche />
+        <Pied />
       </body>
     </html>
   );

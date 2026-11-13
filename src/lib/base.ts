@@ -1,5 +1,5 @@
 // Préfixe les fichiers de public/ par le sous-chemin du site (GitHub Pages).
-// next/link et next/image s'en chargent seuls ; un <img> ou une métadonnée non.
+// next/link s'en charge seul ; un <img> ou une métadonnée non.
 export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 export function asset(chemin: string) {

@@ -1,34 +1,30 @@
 import type { ReactNode } from "react";
 import { cx } from "@/lib/base";
 
-export type Surface = "paper" | "paper-2" | "trait" | "laterite";
+/**
+ * Fonds (allegement.md, 2.6) : blanc, un seul gris clair, le bleu pour le pied de
+ * contact. Le gris une section sur deux au plus ; deux sections colorées ne se
+ * suivent jamais (la dernière section d'une page reste blanche : le pied bleu suit).
+ */
+export type Surface = "paper" | "paper-2";
 
-/** Fond de section et variable --bg (lue par les étiquettes de cote). */
 const SURFACES: Record<Surface, string> = {
-  paper: "bg-paper [--bg:var(--color-paper)]",
-  "paper-2": "bg-paper-2 [--bg:var(--color-paper-2)]",
-  trait: "bg-trait text-white [--bg:var(--color-trait)] [&_:focus-visible]:outline-white",
-  laterite: "bg-laterite text-white [--bg:var(--color-laterite)] [&_:focus-visible]:outline-white",
+  paper: "bg-paper",
+  "paper-2": "bg-paper-2",
 };
 
-/** Rythmes verticaux (2.4), mobile puis à partir de 761 px. */
+/** Rythmes verticaux (2.7) : 72 px sur mobile, 96 sur tablette, 128 au bureau. */
 const RYTHMES = {
-  /** 56 / 64, puis 112 / 120 */
-  section: "pt-14 pb-16 tab:pt-28 tab:pb-30",
-  /** Contact : 56 / 64, puis 104 / 112 */
-  contact: "pt-14 pb-16 tab:pt-26 tab:pb-28",
-  /** Registre : 56 / 64, puis 96 / 104 */
-  registre: "pt-14 pb-16 tab:pt-24 tab:pb-26",
-  /** Ouverture dans le dessin (02 sur l'accueil) : 32 / 64, puis 72 / 120 */
-  dessin: "pt-8 pb-16 tab:pt-18 tab:pb-30",
-  /** Bande de contact des pages intérieures : 56 / 64 */
-  bande: "pt-14 pb-16",
-  aucun: "",
+  section: "py-18 tab:py-24 desk:py-32",
+  /** Ouverture d'une page : moins d'air en haut, l'en-tête est juste au-dessus. */
+  ouverture: "pt-10 pb-18 tab:pt-14 tab:pb-24 desk:pt-20 desk:pb-32",
+  /** Dernière ligne d'une page, avant le pied. */
+  fin: "pt-0 pb-18 tab:pb-24 desk:pb-32",
 };
 
 /**
- * Section (3.4) : <section aria-labelledby>, fond et rythme. Le contenu est
- * posé dans `wrap` (1 360 px plus les gouttières), sauf `wrap={false}`.
+ * Section : <section aria-labelledby>, fond et rythme. Le contenu est posé dans
+ * `wrap` (1 360 px plus les gouttières), sauf `wrap={false}`.
  */
 export function Section({
   id,
@@ -40,7 +36,7 @@ export function Section({
   children,
 }: {
   id?: string;
-  labelledBy: string;
+  labelledBy?: string;
   surface?: Surface;
   rythme?: keyof typeof RYTHMES;
   wrap?: boolean;

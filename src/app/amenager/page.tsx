@@ -1,96 +1,132 @@
-// Aménager mon terrain (spécification 7.4) : la page des propriétaires et des
-// promoteurs. Ouverture dans le dessin (la coupe porte le H1), l'encart
-// propriétaires tout de suite après, les six étapes en version longue, les huit
-// services en pleine largeur, le registre complet, la bande de contact.
+// Aménager mon terrain (recherche/allegement.md, partie 3) : la page des
+// propriétaires et des promoteurs. Ouverture sur la coupe, les cinq étapes en
+// photos, les quatre travaux datés avec leur source (#travaux), les huit services.
 //
-// Écarts voulus à 7.4 :
-// - l'encart propriétaires n'a pas la nomenclature : la section pleine largeur
-//   des huit services la suit, elle ferait doublon ;
-// - étape 4 : pas de ligne sous les photos d'agents SEN'EAU (2355, 2327). Pas
-//   celle des 58 parcelles et de la visite de contrôle de SEN'EAU (4.3 : 2355
-//   jamais accolée aux 58 parcelles), qui reste au registre, en bas de page. Pas
-//   le libellé du service 04 non plus : ce service renvoie à l'étape 4 (7.4), le
-//   lecteur serait revenu au même texte. L'intro dit « sous la plupart » ;
-// - titres : les étapes affirment (« Du débroussaillage au titre foncier. »), les
-//   services s'ouvrent sur leur étiquette seule (3.4, 6.1).
-//
-// Les lignes datées sous les étapes ne sont pas des légendes : la photo et la
-// ligne ne parlent pas forcément du même chantier. L'intro des étapes le dit.
-//
-// Faits à valider avec le client, affichés sur cette page :
-// - lieux des photos 2542, 2355 et 2516 (légendées sans lieu) ;
-// - registre : Millennium City présenté comme « travaux réalisés », réseau de
-//   canalisation seulement ; lieux non publiés (tracé de 9 ha, électrification,
-//   adduction d'eau), écrits « Non publié » ;
-// - étape 3 : la ligne « Voies en latérite avec bordures béton à Sakina City »
-//   n'a pas de date publiée ;
-// - photo 2327 : coupée au-dessus du bandeau SEN'EAU incrusté.
+// Aucun fait daté sous une photo d'étape : une photo de lieu inconnu posée sur un
+// fait daté se lirait comme sa légende. 2355 (agent SEN'EAU) n'est jamais dans la
+// même section que les 58 parcelles. Un lieu n'est écrit que s'il est publié
+// (Kounoune).
 
 import type { Metadata } from "next";
-import { ContactBand } from "@/components/contact-band";
-import { Coupe } from "@/components/dessins/coupe";
-import { Nomenclature } from "@/components/nomenclature";
-import { OwnerBox } from "@/components/owner-box";
-import { Planche } from "@/components/planche";
-import { Registre } from "@/components/registre";
+import { BoutonWhatsApp } from "@/components/boutons";
+import { Coupe } from "@/components/coupe";
+import { Photo } from "@/components/photo";
 import { Section } from "@/components/section";
-import { MESSAGES } from "@/content/messages";
-import { ETAPES } from "@/content/services";
-import { enLettres, typo } from "@/lib/format";
+import { TextLink } from "@/components/text-link";
+import { LIBELLES, MESSAGES } from "@/content/messages";
+import { TRAVAUX } from "@/content/registre";
+import { ETAPES, ETAPE_TITRE, INTRO_AMENAGER, QUESTION_PROPRIETAIRES, SERVICES } from "@/content/services";
+import { cx } from "@/lib/base";
+import { CHAPEAU, ENTRE_BLOCS, T1, T2, T3 } from "@/lib/classes";
+import { moisEnLettres, typo } from "@/lib/format";
 import { metaPage } from "@/lib/meta";
 
 export const metadata: Metadata = metaPage(
   "Aménager mon terrain",
-  "Saloum Immo aménage ses programmes et les terrains des propriétaires : terrassement, bornage, voies en latérite, eau avec SEN’EAU, électricité. Les étapes en photos, les travaux datés, et WhatsApp pour décrire votre terrain.",
+  "Saloum Immo aménage les terrains qu’il vend et ceux des propriétaires : terrassement, bornage, voies en latérite, eau avec SEN’EAU, électricité. Les étapes en photos, les travaux datés, et WhatsApp pour décrire votre terrain.",
 );
 
 export default function Amenager() {
-  const etapes = enLettres(ETAPES.length);
   return (
     <>
-      {/* 02 Aménager la terre : ouverture dans le dessin, puis l'encart propriétaires */}
-      <Section id="amenager" labelledBy="t-amenager" surface="paper-2" rythme="dessin">
-        <Coupe
-          numero="02"
-          titre="Aménager la terre"
-          titreId="t-amenager"
-          intro="Terrassement, voies en latérite, eau avec SEN’EAU, électricité, bornage. Sur les terrains que nous vendons, et sur ceux des propriétaires."
-          niveau={1}
-        />
-        {/* Sans la nomenclature : la page la donne en pleine largeur deux sections plus bas. */}
-        <OwnerBox niveau={2} nomenclature={false} className="mt-11 tab:mt-20" />
+      {/* 1. Ouverture : le titre, la question des propriétaires, la coupe. */}
+      <Section labelledBy="t-page" rythme="ouverture">
+        <div className="grid gap-y-12 desk:grid-cols-12 desk:items-center desk:gap-x-6">
+          <div className="desk:col-span-5">
+            <h1 id="t-page" className={T1}>
+              Aménager la terre
+            </h1>
+            <p className={cx(CHAPEAU, "mt-5 max-w-[30em] desk:mt-7")}>{typo(INTRO_AMENAGER)}</p>
+            <p className="mt-8 font-semibold desk:mt-10">{typo(QUESTION_PROPRIETAIRES)}</p>
+            <BoutonWhatsApp label={LIBELLES.proprietaire} message={MESSAGES.proprietaire.texte} className="mt-4" />
+          </div>
+          <Coupe className="desk:col-span-7" />
+        </div>
       </Section>
 
-      {/* Les six étapes, version longue : deux photos au plus et une ligne datée.
-          Ouverture du registre (titre col. 1 à 6, intro col. 8 à 12), sans numéro :
-          le 02 de la rubrique est déjà dans la coupe. Le titre affirme (6.1). */}
-      <Section id="etapes" labelledBy="t-etapes">
-        <header className="mb-9 border-t-2 border-ink pt-4 tab:mb-18 tab:pt-5 desk:grid desk:grid-cols-12 desk:items-end desk:gap-x-6">
-          <h2 id="t-etapes" className="text-6 leading-title font-bold tracking-tight stretch-title desk:col-span-6">
-            {typo("Du débroussaillage au titre foncier.")}
-          </h2>
-          <p className="mt-4 text-3 leading-body text-ink-2 desk:col-[8/span_5] desk:mt-0">
-            {typo(
-              `${etapes} étapes, dans l’ordre de la coupe. Sous la plupart, un fait publié et son origine : la photo et la ligne ne montrent pas forcément le même chantier.`,
-            )}
-          </p>
-        </header>
-        <Planche etapes={ETAPES} version="longue" niveau={3} marge="" />
+      {/* 2. Les étapes : cinq photos (bord à bord sur mobile), la sixième case en texte. */}
+      <Section labelledBy="t-etapes" surface="paper-2">
+        <h2 id="t-etapes" className={T2}>
+          {typo("Du débroussaillage au titre foncier")}
+        </h2>
+        <ol className={cx(ENTRE_BLOCS, "grid gap-y-12 tab:grid-cols-2 tab:gap-x-6 desk:grid-cols-3 desk:gap-y-16")}>
+          {ETAPES.map((e) => (
+            <li key={e.titre}>
+              <span className="relative -mx-gutter block aspect-[4/3] overflow-hidden bg-paper tab:mx-0">
+                <Photo
+                  id={e.photo}
+                  fill
+                  sizes="(min-width: 1440px) 437px, (min-width: 1101px) 31vw, (min-width: 761px) 47vw, 100vw"
+                  className="object-cover"
+                />
+              </span>
+              <h3 className={cx(T3, "mt-5")}>{typo(e.titre)}</h3>
+              <p className="mt-2 text-ink-2">{typo(e.texte)}</p>
+            </li>
+          ))}
+          {/* Sans photo : une cale de la hauteur d'une photo (dès 761 px) aligne son
+              titre sur ceux de la rangée. */}
+          <li>
+            <span aria-hidden="true" className="hidden aspect-[4/3] tab:block" />
+            <h3 className={cx(T3, "tab:mt-5")}>{typo(ETAPE_TITRE.titre)}</h3>
+            <p className="mt-2 text-ink-2">{typo(ETAPE_TITRE.texte)}</p>
+            <p className="mt-2">
+              <TextLink href="/foncier/">Comprendre le foncier</TextLink>
+            </p>
+          </li>
+        </ol>
       </Section>
 
-      {/* Les huit services : pas une ouverture classique de plus (3.4), l'étiquette de la
-          nomenclature sert de titre, comme dans l'encart propriétaires de l'accueil. */}
-      <Section id="services" labelledBy="t-services" surface="paper-2">
-        <Nomenclature variante="pleine" titreH2 titreId="t-services" />
+      {/* 3. Travaux datés : la date, le fait, sa source. Fond blanc, chiffres dans la phrase. */}
+      <Section id="travaux" labelledBy="t-travaux">
+        <h2 id="t-travaux" className={T2}>
+          Travaux datés
+        </h2>
+        <ul className={cx(ENTRE_BLOCS, "divide-y divide-rule tabular-nums")}>
+          {TRAVAUX.map((t) => (
+            <li
+              key={t.id}
+              className="grid gap-y-1 py-5 first:pt-0 last:pb-0 tab:grid-cols-12 tab:items-baseline tab:gap-x-6 desk:py-6"
+            >
+              <span className="font-semibold tab:col-span-3 desk:col-span-2">{moisEnLettres(t.mois)}</span>
+              <span className="tab:col-span-9 desk:col-span-6">{typo(t.texte.texte)}</span>
+              {/* Sources : 44 px de haut chacune, côte à côte quand il y en a deux. */}
+              <span className="flex flex-wrap gap-x-5 text-small text-ink-2 tab:col-span-9 tab:col-start-4 desk:col-span-4 desk:col-start-9">
+                {t.sources.map((s) =>
+                  s.href ? (
+                    <a
+                      key={s.libelle}
+                      href={s.href}
+                      className="inline-flex min-h-11 items-center text-trait underline decoration-1 underline-offset-4 hover:decoration-2"
+                    >
+                      {typo(s.libelle)}
+                    </a>
+                  ) : (
+                    <span key={s.libelle} className="inline-flex min-h-11 items-center">
+                      {typo(s.libelle)}
+                    </span>
+                  ),
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
       </Section>
 
-      <Registre id="registre" />
-
-      <ContactBand
-        message={MESSAGES.proprietaire.texte}
-        template={MESSAGES.proprietaire.gabarit}
-        bouton="Décrire mon terrain sur WhatsApp"
-      />
+      {/* 4. Les huit services, verbatim, en deux colonnes. */}
+      <Section labelledBy="t-services" rythme="fin">
+        <h2 id="t-services" className={T2}>
+          Nos huit services
+        </h2>
+        <ul className={cx(ENTRE_BLOCS, "grid gap-y-3 tab:grid-flow-col tab:grid-cols-2 tab:grid-rows-4 tab:gap-x-6 desk:gap-y-4")}>
+          {SERVICES.map((s) => (
+            <li key={s} className="flex gap-3">
+              <span aria-hidden="true" className="mt-[0.6em] size-1.5 flex-none bg-laterite" />
+              {typo(s)}
+            </li>
+          ))}
+        </ul>
+      </Section>
     </>
   );
 }

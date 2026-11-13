@@ -1,0 +1,22 @@
+/* Coupe de principe d'une voie aménagée (page Aménager). Un dessin, pas une icône.
+   Ni cadre ni numéros : les noms sont écrits sur le dessin, en HTML (components/coupe.tsx).
+   Importé par globals.css dans @layer components. */
+
+.coupe .sol-pt { fill: var(--color-sol); }
+.coupe .tn { fill: none; stroke: var(--color-ink-2); stroke-width: 1.5; stroke-dasharray: 6 6; }
+.coupe .ground { stroke: var(--color-ink); stroke-width: 2; }
+.coupe .cable { fill: none; stroke: var(--color-ink); stroke-width: 1.6; }
+.coupe .obj { fill: var(--color-paper); stroke: var(--color-ink); stroke-width: 1.6; }
+.coupe .obj-line { stroke: var(--color-ink); stroke-width: 3; }
+.coupe .road { fill: var(--color-laterite); stroke: var(--color-ink); stroke-width: 1.6; }
+.coupe .trench { fill: var(--color-paper); stroke: var(--color-ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.coupe .pipe { fill: var(--color-paper); stroke: var(--color-trait); stroke-width: 4; }
+.coupe .borne { fill: var(--color-borne); stroke: var(--color-ink); stroke-width: 1.6; }
+.coupe .lead { fill: none; stroke: var(--color-ink-2); stroke-width: 1.2; }
+
+/* Deux jeux de traits de rappel : les noms sont étagés sur mobile, alignés au-dessus. */
+.coupe .lead-tab { display: none; }
+@media (width >= 47.5625rem) {
+  .coupe .lead-tab { display: inline; }
+  .coupe .lead-mob { display: none; }
+}

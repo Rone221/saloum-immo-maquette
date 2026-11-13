@@ -1,4 +1,4 @@
-// Typographie française et dates (spécification 6.1).
+// Typographie française et dates. Dates toujours en lettres (allegement.md, 2.4).
 
 const NBSP = " ";
 const MOIS = [
@@ -28,12 +28,6 @@ export function typo(texte: string): string {
     .replace(/(\+221) /g, `$1${NBSP}`);
 }
 
-/** « 2026-05-21 » devient « 21.05.2026 » ; « 2025-04 » devient « 04.2025 ». */
-export function dateMono(iso: string): string {
-  const [a, m, j] = iso.split("-");
-  return j ? `${j}.${m}.${a}` : m ? `${m}.${a}` : a;
-}
-
 /** « 2026-05-21 » devient « 21 mai 2026 » ; « 2025-04 » devient « avril 2025 ». */
 export function dateLongue(iso: string): string {
   const [a, m, j] = iso.split("-");
@@ -42,9 +36,8 @@ export function dateLongue(iso: string): string {
   return j ? `${Number(j) === 1 ? "1er" : Number(j)} ${mois} ${a}` : `${mois} ${a}`;
 }
 
-const EN_LETTRES = ["Zéro", "Un", "Deux", "Trois", "Quatre", "Cinq", "Six", "Sept", "Huit", "Neuf", "Dix"];
-
-/** 6 devient « Six » (jusqu'à dix), au-delà le chiffre. Pour « Six étapes », « Six vidéos ». */
-export function enLettres(n: number): string {
-  return EN_LETTRES[n] ?? String(n);
+/** « 2024-09 » devient « Septembre 2024 » : la date d'une ligne de travaux. */
+export function moisEnLettres(iso: string): string {
+  const d = dateLongue(iso);
+  return d.charAt(0).toUpperCase() + d.slice(1);
 }

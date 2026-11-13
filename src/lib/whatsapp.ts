@@ -2,7 +2,7 @@ import { WHATSAPP } from "@/content/coordonnees";
 
 /**
  * Lien WhatsApp vers le numéro de Saloum Immo, avec un message pré-rempli.
- * Le message passé ici doit être exactement celui qui s'affiche sous le bouton.
+ * Le texte n'est affiché que sur la page Contact (allegement.md, 2.9).
  */
 export function waHref(message?: string): string {
   const base = `https://wa.me/${WHATSAPP}`;

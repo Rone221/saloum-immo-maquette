@@ -1,89 +1,147 @@
-// Terrains (spécification 7.2) : ouverture classique, clé des quatre statuts,
-// catalogue des quatre offres, les trois programmes comme sur l'accueil, l'offre
-// datée AIBD, les autres sites publiés, la phrase d'honnêteté, la bande de contact.
-// Pas de filtres, pas de recherche, pas de tri : il y a trois programmes.
-//
-// Faits à valider avec le client, affichés sur cette page :
-// - rattachement de la photo 2580 à Lac Town (légendée sans nom de lieu) ;
-// - Lac Town : surfaces 150 à 450 m² et équipements, dits à l'oral le 21.05.2026 ;
-// - Sicap Keur Massar : nom « Paradise City », disponibilité des lots publiés en 2026,
-//   photo 2616 (probablement ce secteur, légendée sans nom) ;
-// - Recasement AIBD : disponibilité en 2026 (offre d'avril 2025, prix de cette date) ;
-// - Bayakh et Niague : statut foncier et disponibilité inconnus (échantillon
-//   « Statut non publié »), et les deux messages WhatsApp proposés par la spécification.
+// Terrains (recherche/allegement.md, partie 3) : une rangée par programme, photo
+// à gauche, faits à droite ; l'offre AIBD datée, sans photo, en une colonne ; les
+// deux autres sites publiés ; une ligne vers le foncier. Plus de tableau
+// comparatif : le même contenu aurait été donné deux fois. Le détail de chaque
+// programme vit sur sa fiche.
 //
 // Jamais sur cette page : Kounoune 2 (peut-être Sakina City) ni son prix de 2024.
 
 import type { Metadata } from "next";
-import { CatalogueTable } from "@/components/catalogue-table";
-import { ContactBand } from "@/components/contact-band";
-import { DatedOffer } from "@/components/dated-offer";
-import { StatusKey } from "@/components/dessins/status-key";
-import { PageHead } from "@/components/page-head";
-import { ProgrammeBlock } from "@/components/programme-block";
+import Link from "next/link";
+import { BoutonWhatsApp } from "@/components/boutons";
+import { EnTete } from "@/components/en-tete";
+import { Faits } from "@/components/faits";
+import { Photo, plafond } from "@/components/photo";
 import { Section } from "@/components/section";
-import { Warn } from "@/components/warn";
-import { AVERTISSEMENT_STATUT } from "@/content/foncier";
-import { MESSAGES } from "@/content/messages";
-import { AUTRES_SITES, PROGRAMMES, RECASEMENT_AIBD } from "@/content/programmes";
-import { dateLongue, enLettres } from "@/lib/format";
+import { TextLink } from "@/components/text-link";
+import { LIBELLES } from "@/content/messages";
+import { AUTRES_SITES, PROGRAMMES, RECASEMENT_AIBD, type Programme } from "@/content/programmes";
+import { cx } from "@/lib/base";
+import { COLONNE, SOUS_TITRE, T2, T3 } from "@/lib/classes";
+import { typo } from "@/lib/format";
 import { metaPage } from "@/lib/meta";
+import { waHref } from "@/lib/whatsapp";
 
 const TITRE = "Terrains disponibles";
 
-/** « Lac Town, Sakina City et Sicap Keur Massar » */
-const NOMS = PROGRAMMES.map((p) => p.nom).reduce((liste, nom, i, tous) =>
-  i === tous.length - 1 ? `${liste} et ${nom}` : `${liste}, ${nom}`,
+export const metadata: Metadata = metaPage(
+  "Terrains disponibles",
+  "Sakina City, Sicap Keur Massar et Lac Town, autour de Dakar, et l’offre Recasement AIBD d’avril 2025. Statut foncier, surfaces publiées et travaux déjà faits. Prix sur demande, par WhatsApp.",
 );
 
-const DESCRIPTION = `${NOMS}, autour de Dakar, et l’offre ${RECASEMENT_AIBD.nom} d’${dateLongue(
-  RECASEMENT_AIBD.texte.date ?? "",
-)}. Statut foncier, surfaces publiées et travaux déjà faits. Prix sur demande, par WhatsApp.`;
+/** Lien d'un titre de rangée : 44 px de haut au moins. */
+const LIEN_TITRE = "inline-flex min-h-11 items-center decoration-2 underline-offset-6 hover:text-trait hover:underline";
 
-export const metadata: Metadata = metaPage(TITRE, DESCRIPTION);
+/**
+ * Une rangée : la photo toujours à gauche (5 colonnes, 553 × 369 au bureau), les
+ * faits à droite. Sur mobile, la photo va bord à bord.
+ */
+function Rangee({ programme: p }: { programme: Programme }) {
+  const titreId = `t-${p.slug}`;
+  const photo = p.photoRangee ?? p.photo;
+  return (
+    <article aria-labelledby={titreId} className="grid gap-y-6 tab:grid-cols-12 tab:items-center tab:gap-x-6">
+      {/* La photo double le lien du nom : hors de la tabulation, alt vide. */}
+      <Link
+        href={p.href}
+        tabIndex={-1}
+        aria-hidden="true"
+        className="-mx-gutter block tab:col-span-6 tab:mx-0 desk:col-span-5"
+        style={plafond(photo)}
+      >
+        <span className="relative block aspect-[3/2] overflow-hidden bg-paper-2">
+          <Photo
+            id={photo}
+            fill
+            decorative
+            sizes="(min-width: 1440px) 553px, (min-width: 1101px) 39vw, (min-width: 761px) 47vw, 100vw"
+            className="object-cover"
+          />
+        </span>
+      </Link>
+      <div className={cx(COLONNE, "tab:col-span-6 desk:col-span-6 desk:col-start-7")}>
+        <h2 id={titreId} className={T2}>
+          <Link href={p.href} className={LIEN_TITRE}>
+            {p.nom}
+          </Link>
+        </h2>
+        <p className="mt-3 text-ink-2">{typo(p.lieu.texte)}</p>
+        <p className="font-semibold">{typo(p.statut.texte)}</p>
+        <Faits
+          className="mt-6"
+          lignes={[
+            { libelle: "Surfaces", valeur: typo(p.surfaces.texte) },
+            { libelle: "Déjà fait", valeur: typo(p.dejaFait.texte) },
+            { libelle: "Prix", valeur: "Sur demande." },
+          ]}
+        />
+        <BoutonWhatsApp
+          label={LIBELLES.programme}
+          ariaLabel={`${LIBELLES.programme}, ${p.nom}`}
+          message={p.message}
+          variante="contour"
+          className="mt-7"
+        />
+      </div>
+    </article>
+  );
+}
 
 export default function Terrains() {
   return (
-    <>
-      <Section labelledBy="t-page">
-        <PageHead
-          numero="01"
-          titre={TITRE}
-          titreId="t-page"
-          intro={`${enLettres(PROGRAMMES.length)} programmes en vente autour de Dakar. Les prix ne sont pas publiés : demandez-les par WhatsApp, lot par lot.`}
-        >
-          <StatusKey etats={["delib", "bail", "tf", "non-publie"]} />
-        </PageHead>
+    <Section labelledBy="t-page" rythme="ouverture">
+      <EnTete
+        titre={TITRE}
+        chapeau="Trois programmes en vente autour de Dakar, et une offre datée. Prix sur demande, par WhatsApp."
+      />
 
-        <CatalogueTable titreId="t-page" />
+      <div className="mt-10 flex flex-col gap-14 tab:mt-14 tab:gap-20 desk:gap-24">
+        {PROGRAMMES.map((p) => (
+          <Rangee key={p.slug} programme={p} />
+        ))}
 
-        {/* Les trois programmes, identiques à l'accueil. Pas de H2 au-dessus d'eux
-            sur cette page : leur nom passe en H2, juste sous le H1. */}
-        <div className="mt-14 tab:mt-28">
-          {PROGRAMMES.map((p, i) => (
-            <ProgrammeBlock key={p.slug} programme={p} niveau={2} premier={i === 0} />
-          ))}
-        </div>
-
-        <DatedOffer offre={RECASEMENT_AIBD} as="article" lienFiche className="mt-10 tab:mt-18" />
-
-        <section aria-labelledby="t-autres-sites" className="mt-14 tab:mt-20">
-          <h2 id="t-autres-sites" className="mb-4 text-5 leading-snug font-bold stretch-sub tab:mb-6">
-            Autres sites publiés
+        {/* L'offre datée, sans photo, en une colonne : le prix n'apparaît qu'avec sa date. */}
+        <article aria-labelledby="t-aibd" className={COLONNE}>
+          <h2 id="t-aibd" className={T2}>
+            <Link href={RECASEMENT_AIBD.href} className={LIEN_TITRE}>
+              {RECASEMENT_AIBD.nom}
+            </Link>
           </h2>
-          <ul>
-            {AUTRES_SITES.map((o, i) => (
-              <li key={o.slug} className={i > 0 ? "-mt-px" : undefined}>
-                <DatedOffer offre={o} as="article" />
-              </li>
-            ))}
-          </ul>
-        </section>
+          <p className={SOUS_TITRE}>{typo(RECASEMENT_AIBD.terrains.texte)}</p>
+          <BoutonWhatsApp
+            label={LIBELLES.recasementAibd}
+            message={RECASEMENT_AIBD.message}
+            variante="contour"
+            className="mt-7"
+          />
+        </article>
+      </div>
 
-        <Warn marge="mt-10 tab:mt-14">{AVERTISSEMENT_STATUT}</Warn>
-      </Section>
+      {/* Les autres sites publiés : « Demander » en fin de phrase, sur chaque ligne. */}
+      <section aria-labelledby="t-autres" className={cx(COLONNE, "mt-20 tab:mt-24 desk:mt-32")}>
+        <h2 id="t-autres" className={T3}>
+          Autres sites publiés
+        </h2>
+        <ul className="mt-3">
+          {AUTRES_SITES.map((s) => (
+            <li key={s.nom}>
+              {typo(s.texte.texte)}{" "}
+              <a
+                href={waHref(typo(s.message))}
+                aria-label={`${LIBELLES.autreSite} sur WhatsApp, ${s.nom}`}
+                className="inline-flex min-h-11 items-center font-semibold whitespace-nowrap text-trait underline decoration-1 underline-offset-4 hover:decoration-2"
+              >
+                {LIBELLES.autreSite}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-      <ContactBand message={MESSAGES.question.texte} />
-    </>
+      {/* La ligne vers le foncier, à part, sous les autres sites. */}
+      <p className="mt-12">
+        <TextLink href="/foncier/">Avant de verser quoi que ce soit, voyez quels documents vérifier</TextLink>
+      </p>
+    </Section>
   );
 }

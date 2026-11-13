@@ -4,33 +4,17 @@
 // que les chaînes affichées, jamais un `Fait`. Les faits, avec leur source et leur
 // statut, sont dans site.ts, qui reprend ces valeurs.
 
-export type Rubrique = { numero: string; libelle: string; href: string };
+export type Rubrique = { libelle: string; href: string };
 
-/** Ordre et libellés fixes (3.1). */
+/** Ordre et libellés fixes, sans numéro (allegement.md, partie 3). */
 export const NAVIGATION: Rubrique[] = [
-  { numero: "01", libelle: "Terrains", href: "/terrains/" },
-  { numero: "02", libelle: "Aménager mon terrain", href: "/amenager/" },
-  { numero: "03", libelle: "Comprendre le foncier", href: "/foncier/" },
-  { numero: "04", libelle: "Diaspora", href: "/diaspora/" },
-  { numero: "05", libelle: "À propos", href: "/a-propos/" },
-  { numero: "06", libelle: "Contact", href: "/contact/" },
+  { libelle: "Terrains", href: "/terrains/" },
+  { libelle: "Aménager mon terrain", href: "/amenager/" },
+  { libelle: "Comprendre le foncier", href: "/foncier/" },
+  { libelle: "Diaspora", href: "/diaspora/" },
+  { libelle: "À propos", href: "/a-propos/" },
+  { libelle: "Contact", href: "/contact/" },
 ];
-
-/** Nom de chaque page, pour la case « Page » du cartouche. */
-export const NOMS_DE_PAGE: Record<string, string> = {
-  "/": "Accueil",
-  "/terrains/": "Terrains",
-  "/terrains/lac-town/": "Lac Town",
-  "/terrains/sakina-city/": "Sakina City",
-  "/terrains/sicap-keur-massar/": "Sicap Keur Massar",
-  "/terrains/recasement-aibd/": "Recasement AIBD",
-  "/amenager/": "Aménager mon terrain",
-  "/foncier/": "Comprendre le foncier",
-  "/diaspora/": "Diaspora",
-  "/a-propos/": "À propos",
-  "/contact/": "Contact",
-  "/mentions-legales/": "Mentions légales",
-};
 
 export type Numero = {
   /** « 77 400 75 75 » */

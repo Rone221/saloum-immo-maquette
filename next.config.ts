@@ -11,13 +11,9 @@ const nextConfig: NextConfig = {
   // next dev ne réécrit plus AGENTS.md (son bloc géré contient des tirets cadratins).
   agentRules: false,
   // Pas de cacheComponents ni de PPR : incompatibles avec l'export statique.
-  images: {
-    loader: "custom",
-    loaderFile: "./src/lib/image-loader.ts",
-    // Les largeurs des variantes WebP produites par scripts/photos.mjs.
-    deviceSizes: [480, 800, 1200, 1600, 2000],
-    imageSizes: [320],
-  },
+  // Pas de next/image : components/photo.tsx écrit le srcset des variantes réelles
+  // (scripts/photos.mjs), sans optimiseur.
+  images: { unoptimized: true },
   turbopack: {
     rules: {
       "*.css": {
