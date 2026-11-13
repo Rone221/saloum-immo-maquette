@@ -38,7 +38,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <a href={WA_DEFAULT} target="_blank" rel="noopener" className={`${btnPrimary} hidden md:inline-flex`}>
+          <a href={WA_DEFAULT} target="_blank" rel="noopener" className={`${btnPrimary} max-md:hidden`}>
             <WhatsappLogoIcon size={18} weight="fill" aria-hidden />
             WhatsApp
           </a>
