@@ -62,6 +62,14 @@ export type Programme = {
   photoRangee?: PhotoId;
   /** Deux vidéos au plus, en liens. */
   videos: CleVideo[];
+  /**
+   * Nature du statut, pour le badge de la carte (revue 2) : « titre » quand le
+   * programme est vendu avec titre foncier, « a-demander » sinon. Le texte du badge
+   * reste celui de `statut`.
+   */
+  foncier: "titre" | "a-demander";
+  /** Repères de la carte, en puces : trois au plus, tirés des faits de la fiche. */
+  reperes: string[];
 };
 
 const PRIX = f("Sur demande.", "contenu-maquette §5 (prix non publié)");
@@ -94,6 +102,9 @@ export const SAKINA_CITY: Programme = {
   photoFiche: "2413-droite",
   photoRangee: "2413-droite",
   videos: ["visiteSakina"],
+  foncier: "titre",
+  // contenu-maquette §5 : 78 parcelles de 150 m², viabilisées.
+  reperes: ["78 parcelles", "150 m²", "Viabilisé"],
 };
 
 export const SICAP_KEUR_MASSAR: Programme = {
@@ -128,6 +139,10 @@ export const SICAP_KEUR_MASSAR: Programme = {
   message: MESSAGES.sicapKeurMassar.texte,
   photo: "2616",
   videos: ["lotsSKM", "reelLotsSKM"],
+  foncier: "titre",
+  // contenu-maquette §5 : lots publiés en 2026 de 150, 175 et 237 m², terrassés et viabilisés.
+  // La date reste dans le repère : certains lots ont pu partir depuis.
+  reperes: ["Lots de 150 à 237 m², publiés en 2026", "Terrassé", "Viabilisé"],
 };
 
 export const LAC_TOWN: Programme = {
@@ -175,6 +190,9 @@ export const LAC_TOWN: Programme = {
   message: MESSAGES.lacTown.texte,
   photo: "2580",
   videos: ["lancementLacTown", "visiteLacTown"],
+  foncier: "a-demander",
+  // contenu-maquette §5 (voies ouvertes, viabilisation) ; YouTube qtAHrgDQd4U (lancement le 30 mars 2026).
+  reperes: ["Voies ouvertes", "Viabilisé", "Lancé en mars 2026"],
 };
 
 /**
@@ -203,6 +221,16 @@ export const RECASEMENT_AIBD = {
   ),
   /** En-tête de sa fiche. La date n'y apparaît qu'une fois, collée au prix. */
   fiche: f(
+    "Parcelles en bail de plus de 200 m², à Diamniadio, près de l’aéroport AIBD. 6 à 10 millions FCFA selon la position, au prix d’avril 2025. Disponibilité à demander.",
+    "contenu-maquette §5 (offre d’avril 2025)",
+    { date: "2025-04" },
+  ),
+  /**
+   * Carte de l'accueil et de Terrains : le prix porte sa date dans sa phrase,
+   * l'étiquette la redit au-dessus. « Disponibilité à demander » : contenu-maquette §5.
+   */
+  etiquette: "Offre d’avril 2025",
+  carte: f(
     "Parcelles en bail de plus de 200 m², à Diamniadio, près de l’aéroport AIBD. 6 à 10 millions FCFA selon la position, au prix d’avril 2025. Disponibilité à demander.",
     "contenu-maquette §5 (offre d’avril 2025)",
     { date: "2025-04" },

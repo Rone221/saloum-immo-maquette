@@ -1,6 +1,7 @@
 // Comprendre le foncier : les trois documents, la liste « Avant d'acheter,
 // vérifiez avec nous » et l'avertissement. Ces blocs vivent sur la page Foncier
-// seulement (allegement.md, 2.2) ; l'accueil n'en garde que les trois niveaux.
+// seulement (allegement.md, 2.2) ; l'accueil n'en garde que les trois documents en
+// cartes, avec leur niveau et leur définition (revue 2).
 //
 // Sources : carrousel publié par Saloum Immo sur Instagram le 8 juillet 2026 (signé
 // « Saloum Immo Consulting », nom absent de contenu-maquette.md : il ne s'affiche pas)
@@ -14,10 +15,18 @@ import { f, type Fait } from "./types";
 /** Titre sans point final (règle des titres, src/lib/classes.ts). */
 export const TITRE_FONCIER = "Le bon papier avant le bon prix";
 
+/** Chapeau de la page Foncier, qui porte aussi la liste à vérifier. */
 export const INTRO_FONCIER =
   "Avant de payer, sachez quel document vous achetez. Voici ce que nous faisons, et ce que vous pouvez vérifier avec nous.";
 
-export const NOTAIRE = f("Un notaire agréé accompagne chaque étape.", "TikTok, 15.10.2025 ; contenu-maquette §6", {
+/** Chapeau de la section foncier de l'accueil : elle ne montre que les trois documents. */
+export const INTRO_FONCIER_ACCUEIL =
+  "Avant de payer, sachez quel document vous achetez. Les trois, du moins au plus protégé.";
+
+// « de l'achat » : la source parle de l'achat. Sans ces mots, posée près des étapes du
+// chantier (ouverture de l'accueil) ou des étapes de la diaspora, la phrase mettrait un
+// notaire au débroussaillage.
+export const NOTAIRE = f("Un notaire agréé accompagne chaque étape de l’achat.", "TikTok, 15.10.2025 ; contenu-maquette §6", {
   date: "2025-10-15",
 });
 
@@ -101,12 +110,22 @@ export const DOCUMENTS: Document[] = [
 export const AVERTISSEMENT_STATUT =
   "Pour tout autre terrain, chez nous ou ailleurs, demandez le statut exact avant de verser quoi que ce soit : délibération, bail ou titre foncier.";
 
-/** Sous les trois documents, page Foncier. */
+/** Sous les trois documents : page Foncier et accueil, qui montrent tous deux les définitions. */
 export const SOURCE_DEFINITIONS = f(
   "Définitions et niveaux publiés par Saloum Immo sur Instagram le 8 juillet 2026.",
   SOURCE_CARROUSEL,
   PUBLIE,
 );
 
-/** Sous les trois niveaux, accueil. */
-export const SOURCE_NIVEAUX = f("Niveaux publiés par Saloum Immo le 8 juillet 2026.", SOURCE_CARROUSEL, PUBLIE);
+/**
+ * Trois preuves sous l'ouverture de l'accueil (revue 2). Rien de neuf : des faits
+ * déjà publiés, dits en deux temps. Ce sont des repères, pas des garanties.
+ */
+export const PREUVES: { titre: string; texte: Fait }[] = [
+  { titre: "Titres fonciers individuels", texte: f("À Sakina City et à Sicap Keur Massar.", "contenu-maquette §5") },
+  {
+    titre: "Un notaire agréé",
+    texte: f("Il accompagne chaque étape de l’achat.", "TikTok, 15.10.2025 ; contenu-maquette §6", { date: "2025-10-15" }),
+  },
+  { titre: "Visite avec notre équipe", texte: f("Sur place, sur rendez-vous.", "contenu-maquette §6 (visites accompagnées)") },
+];

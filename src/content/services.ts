@@ -71,8 +71,12 @@ export const NOMS_COUPE = {
 export const INTRO_AMENAGER =
   "Terrassement, voies en latérite, eau avec SEN’EAU, électricité, bornage. Sur les terrains que nous vendons, et sur ceux des propriétaires.";
 
-/** La phrase de la section Aménager de l'accueil. */
-export const PHRASE_AMENAGER_ACCUEIL = "Sur nos terrains, le travail commence bien avant la vente.";
+/**
+ * Bandeau des propriétaires, à l'accueil. Pas INTRO_AMENAGER : l'ouverture de l'accueil
+ * dit déjà presque mot pour mot la même phrase.
+ */
+export const AMENAGER_PROPRIETAIRES =
+  "Nous aménageons aussi les terrains des propriétaires : terrassement, voies en latérite, eau, électricité, bornage.";
 
 export const QUESTION_PROPRIETAIRES = "Vous avez un terrain ou des hectares ?";
 
@@ -95,22 +99,32 @@ export type Station = {
    * tel: vers le même numéro, sur le texte donné.
    */
   texte: string;
+  /** Version courte, sans lien, pour les cartes de l'accueil (revue 2). Mêmes faits. */
+  court: string;
 };
 
 export const PARCOURS_DIASPORA: Station[] = [
-  { titre: "Écrivez-nous", texte: "Sur {whatsapp}, depuis n’importe quel pays. Ou {appel:appelez ce numéro}." },
+  {
+    titre: "Écrivez-nous",
+    texte: "Sur {whatsapp}, depuis n’importe quel pays. Ou {appel:appelez ce numéro}.",
+    court: "Sur WhatsApp, depuis n’importe quel pays.",
+  },
   // « Les terrains en vente », pas « nos programmes » : Sicap Keur Massar (Paradise City)
   // n'est jamais présenté comme notre programme.
   {
     titre: "Regardez le terrain en vidéo",
-    texte: "Les terrains en vente sont filmés au drone et en visite commentée. Trois vidéos ci-dessous pour commencer.",
+    // Pas « trois vidéos ci-dessous » : une seule des vidéos de la page Diaspora montre un terrain.
+    texte: "Les terrains en vente sont filmés au drone et en visite commentée.",
+    court: "Les terrains en vente sont filmés au drone et en visite commentée.",
   },
   {
     titre: "Faites vérifier les documents",
     texte: "Titre, propriétaire, situation juridique : vérifiez-les avec nous.",
+    court: "Titre, propriétaire, situation juridique : vérifiez-les avec nous.",
   },
   {
     titre: "Visitez sur place",
     texte: "Quand vous êtes au Sénégal, la visite se fait avec notre équipe, sur rendez-vous.",
+    court: "Au Sénégal, avec notre équipe, sur rendez-vous.",
   },
 ];

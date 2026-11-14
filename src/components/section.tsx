@@ -6,11 +6,16 @@ import { cx } from "@/lib/base";
  * contact. Le gris une section sur deux au plus ; deux sections colorées ne se
  * suivent jamais (la dernière section d'une page reste blanche : le pied bleu suit).
  */
-export type Surface = "paper" | "paper-2";
+export type Surface = "paper" | "paper-2" | "ink";
 
+/**
+ * Revue 2 : une surface encre pour une section forte par page au plus (le foncier de
+ * l'accueil). Le focus y passe au blanc, le bleu ne s'y verrait pas.
+ */
 const SURFACES: Record<Surface, string> = {
   paper: "bg-paper",
   "paper-2": "bg-paper-2",
+  ink: "bg-ink text-white [&_:focus-visible]:outline-white",
 };
 
 /** Rythmes verticaux (2.7) : 72 px sur mobile, 96 sur tablette, 128 au bureau. */

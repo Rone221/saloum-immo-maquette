@@ -107,7 +107,7 @@ const FICHES = {
     // logo incrusté en haut à gauche (x 28 à 147 sur 899).
     position: "75% 40%",
     statut: "a-valider",
-    note: "Accueil et À propos. 899 px de large : cadre 4:3 de 674 px de large au plus.",
+    note: "Accueil et À propos. 899 px de large : cadre 4:3 de 640 px de large au plus (887 px dessinés au survol).",
   },
   "ig-DfAoxMkAbKR": {
     alt: "Une collaboratrice en casque et gilet Saloum Immo parle face caméra, sur un lot.",
@@ -115,7 +115,7 @@ const FICHES = {
     // Cadre 4:3, comme l'interview : le logo incrusté (x 21 à 119 sur 899) sort du cadre.
     position: "62% 30%",
     statut: "a-valider",
-    note: "Diaspora. Personne n'est nommé. 899 px de large au plus.",
+    note: "Diaspora (cadre 4:3 de 668 px au plus) et fiche Sicap Keur Massar (carte vidéo de 416 px au plus), pas ailleurs : deux pages au plus. Personne n'est nommé. 899 px de large au plus.",
   },
   "2499": {
     alt: "Trois membres de l’équipe en gilet sur un chantier, l’un d’eux gâche du mortier.",
@@ -126,9 +126,9 @@ const FICHES = {
   },
   "2537": {
     alt: "Rond-point à l’entrée de Millennium City, trois personnes posent devant.",
-    legende: "Entrée de Millennium City.",
+    legende: "Trois personnes posent devant un rond-point.",
     statut: "a-valider",
-    note: "À propos, réalisations. Personne n'est nommé. Jamais « notre programme ».",
+    note: "À propos, réalisations. Personne n'est nommé. Jamais « notre programme ». Le nom du projet est dans le texte (registre.ts), pas dans la légende.",
   },
   // Le bas de 2352 (y 650 à 810), avec l'affiche de la vitrine, n'est pas publié.
   "2352-haut": {

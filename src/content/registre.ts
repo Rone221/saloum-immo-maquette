@@ -70,11 +70,12 @@ export const TRAVAUX: Travail[] = [
 /**
  * Millennium City (page À propos, avec la photo 2537). Seul le réseau de
  * canalisation est attribué à Saloum Immo, jamais l'aire de jeux, jamais « notre
- * programme ». Les dates sont celles du projet, pas de la pose.
+ * programme ». Les dates sont celles du projet, pas de la pose. Le nom est dans le
+ * texte, pas dans la légende de la photo : l'attribution ne tient pas à une légende.
  */
 export const MILLENNIUM_CITY = {
   texte: f(
-    "Réseau de canalisation conçu et posé par Saloum Immo, sur un projet mené de mars 2022 à décembre 2023. Le lotissement est commercialisé par Senegindia.",
+    "Millennium City : réseau de canalisation conçu et posé par Saloum Immo, sur un projet mené de mars 2022 à décembre 2023. Le lotissement est commercialisé par Senegindia.",
     "contenu-maquette §5 (réalisations)",
     { date: "2022-03" },
   ),

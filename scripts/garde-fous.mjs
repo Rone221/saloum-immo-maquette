@@ -168,6 +168,23 @@ for (const fichier of lister(join(RACINE, "out"), new Set([".html"]))) {
   }
 }
 
+// Une photo hors programme sert sur deux pages au plus (allègement, repris de la
+// maquette arrondie) : les photos de programme suivent leur programme (carte de
+// l'accueil, rangée de Terrains, fiche, vignettes « Autres terrains »).
+const PHOTOS_PROGRAMME = new Set(["2534", "2616", "2580", "2413-droite"]);
+const pagesParPhoto = new Map();
+for (const fichier of lister(join(RACINE, "out"), new Set([".html"])).filter((f) => f.endsWith("index.html"))) {
+  const texte = readFileSync(fichier, "utf8");
+  for (const id of new Set([...texte.matchAll(/photos\/([\w-]+?)-\d+\.webp/g)].map((m) => m[1]))) {
+    if (!pagesParPhoto.has(id)) pagesParPhoto.set(id, []);
+    pagesParPhoto.get(id).push(nature(fichier).rel);
+  }
+}
+for (const [id, pages] of pagesParPhoto) {
+  if (PHOTOS_PROGRAMME.has(id) || pages.length <= 2) continue;
+  fautes.push(`[photo sur plus de deux pages]  ${id} : ${pages.join(", ")}`);
+}
+
 if (!existsSync(join(RACINE, "out"))) {
   console.warn("garde-fous : pas de dossier out/, seules les sources ont été vérifiées.");
 }

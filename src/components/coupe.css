@@ -20,3 +20,25 @@
   .coupe .lead-tab { display: inline; }
   .coupe .lead-mob { display: none; }
 }
+
+/* Revue 2 : la coupe se dessine au chargement. Le sol, puis la voie, les poteaux, les
+   bornes qui tombent en place, le tuyau, le câble, et enfin les noms. Sans animation
+   (prefers-reduced-motion), le dessin est là d'emblée. */
+@keyframes coupe-trait { from { stroke-dashoffset: var(--longueur); } to { stroke-dashoffset: 0; } }
+@keyframes coupe-tombe { from { opacity: 0; transform: translateY(-28px); } to { opacity: 1; transform: none; } }
+@keyframes coupe-montre { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: no-preference) {
+  .coupe .ground { --longueur: 1200; stroke-dasharray: 1200; animation: coupe-trait 0.8s ease-out both; }
+  .coupe .road,
+  .coupe .obj,
+  .coupe .obj-line,
+  .coupe .borne,
+  .coupe .pipe { transform-box: fill-box; }
+  .coupe .road { animation: coupe-tombe 0.5s ease-out 0.3s both; }
+  .coupe .obj, .coupe .obj-line { animation: coupe-tombe 0.5s ease-out 0.45s both; }
+  .coupe .borne { animation: coupe-tombe 0.45s cubic-bezier(0.3, 1.4, 0.5, 1) 0.65s both; }
+  .coupe .trench, .coupe .pipe { animation: coupe-montre 0.4s ease-out 0.75s both; }
+  .coupe .cable { --longueur: 320; stroke-dasharray: 320; animation: coupe-trait 0.6s ease-out 0.8s both; }
+  .coupe .lead, .coupe .tn, .coupe span { animation: coupe-montre 0.4s ease-out 1s both; }
+}

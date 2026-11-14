@@ -7,13 +7,15 @@
 
 import type { Metadata } from "next";
 import { BoutonAppel, BoutonWhatsApp } from "@/components/boutons";
+import { Fleche } from "@/components/reperes";
 import { Cadre } from "@/components/photo";
 import { Section } from "@/components/section";
 import { LIBELLES, MESSAGES, type Message } from "@/content/messages";
 import { AGENCE, EMAIL, FIXE, MOBILE, RELEVE_RESEAUX, RESEAUX } from "@/content/site";
 import { cx } from "@/lib/base";
-import { COLONNE, ENTRE_BLOCS, NOTE, SOUS_TITRE, T1, T2, T3 } from "@/lib/classes";
+import { ENTRE_BLOCS, NOTE, SOUS_TITRE, T1, T2, T3 } from "@/lib/classes";
 import { dateLongue, typo } from "@/lib/format";
+import { waHref } from "@/lib/whatsapp";
 import { metaPage } from "@/lib/meta";
 
 /** Trois situations, chacune avec le bouton de son intention et son message. */
@@ -43,7 +45,7 @@ export default function Contact() {
       <section aria-labelledby="t-page" className="bg-trait text-white [&_:focus-visible]:outline-white">
         <div className="wrap grid gap-y-10 pt-10 pb-18 tab:pt-14 tab:pb-24 tab:grid-cols-12 tab:items-center tab:gap-x-6 desk:pt-20 desk:pb-28">
           <div className="tab:col-span-6">
-            <h1 id="t-page" className={T1}>
+            <h1 id="t-page" className={cx(T1, "entree")}>
               Parlons de votre terrain
             </h1>
             <a
@@ -99,43 +101,53 @@ export default function Contact() {
         <p className={cx(SOUS_TITRE, "max-w-[36rem] text-ink-2")}>
           {typo("Chaque bouton ouvre WhatsApp avec ce message déjà écrit. Vous le relisez avant d’envoyer.")}
         </p>
-        <ul className={cx(ENTRE_BLOCS, "grid gap-y-12 desk:grid-cols-3 desk:gap-x-12")}>
-          {SITUATIONS.map((s) => (
-            <li key={s.titre} className="flex flex-col">
-              <h3 className={T3}>{typo(s.titre)}</h3>
-              <p className="mt-3 text-ink-2 desk:flex-1">{typo(`« ${s.message.texte} »`)}</p>
-              <BoutonWhatsApp
-                label={s.bouton}
-                message={s.message.texte}
-                variante="contour"
-                className="mt-6 self-start"
-              />
+        <ul className={cx(ENTRE_BLOCS, "grid gap-4 tab:grid-cols-3 tab:gap-6")}>
+          {SITUATIONS.map((st, i) => (
+            <li key={st.titre} className={i === 1 ? "reveler-2" : i === 2 ? "reveler-3" : "reveler"}>
+              {/* Pas d'aria-label : le nom du lien est son texte, le message prêt compris. */}
+              <a
+                href={waHref(typo(st.message.texte))}
+                className="group relative flex h-full flex-col border border-rule bg-paper p-6 transition-[border-color,translate] duration-300 hover:-translate-y-1 hover:border-trait"
+              >
+                <h3 className={T3}>{typo(st.titre)}</h3>
+                {/* Le message, comme une bulle déjà écrite. */}
+                <p className="relative mt-5 bg-paper-2 px-4 py-3.5 text-ink-2 transition-colors duration-300 group-hover:bg-trait group-hover:text-white tab:flex-1">
+                  {typo(`« ${st.message.texte} »`)}
+                  <span
+                    aria-hidden="true"
+                    className="absolute -bottom-2 left-6 border-x-[8px] border-t-[8px] border-x-transparent border-t-paper-2 transition-colors duration-300 group-hover:border-t-trait"
+                  />
+                </p>
+                <span className="mt-7 inline-flex items-center gap-2 font-semibold text-trait">
+                  {st.bouton} <Fleche />
+                </span>
+              </a>
             </li>
           ))}
         </ul>
       </Section>
 
-      {/* 3. Les réseaux, en une colonne, avec la date de leurs chiffres. */}
+      {/* 3. Les réseaux, en cartes, avec la date de leurs chiffres. */}
       <Section labelledBy="t-reseaux" surface="paper-2">
-        <div className={COLONNE}>
-          <h2 id="t-reseaux" className={T2}>
-            Réseaux
-          </h2>
-          <ul className="mt-3 desk:mt-4">
-            {RESEAUX.map((r) => (
-              <li key={r.nom}>
-                <a
-                  href={r.href}
-                  className="inline-flex min-h-11 items-center font-semibold text-trait underline decoration-1 underline-offset-4 hover:decoration-2"
-                >
-                  {r.nom}
-                </a>
-                {r.chiffre ? <span className="text-ink-2">{typo(`, ${r.chiffre.texte}`)}</span> : null}
-              </li>
-            ))}
-          </ul>
-          <p className={cx(NOTE, "mt-4")}>{typo(`Chiffres au ${dateLongue(RELEVE_RESEAUX)}.`)}</p>
-        </div>
+        <h2 id="t-reseaux" className={T2}>
+          Réseaux
+        </h2>
+        <ul className={cx(ENTRE_BLOCS, "grid grid-cols-2 gap-3 tab:grid-cols-3 desk:grid-cols-5")}>
+          {RESEAUX.map((r, i) => (
+            <li key={r.nom} className={i % 3 === 1 ? "reveler-2" : i % 3 === 2 ? "reveler-3" : "reveler"}>
+              <a
+                href={r.href}
+                className="group flex h-full flex-col border border-rule bg-paper p-5 transition-colors duration-300 hover:border-trait"
+              >
+                <span className="inline-flex items-center gap-2 font-semibold transition-colors group-hover:text-trait">
+                  {r.nom} <Fleche />
+                </span>
+                {r.chiffre ? <span className="mt-1 text-small text-ink-2">{typo(r.chiffre.texte)}</span> : null}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p className={cx(NOTE, "mt-4")}>{typo(`Chiffres au ${dateLongue(RELEVE_RESEAUX)}.`)}</p>
       </Section>
     </>
   );

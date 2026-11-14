@@ -77,7 +77,7 @@ export function Coupe({ className }: { className?: string }) {
                 "--bt": pct(n.basTab, H),
               } as CSSProperties
             }
-            className="absolute top-(--bm) left-(--x) -translate-x-1/2 -translate-y-full text-small leading-none font-semibold whitespace-nowrap tab:top-(--bt) desk:text-body"
+            className="absolute top-(--bm) left-(--x) -translate-x-1/2 -translate-y-full text-small leading-none font-semibold whitespace-nowrap tab:top-(--bt) wide:text-body"
           >
             {n.nom}
           </span>

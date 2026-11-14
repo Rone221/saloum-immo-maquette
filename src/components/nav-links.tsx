@@ -29,7 +29,7 @@ export function ariaCourant(etat: ReturnType<typeof etatRubrique>) {
 
 /**
  * Navigation en ligne de l'en-tête (≥ 1 101 px). Six liens, ordre fixe, sans numéro.
- * Page courante : bleu souligné, en permanence.
+ * Page courante : bleue, le trait dessous tracé en permanence. Survol : le trait se trace.
  */
 export function NavLinks() {
   const chemin = useChemin();
@@ -43,8 +43,10 @@ export function NavLinks() {
               href={r.href}
               aria-current={ariaCourant(etat)}
               className={cx(
-                "inline-flex min-h-11 items-center font-medium whitespace-nowrap decoration-[1.5px] underline-offset-8 hover:text-trait hover:underline",
-                etat && "text-trait underline",
+                // Le trait se trace de gauche à droite au survol ; il reste tracé sur la page courante.
+                "relative inline-flex min-h-11 items-center font-medium whitespace-nowrap transition-colors duration-200 hover:text-trait",
+                "after:absolute after:inset-x-0 after:bottom-1.5 after:h-[2px] after:origin-left after:bg-trait after:transition-transform after:duration-300 after:ease-out",
+                etat ? "text-trait after:scale-x-100" : "after:scale-x-0 hover:after:scale-x-100",
               )}
             >
               {r.libelle}

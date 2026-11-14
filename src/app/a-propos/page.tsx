@@ -9,8 +9,8 @@
 // réalisé par Saloum Immo : elle est liée depuis L'entreprise, pas depuis Réalisations.
 
 import type { Metadata } from "next";
-import { Faits } from "@/components/faits";
-import { Cadre } from "@/components/photo";
+import { Cadre, Photo } from "@/components/photo";
+import { Borne } from "@/components/reperes";
 import { Section } from "@/components/section";
 import { TextLink } from "@/components/text-link";
 import { FICHE_ENTREPRISE } from "@/content/pages/a-propos";
@@ -34,16 +34,33 @@ export default function APropos() {
       {/* 1. Babacar Ndiaye : l'interview, le rôle, la biographie. */}
       <Section labelledBy="t-page" rythme="ouverture">
         <div className="grid gap-y-10 tab:grid-cols-12 tab:items-center tab:gap-x-6">
-          {/* Capture de 899 px dans un cadre 4:3 : dessinée par sa hauteur, 674 px de
-              cadre au plus pour ne jamais l'agrandir. */}
-          <Cadre
-            id={FONDATEUR.photo}
-            preload
-            bord
-            sizes="(min-width: 1101px) 890px, (min-width: 761px) 63vw, 133vw"
-            className="tab:col-span-6"
-          />
-          <div className="tab:col-span-6 desk:col-span-5 desk:col-start-8">
+          {/* Capture de 899 px dans un cadre 4:3 : dessinée par sa hauteur, 640 px de
+              cadre au plus, soit 853 px dessinés et 887 au survol (zoom de 1,04) : jamais
+              agrandie. */}
+          <a
+            href={interview.href}
+            tabIndex={-1}
+            aria-hidden="true"
+            className="group entree relative -mx-gutter block max-w-[640px] [--delai:0.1s] tab:col-span-6 tab:mx-0"
+          >
+            <span className="relative block aspect-[4/3] overflow-hidden bg-paper-2">
+              <Photo
+                id={FONDATEUR.photo}
+                fill
+                preload
+                decorative
+                sizes="(min-width: 1384px) 853px, (min-width: 761px) 63vw, (min-width: 641px) 853px, 133vw"
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+              />
+            </span>
+            <span className="absolute bottom-0 left-0 inline-flex items-center gap-3 bg-ink py-3 pr-5 pl-3 font-semibold text-white transition-colors duration-300 group-hover:bg-trait">
+              <span className="inline-flex size-9 items-center justify-center bg-white/15">
+                <span className="ml-0.5 border-y-[6px] border-l-[10px] border-y-transparent border-l-white" />
+              </span>
+              {typo(`L’interview, ${interview.duree}`)}
+            </span>
+          </a>
+          <div className="entree tab:col-span-6 desk:col-span-5 desk:col-start-8">
             <h1 id="t-page" className={T1}>
               {FONDATEUR.nom.texte}
             </h1>
@@ -64,16 +81,29 @@ export default function APropos() {
             legende
             bord
             sizes="(min-width: 1440px) 668px, (min-width: 761px) 47vw, 100vw"
-            className="tab:col-span-6"
+            className="reveler tab:col-span-6"
           />
           <div className="tab:col-span-6 desk:col-span-5 desk:col-start-8">
             <h2 id="t-entreprise" className={T2}>
               {typo("L’entreprise")}
             </h2>
-            <Faits
-              className={ENTRE_BLOCS}
-              lignes={FICHE_ENTREPRISE.map((l) => ({ libelle: l.libelle, valeur: typo(l.valeur.texte) }))}
-            />
+            <dl className={cx(ENTRE_BLOCS, "grid gap-3 tab:grid-cols-2")}>
+              {FICHE_ENTREPRISE.map((l, i) => (
+                <div
+                  key={l.libelle}
+                  className={cx(
+                    "border border-rule bg-paper p-4 transition-colors duration-300 hover:border-trait",
+                    i % 2 === 1 ? "reveler-2" : "reveler",
+                  )}
+                >
+                  <dt className="flex items-center gap-2 text-small font-semibold text-ink-2">
+                    <Borne />
+                    {l.libelle}
+                  </dt>
+                  <dd className="mt-1.5">{typo(l.valeur.texte)}</dd>
+                </div>
+              ))}
+            </dl>
             <p className="mt-6">
               <TextLink href={VIDEOS.realisations2026.href}>{titreVideo("realisations2026")}</TextLink>
             </p>
@@ -90,9 +120,9 @@ export default function APropos() {
             legende
             sizes="(min-width: 1440px) 668px, (min-width: 761px) 47vw, 100vw"
             bord
-            className="tab:col-span-6"
+            className="reveler tab:col-span-6"
           />
-          <div className="tab:col-span-6 desk:col-span-5 desk:col-start-8">
+          <div className="reveler-2 border-l-4 border-borne pl-6 tab:col-span-6 desk:col-span-5 desk:col-start-8">
             <h2 id="t-realisations" className={T2}>
               Réalisations
             </h2>

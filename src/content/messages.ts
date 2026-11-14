@@ -30,6 +30,8 @@ export const MESSAGES = {
  */
 export const LIBELLES = {
   programme: "Prix et lots libres sur WhatsApp",
+  /** Pied d'une carte de programme, où la place manque. Nom accessible : `programmeCourt`, puis le nom. */
+  programmeCourt: "Prix sur WhatsApp",
   recasementAibd: "Demander la disponibilité sur WhatsApp",
   proprietaire: "Décrire mon terrain sur WhatsApp",
   diaspora: "Commencer sur WhatsApp",

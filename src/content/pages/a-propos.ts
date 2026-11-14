@@ -11,7 +11,7 @@ export type LigneEntreprise = { libelle: string; valeur: Fait };
 const enValeur = (fait: Fait, texte: string): Fait => ({ ...fait, texte });
 
 export const FICHE_ENTREPRISE: LigneEntreprise[] = [
-  { libelle: "Raison sociale", valeur: RAISON_SOCIALE },
+  { libelle: "Raison sociale", valeur: enValeur(RAISON_SOCIALE, "SALOUM IMMO ELITE SUARL.") },
   { libelle: "Création", valeur: enValeur(CREATION, "Depuis 2022.") },
   { libelle: "Siège", valeur: enValeur(SIEGE, "Sicap Keur Massar, Sangalkam, Dakar.") },
   { libelle: "Valeurs", valeur: enValeur(VALEURS, "La transparence, la qualité et l’engagement.") },

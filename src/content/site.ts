@@ -81,6 +81,11 @@ export const FONDATEUR = {
     "Il explique lui-même en vidéo la délibération, le bail et le titre foncier.",
     "contenu-maquette §2 et §9 ; YouTube rpbEvdrm5AA",
   ),
+  /**
+   * Accueil : la dernière phrase du parcours seulement. La biographie complète vit sur
+   * À propos. Date de création à valider (contenu-maquette §2).
+   */
+  creation: fv("En 2022, il crée Saloum Immo.", "contenu-maquette §2, parcours publié sur son site", { date: "2022" }),
   /** Résumée, jamais recopiée (contenu-maquette §2). */
   biographie: fv(
     "Il a commencé à l’aéroport Léopold Sédar Senghor, comme agent de nettoyage. Il y a appris seul le français et l’anglais. Ensuite Dakar Catering, le change, puis la vente et la location de véhicules. En 2022, il crée Saloum Immo.",

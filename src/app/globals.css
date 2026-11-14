@@ -141,6 +141,114 @@
   transition-timing-function: ease;
 }
 
+/* Mouvement (revue 2, recherche/revue-2/plan.md). Tout est en CSS, sans bibliothèque.
+   Règle : rien n'est caché si une animation n'a pas lieu. Les apparitions au
+   défilement ne partent que là où animation-timeline est pris en charge, et jamais
+   avec prefers-reduced-motion (la règle de @layer base coupe aussi le reste). */
+@keyframes apparition {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes tracer-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes tracer-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes remplir { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes zoom-lent { from { transform: scale(1); } to { transform: scale(1.07); } }
+
+/* Ouverture d'une page : le titre, le texte, les boutons arrivent l'un après l'autre
+   au chargement (--delai). Rien ne reste caché sans animation. */
+@utility entree {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: apparition 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--delai, 0s);
+  }
+}
+
+/* Un bloc entre en glissant vers le haut quand il arrive à l'écran. */
+@utility reveler {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: apparition linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+  }
+}
+/* Même chose, un temps plus tard : le deuxième et le troisième d'une rangée. */
+@utility reveler-2 {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: apparition linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 75%;
+    }
+  }
+}
+@utility reveler-3 {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: apparition linear both;
+      animation-timeline: view();
+      animation-range: entry 20% entry 90%;
+    }
+  }
+}
+
+/* Le trait d'une frise se trace pendant qu'on la fait défiler. */
+@utility trace-x {
+  transform-origin: left center;
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: tracer-x linear both;
+      animation-timeline: view();
+      animation-range: entry 30% cover 50%;
+    }
+  }
+}
+@utility trace-y {
+  transform-origin: center top;
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: tracer-y linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 60%;
+    }
+  }
+}
+
+/* Ouverture : la photo active avance doucement, le segment actif se remplit. */
+@utility zoom-lent {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: zoom-lent 9s ease-out both;
+  }
+}
+@utility remplissage {
+  transform-origin: left center;
+  animation: remplir var(--duree, 6s) linear both;
+  animation-play-state: var(--lecture, running);
+}
+
+/* Piste d'un carrousel : défilement natif, au doigt, à la molette, au clavier.
+   Pas de barre de défilement : les boutons et le trait de progression la remplacent. */
+@utility piste {
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--spacing-gutter);
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+/* Quadrillage de plan, pour les couvertures sans photo. Un motif, pas un dégradé. */
+@utility quadrillage {
+  background-color: var(--color-paper-2);
+  background-image:
+    linear-gradient(var(--color-rule) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: -1px -1px;
+}
+
 /* Lien d'évitement, visible au clavier seulement. */
 @utility skip {
   position: absolute;
