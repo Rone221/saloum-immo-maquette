@@ -1,7 +1,8 @@
 @import "tailwindcss";
 @import "../components/coupe.css" layer(components);
 
-/* Jetons de la direction « Relevé », allégée (recherche/allegement.md, partie 2).
+/* Jetons de la direction v4, « Du plan au terrain » (recherche/revue-4/direction-v4.md).
+   La notice des fondations (recherche/revue-4/v4/fondations.md) dit comment s'en servir.
    static : toutes les variables sont émises, même celles qu'aucune classe n'utilise
    (gouttière, en-tête, tailles redéfinies dans les @media). */
 @theme static {
@@ -21,21 +22,24 @@
   --animate-*: initial;
   --breakpoint-*: initial;
 
-  /* Couleurs. Fonds : paper, un seul gris (paper-2), le bleu pour le pied de contact.
-     La latérite et l'orange ne servent plus de fond : petites touches seulement. */
-  --color-paper: #FFFFFF;
-  --color-paper-2: #EFF2F6;
-  --color-ink: #0A1220;
-  --color-ink-2: #465264;
-  --color-rule: #C9D2DE;
-  --color-trait: #004EBF;
-  --color-borne: #EB8624;
-  --color-laterite: #9B4724;
-  --color-sol: #9AA6B5;
-  --color-white: #FFFFFF;
+  /* Couleurs : trois matières (sable, calque, plan) et un accent (latérite).
+     scripts/garde-fous.mjs refuse toute autre valeur : les deux listes vont ensemble. */
+  --color-sable: #F3EEE4;          /* le fond de page : une parcelle terrassée, très éclaircie */
+  --color-calque: #FBF9F4;         /* ce qui se pose sur le plan : en-tête, bandes, cases, fiches */
+  --color-attente: #E6DECE;        /* derrière chaque photo avant son arrivée */
+  --color-filet: #D6CCB8;          /* tous les filets clairs de 1 px */
+  --color-encre: #0F1F36;          /* le texte, les traits forts ; jamais de noir pur */
+  --color-encre-2: #4A566B;        /* légendes, clés de cartouche, notes ; jamais un paragraphe */
+  --color-plan: #0E2444;           /* le bleu d'un tirage de plan : ouverture, méthode, pied */
+  --color-laterite: #A5461F;       /* l'accent sur fond clair : la mesure, l'état, l'action */
+  --color-laterite-vive: #EB8624;  /* le même accent sur le bleu de plan : l'orange du logo */
+  --color-eau: #004EBF;            /* le bleu du logo : dans les dessins seulement */
+  --color-blanc: #FFFFFF;          /* la face des bornes, le texte sur plan et sur latérite */
 
-  /* Une seule famille : Archivo. Étroite pour h1 et h2, normale pour le reste. */
+  /* Deux familles. Archivo : le texte, et la voix technique (large) ou les numéros
+     de borne (étroit). Besley : les titres, rien d'autre. */
   --font-sans: var(--font-archivo), "Arial Narrow", system-ui, sans-serif;
+  --font-titre: var(--font-besley), serif;
 
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -43,24 +47,37 @@
   --font-weight-650: 650;
   --font-weight-bold: 700;
 
-  /* Cinq tailles (2.4). Base = mobile : 14, 16, 19, 30, 40.
-     Bureau, plus bas : 14, 17, 22, 44, 72. Rien sous 14 px. */
-  --text-small: 0.875rem;  --text-small--line-height: 1.45;
-  --text-body: 1rem;       --text-body--line-height: 1.6;
-  --text-h3: 1.1875rem;    --text-h3--line-height: 1.3;
-  --text-h2: 1.875rem;     --text-h2--line-height: 1.05;
-  --text-h1: 2.5rem;       --text-h1--line-height: 1;
+  /* Corps (direction v4, « Lettres »). Base = mobile. Les corps de titre grandissent
+     avec l'écran, sans palier ; le texte et le chapeau changent à 761 px, plus bas.
+     Rien sous 12 px (l'étiquette). */
+  --text-etiquette: 0.75rem;                       --text-etiquette--line-height: 1.3;  /* 12 */
+  --text-small: 0.875rem;                          --text-small--line-height: 1.45;     /* 14 : légendes, notes */
+  --text-menu: 0.9375rem;                          --text-menu--line-height: 1.3;       /* 15 : rubriques de l'en-tête */
+  --text-body: 1rem;                               --text-body--line-height: 1.625;     /* 16/26, puis 17/28 */
+  --text-chapeau: 1.1875rem;                       --text-chapeau--line-height: 1.45;   /* 19, puis 22 */
+  --text-h3: 1.375rem;                             --text-h3--line-height: 1.2;         /* 22, puis 26 */
+  --text-nom: clamp(1.75rem, 2.8vw, 2.5rem);       --text-nom--line-height: 1.1;        /* 28 à 40 : nom d'un programme */
+  --text-h2: clamp(2rem, 3.9vw, 3.5rem);           --text-h2--line-height: 1.08;        /* 32 à 56 */
+  --text-h1: clamp(2.25rem, 5vw, 4.5rem);          --text-h1--line-height: 1.06;        /* 36 à 72 : h1 de page */
+  --text-hero: clamp(2.5rem, 6.1vw, 5.5rem);       --text-hero--line-height: 1.04;      /* 40 à 88 : h1 de l'accueil */
+  --text-mesure: 3.25rem;                          --text-mesure--line-height: 0.9;     /* un grand chiffre : 52, puis 56 à 96 */
 
   --leading-none: 1;
   --leading-tight: 1.05;
   --leading-snug: 1.3;
-  --leading-body: 1.6;
+  --leading-body: 1.625;
 
-  --tracking-title: -0.015em;
+  --tracking-titre: -0.02em;      /* Besley */
+  --tracking-etiquette: 0.08em;
   --tracking-tight: -0.01em;
 
+  /* Rayons : 0 partout, 2 px pour une borne ou une plaque. */
   --radius-0: 0;
   --radius-1: 2px;
+
+  /* Une seule courbe de mouvement : ça arrive vite, ça se pose lentement. Ce qui se
+     trace va à vitesse constante (linear). */
+  --ease-pose: cubic-bezier(0.23, 1, 0.32, 1);
 
   --breakpoint-tab: 47.5625rem;   /* 761 px */
   --breakpoint-desk: 68.8125rem;  /* 1101 px */
@@ -73,53 +90,148 @@
   --spacing-header: 4rem;         /* 64 */
 }
 
-/* Police par défaut de Tailwind (html) : la nôtre, écrite en ligne, pour que la
-   pile de repli de Tailwind (polices système d'un autre site) ne sorte pas. */
+/* Écrits en ligne dans les classes, pas sur :root.
+   La police par défaut de Tailwind (html) : la nôtre, pour que la pile de repli de
+   Tailwind (polices système d'un autre site) ne sorte pas.
+   Les couleurs de rôle : elles se résolvent là où la classe est posée, donc selon la
+   surface (voir « Surfaces », plus bas). text-fort, text-doux, border-ligne,
+   text-accent, bg-accent, bg-fond. */
 @theme inline {
   --default-font-family: var(--font-archivo, "Arial Narrow"), "Arial Narrow", system-ui, sans-serif;
+  --color-fond: var(--r-fond);      /* la surface elle-même */
+  --color-fort: var(--r-fort);      /* titres, valeurs, traits forts */
+  --color-doux: var(--r-doux);      /* légendes, clés, notes */
+  --color-ligne: var(--r-ligne);    /* filets de 1 px */
+  --color-accent: var(--r-accent);  /* la mesure, l'état, l'action */
 }
 
 @media (width >= 47.5625rem) {
   :root {
     --text-body: 1.0625rem;                              /* 17 */
-    --text-h3: 1.375rem;                                 /* 22 */
-    --text-h2: clamp(2.25rem, 3.06vw, 2.75rem);          /* 36 à 44 */
-    --text-h1: clamp(3rem, 5vw, 4.5rem);                 /* 48 à 72 */
+    --text-body--line-height: 1.647;                     /* 28 */
+    --leading-body: 1.647;
+    --text-chapeau: 1.375rem;                            /* 22 */
+    --text-chapeau--line-height: 1.4;
+    --text-h3: 1.625rem;                                 /* 26 */
+    --text-mesure: clamp(3.5rem, 5.6vw, 6rem);           /* 56 à 96 */
     --spacing-gutter: 1.75rem;                           /* 28 */
     --spacing-header: 4.25rem;                           /* 68 */
   }
 }
 @media (width >= 68.8125rem) {
   :root {
+    /* 40 px : la voie de lecture y tient (components/voie-lecture.tsx). */
     --spacing-gutter: 2.5rem;                            /* 40 */
-    --spacing-header: 5.25rem;                           /* 84 */
+    --spacing-header: 4.75rem;                           /* 76 */
+    /* La voix technique s'élargit quand la place ne manque plus. */
+    --voix-large: 125%;
   }
 }
 
 @layer base {
-  :root { color-scheme: light; }
+  :root {
+    color-scheme: light;
+    --voix-large: 118%;
+  }
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
-    scroll-padding-top: calc(var(--spacing-header) + 16px);
+    /* Une ancre s'arrête sous l'en-tête, avec un peu d'air. */
+    scroll-padding-top: calc(var(--spacing-header) + 24px);
   }
   html.menu-open { overflow: hidden; }
   body {
-    background: var(--color-paper);
-    color: var(--color-ink);
+    background: var(--color-sable);
+    color: var(--r-texte);
     font-family: var(--font-sans);
     font-size: var(--text-body);
     line-height: var(--leading-body);
     font-stretch: 100%;
     text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  :focus-visible { outline: 2px solid var(--color-trait); outline-offset: 3px; }
+  /* Le focus suit la surface : latérite sur clair, blanc sur le plan et la latérite. */
+  :focus-visible { outline: 2px solid var(--r-focus); outline-offset: 3px; }
+  /* Un titre prend la valeur forte de sa surface (blanc à 100 % sur le plan, quand le
+     texte y est à 78 %). :where : n'importe quelle classe de couleur passe devant. */
+  :where(h1, h2, h3, h4) { color: var(--r-fort); }
   h1, h2, h3 { text-wrap: balance; }
   p, li, dd { text-wrap: pretty; }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after { transition: none !important; animation: none !important; }
   }
+}
+
+/* ------------------------------------------------------------------ Surfaces
+   Quatre surfaces : sable (la page), calque (ce qui s'y pose), plan (le tirage au
+   bleu), latérite (l'aplat, une fois par page). Chacune règle les couleurs de rôle :
+   une pièce commune (en-tête de section, cartouche, bouton, cote, lien) prend seule
+   les bons habits selon l'endroit où on la pose. components/section.tsx pose la
+   classe ; on peut aussi l'écrire sur un bloc (un cartouche sur une photo : sur-plan).
+
+   Sur le plan, quatre valeurs de clair et pas une de plus : 100 % (titres), 78 %
+   (texte), 28 % (filets), 14 % (texture). Sur la latérite, tout le texte est blanc :
+   à 78 %, il ne passerait plus le contraste AA. */
+@layer components {
+  :root,
+  .sur-sable,
+  .sur-calque {
+    --r-fond: var(--color-sable);
+    --r-texte: var(--color-encre);
+    --r-fort: var(--color-encre);
+    --r-doux: var(--color-encre-2);
+    --r-ligne: var(--color-filet);
+    /* Un axe ou une limite en trait mixte : plus net qu’un filet, plus léger que le texte. */
+    --r-axe: color-mix(in srgb, var(--color-encre-2) 70%, transparent);
+    --r-accent: var(--color-laterite);
+    --r-focus: var(--color-laterite);
+    /* Le bouton plein : fond et texte, au repos puis au survol. */
+    --r-bouton: var(--color-laterite);
+    --r-bouton-texte: var(--color-blanc);
+    --r-bouton-survol: var(--color-encre);
+    --r-bouton-survol-texte: var(--color-blanc);
+  }
+  .sur-calque { --r-fond: var(--color-calque); }
+
+  /* Le plan, et l'en-tête du site tant qu'il est en surimpression sur une ouverture
+     sombre (voir « En-tête du site »). */
+  .sur-plan,
+  html:not(.menu-open) body:has(#contenu > [data-ouverture="sombre"]:first-child) .entete:not([data-pose]) {
+    --r-fond: var(--color-plan);
+    --r-texte: color-mix(in srgb, var(--color-blanc) 78%, transparent);
+    --r-fort: var(--color-blanc);
+    --r-doux: color-mix(in srgb, var(--color-blanc) 78%, transparent);
+    --r-ligne: color-mix(in srgb, var(--color-blanc) 28%, transparent);
+    --r-axe: color-mix(in srgb, var(--color-blanc) 28%, transparent);
+    --r-accent: var(--color-laterite-vive);
+    --r-focus: var(--color-blanc);
+    --r-bouton: var(--color-laterite-vive);
+    --r-bouton-texte: var(--color-encre);
+    --r-bouton-survol: var(--color-blanc);
+    --r-bouton-survol-texte: var(--color-encre);
+  }
+
+  .sur-laterite {
+    --r-fond: var(--color-laterite);
+    --r-texte: var(--color-blanc);
+    --r-fort: var(--color-blanc);
+    --r-doux: var(--color-blanc);
+    --r-ligne: color-mix(in srgb, var(--color-blanc) 35%, transparent);
+    --r-axe: color-mix(in srgb, var(--color-blanc) 55%, transparent);
+    --r-accent: var(--color-blanc);
+    --r-focus: var(--color-blanc);
+    --r-bouton: var(--color-blanc);
+    --r-bouton-texte: var(--color-encre);
+    --r-bouton-survol: var(--color-encre);
+    --r-bouton-survol-texte: var(--color-blanc);
+  }
+
+  .sur-sable,
+  .sur-calque,
+  .sur-plan,
+  .sur-laterite { color: var(--r-texte); }
 }
 
 @utility wrap {
@@ -129,8 +241,175 @@
   padding-inline: var(--spacing-gutter);
 }
 
-/* Largeur étroite, pour h1 et h2 seulement. */
-@utility stretch-title { font-stretch: 75%; }
+/* ------------------------------------------------------------------- Lettres
+   Trois voix, chacune son rôle, jamais croisées (lib/classes.ts donne les
+   combinaisons prêtes : T1, T2, T3, TITRE_ACCUEIL, NOM, CHAPEAU, ETIQUETTE). */
+
+/* Titres : Besley 400. Jamais un paragraphe. */
+@utility titre {
+  font-family: var(--font-titre);
+  font-weight: 400;
+  letter-spacing: var(--tracking-titre);
+}
+
+/* La voix technique, première recette : tout ce qui se mesure ou se référence
+   (TF 15026/R, 150 m², 3 km, 30 mars 2026, le numéro de téléphone). */
+@utility mesure {
+  font-stretch: var(--voix-large);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+/* La même, dans le fil d'une phrase : 500, pour ne pas crier. */
+@utility mesure-phrase {
+  font-stretch: var(--voix-large);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* Seconde recette, et il n'y en a pas d'autre : la même voix en 12 px, capitales.
+   Têtes de section, clés de cartouche, têtes de colonne, nature d'une photo.
+   Séparateur unique : le point médian. La couleur se choisit à part (text-doux). */
+@utility etiquette {
+  font-stretch: var(--voix-large);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: var(--text-etiquette);
+  line-height: var(--text-etiquette--line-height);
+  font-weight: 600;
+  letter-spacing: var(--tracking-etiquette);
+  text-transform: uppercase;
+}
+
+/* Archivo étroit : le numéro peint sur une borne ou sur la plaque d'un lot. */
+@utility etroit { font-stretch: 75%; }
+
+/* ------------------------------------------------------------------ Matières */
+
+/* Le sable à croisillons : sur un plan de géomètre, le quadrillage n'est pas tracé,
+   il y a une petite croix à chaque intersection. Une croix de 9 px (encre à 12 %)
+   tous les 96 px. Sous les ouvertures de page, les tableaux et les figures. Jamais
+   sous un long paragraphe. Le motif ne peut pas lire une variable : la couleur de
+   l'encre y est écrite (%23 vaut #).
+   --croix-y décale le motif vers le bas. Au bureau, dans une section au rythme courant
+   (128 px d'air), une rangée de croix tombait sur la limite de l'en-tête de section
+   (croix de 140 à 149 px du haut, limite à 142 px) : la limite semblait porter des
+   crans. components/section.tsx pose alors 32 px : la limite passe entre deux rangées.
+   Même défaut sur téléphone, en ouverture de page (limite à 54 px, croix à 48) : -24 px. */
+@utility croisillons {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cpath d='M48.5 44v9M44 48.5h9' stroke='%230F1F36' stroke-opacity='.12'/%3E%3C/svg%3E");
+  background-size: 96px 96px;
+  background-position: 50% var(--croix-y, 0px);
+}
+/* Les mêmes en clair, à 14 %, pour la planche au bleu. */
+@utility croisillons-clairs {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cpath d='M48.5 44v9M44 48.5h9' stroke='%23FFFFFF' stroke-opacity='.14'/%3E%3C/svg%3E");
+  background-size: 96px 96px;
+  background-position: 50% var(--croix-y, 0px);
+}
+
+/* Le plan à 60 % avec un flou : sous un cartouche posé sur une photo. */
+@utility voile-plan {
+  background-color: color-mix(in srgb, var(--color-plan) 60%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* -------------------------------------------------------------------- Traits
+   Les conventions du plan, les mêmes partout. Chaque classe trace dans la couleur
+   du texte : on règle la couleur (text-doux, text-accent) et l'épaisseur (h-px).
+     trait mixte (tiret long, point) : un axe ;
+     tirets : une bordure, ou ce qui est en cours ;
+     pointillé : ce qui n'est pas sûr ;
+     plein : ce qui est borné, acquis (bg-current) ;
+     hachures à 45° : le sol, sous un trait de terrain.
+   Module : 8 px. */
+@utility trait-mixte {
+  background-image: repeating-linear-gradient(90deg, currentColor 0 14px, transparent 14px 18px, currentColor 18px 20px, transparent 20px 24px);
+}
+@utility trait-mixte-v {
+  background-image: repeating-linear-gradient(180deg, currentColor 0 14px, transparent 14px 18px, currentColor 18px 20px, transparent 20px 24px);
+}
+@utility tirets {
+  background-image: repeating-linear-gradient(90deg, currentColor 0 8px, transparent 8px 12px);
+}
+@utility pointille {
+  background-image: repeating-linear-gradient(90deg, currentColor 0 2px, transparent 2px 6px);
+}
+/* Les hachures sont un motif vectoriel (un trait à 45° tous les 8 px), pris comme
+   masque : un dégradé oblique de 1 px se dessine mal. L'élément, vide, est peint dans
+   la couleur du texte. */
+@utility hachures {
+  background-color: currentColor;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M-2 2 2-2M0 8 8 0M6 10l4-4' stroke='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M-2 2 2-2M0 8 8 0M6 10l4-4' stroke='black'/%3E%3C/svg%3E");
+  -webkit-mask-size: 8px 8px;
+  mask-size: 8px 8px;
+}
+
+/* ----------------------------------------------------------------- Mouvement
+   Tout est en CSS, sans bibliothèque. Le HTML livre l'état final : rien n'est caché
+   si une animation n'a pas lieu (navigateur sans animation-timeline, script absent),
+   et rien ne bouge avec prefers-reduced-motion (règle générale, plus haut). */
+
+@keyframes apparaitre { from { opacity: 0; translate: 0 20px; } to { opacity: 1; translate: 0 0; } }
+@keyframes tirer { from { clip-path: inset(-1em 100% -1em 0); } to { clip-path: inset(-1em 0 -1em 0); } }
+@keyframes tourner { to { rotate: 360deg; } }
+/* Un trait de relevé qui se trace une fois (masque d'un chemin à pathLength="1"). */
+@keyframes tracer-axe { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes montrer { from { opacity: 0; } to { opacity: 1; } }
+
+/* Ce qui est lié au défilement (animation-timeline: view()) ne joue que pendant
+   l'entrée à l'écran : de l'instant où le haut du bloc touche le bas de l'écran
+   (entry 0px) à quelques centaines de pixels plus haut. Sans remplissage (ni both ni
+   forwards) : avant et après, le bloc est dans son état final, qui est aussi la
+   dernière image de l'animation. Une capture de page entière, une impression, un
+   outil qui lit sans défiler voient donc tout.
+   Trois règles :
+   - une plage commence toujours à entry 0px (plus tard, le bloc déjà visible
+     s'effacerait d'un coup avant d'apparaître) ;
+   - jamais sur un bloc des 450 derniers pixels d'une page (il ne finirait pas
+     d'entrer) : le pied n'en porte pas ;
+   - un bloc qui porte `apparait` devient le repère de ses enfants en position fixe et
+     forme un contexte d'empilement, comme tout bloc animé en déplacement (mesuré) :
+     ne pas y mettre un élément fixe qui suit le pointeur (tirage photo, lunette). */
+
+/* Apparition d'un bloc : il monte de 20 px et se pose pendant qu'il entre à l'écran.
+   Sans script. `--rang` (0, 1, 2…) fait traîner les blocs suivants d'une rangée : leur
+   plage est plus longue. Déjà à l'écran au chargement, le bloc est posé. */
+@utility apparait {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: apparaitre var(--ease-pose);
+      animation-timeline: view();
+      animation-range: entry 0px entry calc(220px + var(--rang, 0) * 110px);
+    }
+  }
+}
+
+/* Un trait qui se tire une fois, de gauche à droite, à vitesse constante : la limite
+   d'un en-tête de section, une cote, une ligne de base. Il part quand il entre à
+   l'écran et va au bout en 0,9 s, que la page défile ou non. Il ne suit pas le
+   défilement : arrêté en bas de l'écran, un trait resterait à moitié tracé.
+   components/traits.tsx dit où il en est, par data-trait :
+     attend : il approche par le bas, encore sous l'écran. Il est replié ;
+     tire : il entre. Il se tire, après 0,2 s (le temps d'être vu).
+   Sans cet attribut, le trait est entier : c'est l'état sans script, celui d'un trait
+   déjà à l'écran à l'arrivée, celui de l'impression et du mouvement réduit. */
+@utility se-tire {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    &[data-trait="attend"] { clip-path: inset(-1em 100% -1em 0); }
+    &[data-trait="tire"] { animation: tirer 0.9s linear 0.2s backwards; }
+  }
+}
+/* Le même, une fois, à l'arrivée sur la page : pour ce qui est dans le premier écran,
+   où l'entrée par le défilement n'a jamais lieu. `--delai` le retarde (le trait
+   attend, invisible : backwards). */
+@utility se-tire-arrivee {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: tirer 1.1s linear var(--delai, 0.25s) backwards;
+  }
+}
 
 /* Survol des boutons et des liens d'en-tête : fond, texte et bordure seulement.
    transition-colors animerait aussi outline-color : au focus clavier, le contour
@@ -141,94 +420,390 @@
   transition-timing-function: ease;
 }
 
-/* Mouvement (revue 2, recherche/revue-2/plan.md). Tout est en CSS, sans bibliothèque.
-   Règle : rien n'est caché si une animation n'a pas lieu. Les apparitions au
-   défilement ne partent que là où animation-timeline est pris en charge, et jamais
-   avec prefers-reduced-motion (la règle de @layer base coupe aussi le reste). */
-@keyframes apparition {
-  from { opacity: 0; transform: translateY(28px); }
-  to { opacity: 1; transform: none; }
+/* Les boutons (components/boutons.tsx) : les couleurs changent vite ; le bouton
+   principal vient vers la main (aimant léger : components/gestes.tsx écrit
+   --aimant-x et --aimant-y, au pointeur fin seulement) et revient en 0,5 s. */
+@utility transition-bouton {
+  translate: var(--aimant-x, 0px) var(--aimant-y, 0px);
+  transition-property: background-color, color, border-color, translate;
+  transition-duration: 0.15s, 0.15s, 0.15s, 0.5s;
+  transition-timing-function: ease, ease, ease, var(--ease-pose);
 }
-@keyframes tracer-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-@keyframes tracer-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-@keyframes remplir { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-@keyframes zoom-lent { from { transform: scale(1); } to { transform: scale(1.07); } }
 
-/* Ouverture d'une page : le titre, le texte, les boutons arrivent l'un après l'autre
-   au chargement (--delai). Rien ne reste caché sans animation. */
-@utility entree {
+/* Une grande photo bascule de 2° au pointeur, pas plus (components/gestes.tsx écrit
+   --bascule-x et --bascule-y sur [data-bascule]). Elle suit vite, revient lentement. */
+@utility bascule {
+  transform: perspective(1400px) rotateX(var(--bascule-x, 0deg)) rotateY(var(--bascule-y, 0deg));
+  transition: transform 0.9s var(--ease-pose);
+  &[data-penche] { transition-duration: 0.18s; }
+}
+
+@layer components {
+  /* ---------------------------------------------------------- Le mot coté
+     Un mot du titre dans la couleur d'accent, posé sur une cote : un trait de 1,5 px
+     avec ses deux butées. Un seul par titre. Le trait est tracé sous la ligne de
+     base (0,1 em) ; `basse` le descend sous les jambages (p, g, q, y) quand le mot
+     en a et qu'il ferme le titre (components/mot-cote.tsx).
+     La boîte fait 1 em de haut (line-height: 1) : la ligne de base y tombe à
+     --besley-base, soit (1 + ascendante - descendante) / 2, mesuré sur la police
+     (ascendante 1,25 em, descendante 0,43 em ; les jambages descendent de 0,26 em). */
+  .mot-cote {
+    --besley-base: 0.91em;
+    --cote-y: 0.1em;
+    position: relative;
+    display: inline-block;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--r-accent);
+  }
+  .mot-cote[data-basse] { --cote-y: 0.34em; }
+  .mot-cote::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--besley-base) + var(--cote-y) - 0.06em);
+    height: calc(0.12em + 1.5px);
+    /* Le trait, puis les deux butées. */
+    background:
+      linear-gradient(currentColor, currentColor) 0 50% / 100% 1.5px no-repeat,
+      linear-gradient(currentColor, currentColor) 0 0 / 1.5px 100% no-repeat,
+      linear-gradient(currentColor, currentColor) 100% 0 / 1.5px 100% no-repeat;
+  }
+  /* La cote se tire une fois, quand le mot entre à l'écran, et va au bout : comme tout
+     trait qui se tire (se-tire, plus haut), elle attend repliée sous l'écran, et ne
+     reste jamais à moitié tracée. Le mot entre avant sa cote, posée sous lui : 0,3 s
+     d'attente, le temps qu'elle soit à l'écran. */
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .mot-cote[data-trait="attend"]::after { clip-path: inset(-1em 100% -1em 0); }
+    .mot-cote[data-trait="tire"]::after { animation: tirer 0.9s linear 0.3s backwards; }
+  }
+  /* Dans le premier écran : la cote se tire une fois, à l'arrivée, après le titre. */
   @media (prefers-reduced-motion: no-preference) {
-    animation: apparition 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-    animation-delay: var(--delai, 0s);
+    .mot-cote[data-arrivee]::after { animation: tirer 0.9s linear var(--delai, 0.5s) backwards; }
   }
-}
 
-/* Un bloc entre en glissant vers le haut quand il arrive à l'écran. */
-@utility reveler {
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      animation: apparition linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 60%;
-    }
+  /* ----------------------------------------------------- En-tête du site
+     Deux états (components/site-header.tsx).
+     Posé : collant, calque à 92 % avec un flou, filet dessous. C'est l'état de toutes
+     les pages, et celui d'un navigateur sans :has().
+     En surimpression : seulement quand le premier bloc de <main> porte
+     data-ouverture="sombre" (l'accueil), et tant qu'on n'a pas défilé de 40 px. Sans
+     fond, texte blanc, couleurs de rôle du plan (plus haut). Sans script, l'en-tête
+     reste sur l'ouverture et part avec elle : il n'est jamais blanc sur du clair.
+     Le calque est une feuille (::before) : un flou posé sur l'en-tête lui-même en
+     ferait le repère du menu mobile, qui est fixe. */
+  .entete {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    color: var(--r-texte);
+    transition: color 0.5s var(--ease-pose);
   }
-}
-/* Même chose, un temps plus tard : le deuxième et le troisième d'une rangée. */
-@utility reveler-2 {
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      animation: apparition linear both;
-      animation-timeline: view();
-      animation-range: entry 10% entry 75%;
-    }
+  .entete::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: color-mix(in srgb, var(--color-calque) 92%, transparent);
+    border-bottom: 1px solid var(--color-filet);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    transition: opacity 0.5s var(--ease-pose);
   }
-}
-@utility reveler-3 {
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      animation: apparition linear both;
-      animation-timeline: view();
-      animation-range: entry 20% entry 90%;
-    }
+  /* En surimpression seulement : un voile de plan qui s'efface vers le bas. Les
+     rubriques restent lisibles sur une photo, même là où elle est claire. */
+  .entete::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 -60% 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: linear-gradient(180deg, color-mix(in srgb, var(--color-plan) 72%, transparent), transparent);
+    opacity: 0;
+    transition: opacity 0.5s var(--ease-pose);
   }
-}
+  /* La plaque du logo : calque, visible seulement en surimpression (le logo officiel
+     n'est jamais recoloré : sur du sombre, il lui faut sa plaque). */
+  .entete-plaque { transition: background-color 0.5s var(--ease-pose); }
 
-/* Le trait d'une frise se trace pendant qu'on la fait défiler. */
-@utility trace-x {
-  transform-origin: left center;
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      animation: tracer-x linear both;
-      animation-timeline: view();
-      animation-range: entry 30% cover 50%;
-    }
+  body:has(#contenu > [data-ouverture="sombre"]:first-child) .entete {
+    position: absolute;
+    left: 0;
+    right: 0;
   }
-}
-@utility trace-y {
-  transform-origin: center top;
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      animation: tracer-y linear both;
-      animation-timeline: view();
-      animation-range: entry 10% cover 60%;
-    }
+  body:has(#contenu > [data-ouverture="sombre"]:first-child) .entete[data-vivant] { position: fixed; }
+  html:not(.menu-open) body:has(#contenu > [data-ouverture="sombre"]:first-child) .entete:not([data-pose]) {
+    color: var(--color-blanc);
   }
-}
+  html:not(.menu-open) body:has(#contenu > [data-ouverture="sombre"]:first-child) .entete:not([data-pose])::before {
+    opacity: 0;
+  }
+  html:not(.menu-open) body:has(#contenu > [data-ouverture="sombre"]:first-child) .entete:not([data-pose])::after {
+    opacity: 1;
+  }
+  html:not(.menu-open) body:has(#contenu > [data-ouverture="sombre"]:first-child) .entete:not([data-pose]) .entete-plaque {
+    background-color: var(--color-calque);
+  }
 
-/* Ouverture : la photo active avance doucement, le segment actif se remplit. */
-@utility zoom-lent {
+  /* Menu mobile : panneau plein écran sous l'en-tête (components/mobile-menu.tsx). */
+  .menu-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: var(--spacing-header);
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 8px var(--spacing-gutter) 28px;
+    background: var(--color-calque);
+    color: var(--color-encre);
+    border-top: 1px solid var(--color-filet);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
+  }
+  .menu-panel[data-open="true"] {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  @media (width >= 68.8125rem) {
+    .menu-panel { display: none; }
+  }
+
+  /* ---------------------------------------------------- La voie de lecture
+     Une voie en latérite vue d'en haut, qui s'ouvre pendant qu'on lit
+     (components/voie-lecture.tsx). Le script écrit --p (0 à 1), le nombre de
+     l'étiquette et deux masques ; la feuille de style fait le reste.
+     Sous 1 101 px : une barre de 3 px sur le filet de l'en-tête. Dès 1 101 px : une
+     colonne dans la gouttière gauche (40 px), jamais sur le contenu.
+     Sans script, elle n'existe pas : elle ne mesure rien. */
+  .voie {
+    --p: 0;
+    position: fixed;
+    z-index: 51;
+    left: 0;
+    right: 0;
+    top: calc(var(--spacing-header) - 3px);
+    height: 3px;
+    pointer-events: none;
+  }
+  /* Tant que le script n’a pas mesuré : en place (il la mesure), mais invisible. */
+  .voie:not([data-pret]),
+  .voie[data-vide] { visibility: hidden; }
+  html.menu-open .voie { display: none; }
+  /* Sous 1 101 px, tant que l'en-tête est en surimpression, il n'a pas de filet et
+     rien n'est encore lu : pas de crans posés sur la photo. */
+  @media (width < 68.8125rem) {
+    body:has(#contenu > [data-ouverture="sombre"]:first-child) .entete:not([data-pose]) ~ .voie { visibility: hidden; }
+  }
+
+  .voie-couche { position: absolute; inset: 0; }
+  .voie-sombre,
+  .voie-piquete,
+  .voie-croix,
+  .voie-front,
+  .voie-etiquette,
+  .voie-nom { display: none; }
+
+  /* La partie lue : l'aplat de latérite. */
+  .voie-faite {
+    position: absolute;
+    inset: 0;
+    background: var(--color-laterite);
+    clip-path: inset(0 calc((1 - var(--p)) * 100%) 0 0);
+  }
+  /* Un carrefour au départ de chaque section : ici, un cran sur le filet. */
+  .voie-carrefours a {
+    position: absolute;
+    left: calc(var(--s) * (100% - 1.5px));
+    bottom: 0;
+    width: 1.5px;
+    height: 7px;
+    background: var(--color-encre);
+  }
+
+  @media (width >= 68.8125rem) {
+    .voie {
+      --voie-haut: 28px;   /* du haut de la colonne au départ de la voie */
+      --voie-bas: 172px;   /* de la fin de la voie au bas de l'écran : la place de l'étiquette (« LECTURE 100 % ») */
+      /* La place d'un point de la voie, pour --s ou --p entre 0 et 1. */
+      --voie-course: calc(100% - var(--voie-haut) - var(--voie-bas));
+      z-index: 40;
+      right: auto;
+      top: var(--spacing-header);
+      bottom: 0;
+      width: var(--spacing-gutter);
+      height: auto;
+    }
+    /* Deux tirages du même dessin : l'un pour les fonds clairs, l'autre pour les
+       fonds sombres (plan, latérite, photo sous voile). Le script découpe chacun
+       selon ce qui passe dessous (masques), à l'image près. */
+    .voie-couche { display: block; }
+    .voie-clair {
+      --v-piquet: color-mix(in srgb, var(--color-encre) 45%, transparent);
+      --v-bordure: var(--color-encre);
+      --v-voie: var(--color-laterite);
+      --v-texte: var(--color-encre-2);
+      -webkit-mask-image: var(--masque-clair, none);
+      mask-image: var(--masque-clair, none);
+    }
+    .voie-sombre {
+      --v-piquet: color-mix(in srgb, var(--color-blanc) 78%, transparent);
+      --v-bordure: var(--color-blanc);
+      --v-voie: var(--color-laterite-vive);
+      --v-texte: var(--color-blanc);
+      -webkit-mask-image: var(--masque-sombre, linear-gradient(transparent, transparent));
+      mask-image: var(--masque-sombre, linear-gradient(transparent, transparent));
+    }
+
+    /* La voie pas encore ouverte : piquetée. Deux files de piquets (les bords) et
+       l'axe en trait mixte. 16 px de large, centrée dans la gouttière. */
+    .voie-piquete,
+    .voie-faite {
+      display: block;
+      position: absolute;
+      inset: var(--voie-haut) auto var(--voie-bas) calc(50% - 8px);
+      width: 16px;
+    }
+    .voie-piquete {
+      background:
+        radial-gradient(circle, var(--v-piquet) 0.9px, transparent 1.4px) 0 0 / 3px 8px repeat-y,
+        radial-gradient(circle, var(--v-piquet) 0.9px, transparent 1.4px) 100% 0 / 3px 8px repeat-y,
+        repeating-linear-gradient(180deg, var(--v-piquet) 0 14px, transparent 14px 18px, var(--v-piquet) 18px 20px, transparent 20px 24px) 50% 0 / 1px 100% no-repeat;
+      /* Là où la voie est ouverte, plus de piquets : l'aplat ne couvre pas leurs files. */
+      clip-path: inset(calc(var(--p) * 100%) 0 0 0);
+    }
+    /* La voie ouverte : 12 px de latérite entre deux bordures en tirets, à la place
+       des piquets. */
+    .voie-faite {
+      background:
+        repeating-linear-gradient(180deg, var(--v-bordure) 0 8px, transparent 8px 12px) 0 0 / 1px 100% no-repeat,
+        repeating-linear-gradient(180deg, var(--v-bordure) 0 8px, transparent 8px 12px) 100% 0 / 1px 100% no-repeat,
+        linear-gradient(var(--v-voie), var(--v-voie)) 50% 0 / 12px 100% no-repeat;
+      clip-path: inset(0 0 calc((1 - var(--p)) * 100%) 0);
+    }
+    /* Un carrefour au départ de chaque section : la traverse est piquetée (son axe
+       seul) tant que la voie n'y est pas, ouverte en latérite ensuite. */
+    .voie-croix {
+      display: block;
+      position: absolute;
+      left: calc(50% - 13px);
+      width: 26px;
+      height: 6px;
+      top: calc(var(--voie-haut) + var(--s) * var(--voie-course) - 3px);
+      background: linear-gradient(var(--v-piquet), var(--v-piquet)) 0 50% / 100% 1px no-repeat;
+    }
+    /* Ouverte : 1 dès que --p atteint le carrefour (--s), 0 avant. */
+    .voie-croix::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--v-voie);
+      opacity: clamp(0, calc((var(--p) - var(--s) + 0.0005) * 100000), 1);
+    }
+    /* Le front : là où on en est. */
+    .voie-front {
+      display: block;
+      position: absolute;
+      left: calc(50% - 8px);
+      width: 16px;
+      height: 2px;
+      top: calc(var(--voie-haut) + var(--p) * var(--voie-course) - 1px);
+      background: var(--v-bordure);
+    }
+    .voie-etiquette {
+      display: block;
+      position: absolute;
+      left: 50%;
+      bottom: 24px;
+      writing-mode: vertical-rl;
+      rotate: 180deg;
+      translate: -50% 0;
+      white-space: nowrap;
+      color: var(--v-texte);
+    }
+
+    /* La zone à cliquer d'un carrefour : toute la largeur de la gouttière, 24 px de
+       haut. Le dessin est dans les deux tirages (.voie-croix). */
+    .voie-carrefours a {
+      left: 0;
+      bottom: auto;
+      width: 100%;
+      height: 24px;
+      top: calc(var(--voie-haut) + var(--s) * var(--voie-course) - 12px);
+      background: none;
+      pointer-events: auto;
+      outline-offset: -3px;
+    }
+
+    /* Le nom de la section, au survol ou au clavier : une plaque de calque, lisible
+       sur tous les fonds. */
+    .voie-nom {
+      display: block;
+      position: absolute;
+      left: calc(100% - 4px);
+      top: 50%;
+      translate: -6px -50%;
+      padding: 7px 10px;
+      border: 1px solid var(--color-encre);
+      background: var(--color-calque);
+      color: var(--color-encre);
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, translate 0.3s var(--ease-pose), visibility 0s linear 0.2s;
+    }
+    .voie-carrefours a:is(:hover, :focus-visible) .voie-nom {
+      opacity: 1;
+      visibility: visible;
+      translate: 0 -50%;
+      transition: opacity 0.2s ease, translate 0.3s var(--ease-pose);
+    }
+  }
+
+  /* --------------------------------------------- La devise en couronne
+     Appel final (components/appel-final.tsx) : la devise du client tourne lentement
+     autour du monogramme, 10° par seconde. Fixe en mouvement réduit. */
+  .couronne-tour { animation: tourner 36s linear infinite; }
+
+  /* --------------------------------------------------------- Pièces de la v3
+     Ouverture de l'accueil (components/ouverture-releve.tsx) : les axes des voies en
+     trait mixte, comme l'axe d'une voie sur un plan, et deux étiquettes de plan. */
+  .ouverture-releve .axe-voie {
+    fill: none;
+    stroke: var(--color-blanc);
+    stroke-width: 5;
+    stroke-dasharray: 48 14 8 14;
+  }
+  .ouverture-releve .axe-masque {
+    fill: none;
+    stroke: var(--color-blanc);
+    stroke-width: 90;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+  .ouverture-releve .axe-etiquettes { display: none; }
+  .ouverture-releve .axe-etiquette { fill: var(--color-calque); stroke: var(--color-encre); stroke-width: 2; }
+  .ouverture-releve .axe-texte { fill: var(--color-encre); font-family: var(--font-sans); font-weight: 600; }
+  .ouverture-releve .axe-rappel { fill: none; stroke: var(--color-blanc); stroke-width: 3; }
+  @media (width >= 68.8125rem) {
+    .ouverture-releve .axe-etiquettes { display: inline; }
+  }
   @media (prefers-reduced-motion: no-preference) {
-    animation: zoom-lent 9s ease-out both;
+    .ouverture-releve .axe-masque { animation: tracer-axe 1.1s cubic-bezier(0.6, 0, 0.2, 1) var(--d, 0s) both; }
+    .ouverture-releve .axe-etiquettes { animation: montrer 0.5s ease-out 2.3s both; }
   }
 }
-@utility remplissage {
-  transform-origin: left center;
-  animation: remplir var(--duree, 6s) linear both;
-  animation-play-state: var(--lecture, running);
-}
 
-/* Piste d'un carrousel : défilement natif, au doigt, à la molette, au clavier.
-   Pas de barre de défilement : les boutons et le trait de progression la remplacent. */
+/* Piste de la planche des gestes (accueil), sous 1 101 px : défilement natif, au doigt,
+   à la molette, au clavier, sans flèches ni compteur. La photo suivante dépasse du bord :
+   elle dit qu'on peut faire glisser. */
 @utility piste {
   display: flex;
   overflow-x: auto;
@@ -239,16 +814,6 @@
   &::-webkit-scrollbar { display: none; }
 }
 
-/* Quadrillage de plan, pour les couvertures sans photo. Un motif, pas un dégradé. */
-@utility quadrillage {
-  background-color: var(--color-paper-2);
-  background-image:
-    linear-gradient(var(--color-rule) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);
-  background-size: 28px 28px;
-  background-position: -1px -1px;
-}
-
 /* Lien d'évitement, visible au clavier seulement. */
 @utility skip {
   position: absolute;
@@ -256,34 +821,7 @@
   top: 0;
   z-index: 100;
   padding: 12px 16px;
-  background: var(--color-ink);
-  color: var(--color-white);
+  background: var(--color-encre);
+  color: var(--color-blanc);
   &:focus { left: 8px; top: 8px; }
-}
-
-/* Menu mobile : panneau plein écran sous l'en-tête. */
-@utility menu-panel {
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: var(--spacing-header);
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 16px var(--spacing-gutter) 32px;
-  background: var(--color-paper);
-  border-top: 1px solid var(--color-rule);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  visibility: hidden;
-  opacity: 0;
-  transform: translateY(-6px);
-  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
-  &[data-open="true"] {
-    visibility: visible;
-    opacity: 1;
-    transform: none;
-    transition: opacity 0.18s ease, transform 0.18s ease;
-  }
-  @media (width >= 68.8125rem) { display: none; }
 }

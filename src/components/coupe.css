@@ -1,44 +1,155 @@
-/* Coupe de principe d'une voie aménagée (page Aménager). Un dessin, pas une icône.
-   Ni cadre ni numéros : les noms sont écrits sur le dessin, en HTML (components/coupe.tsx).
-   Importé par globals.css dans @layer components. */
+/* Coupe de principe d'une voie aménagée, sans échelle (components/coupe.tsx ; direction
+   v4, pièce 9). Un dessin de plan, pas une icône : le terrain naturel en tirets, l'axe
+   de la voie en trait mixte, le sol en hachures, la tranchée en tirets.
+   Importé par globals.css dans @layer components.
 
-.coupe .sol-pt { fill: var(--color-sol); }
-.coupe .tn { fill: none; stroke: var(--color-ink-2); stroke-width: 1.5; stroke-dasharray: 6 6; }
-.coupe .ground { stroke: var(--color-ink); stroke-width: 2; }
-.coupe .cable { fill: none; stroke: var(--color-ink); stroke-width: 1.6; }
-.coupe .obj { fill: var(--color-paper); stroke: var(--color-ink); stroke-width: 1.6; }
-.coupe .obj-line { stroke: var(--color-ink); stroke-width: 3; }
-.coupe .road { fill: var(--color-laterite); stroke: var(--color-ink); stroke-width: 1.6; }
-.coupe .trench { fill: var(--color-paper); stroke: var(--color-ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
-.coupe .pipe { fill: var(--color-paper); stroke: var(--color-trait); stroke-width: 4; }
-.coupe .borne { fill: var(--color-borne); stroke: var(--color-ink); stroke-width: 1.6; }
-.coupe .lead { fill: none; stroke: var(--color-ink-2); stroke-width: 1.2; }
+   Les couleurs suivent la surface où la coupe est posée (rôles de globals.css) : traits
+   clairs et latérite vive sur le plan, encre et latérite sur le sable ou le calque.
+   Deux couleurs ne changent pas : l'eau, en bleu « eau », et la face des bornes, blanche
+   comme celles du terrain. */
 
-/* Deux jeux de traits de rappel : les noms sont étagés sur mobile, alignés au-dessus. */
-.coupe .lead-tab { display: none; }
-@media (width >= 47.5625rem) {
-  .coupe .lead-tab { display: inline; }
-  .coupe .lead-mob { display: none; }
+.coupe {
+  --c-trait: var(--r-fort);      /* ce qui est posé : bordures, poteau, câble */
+  --c-doux: var(--r-doux);       /* ce qui annote : terrain naturel, axe, tranchée, rappels */
+  --c-terre: var(--r-accent);    /* la terre : le trait de terrain, ses hachures, la latérite de la voie */
+  --c-fond: var(--r-fond);       /* le creux d'une pièce de béton, d'une tranchée */
+  /* Le terrain dépasse du dessin (le SVG déborde) : la figure le coupe à ses bords. */
+  overflow: hidden;
+  overflow: clip;
 }
 
-/* Revue 2 : la coupe se dessine au chargement. Le sol, puis la voie, les poteaux, les
-   bornes qui tombent en place, le tuyau, le câble, et enfin les noms. Sans animation
-   (prefers-reduced-motion), le dessin est là d'emblée. */
-@keyframes coupe-trait { from { stroke-dashoffset: var(--longueur); } to { stroke-dashoffset: 0; } }
-@keyframes coupe-tombe { from { opacity: 0; transform: translateY(-28px); } to { opacity: 1; transform: none; } }
-@keyframes coupe-montre { from { opacity: 0; } to { opacity: 1; } }
-
-@media (prefers-reduced-motion: no-preference) {
-  .coupe .ground { --longueur: 1200; stroke-dasharray: 1200; animation: coupe-trait 0.8s ease-out both; }
-  .coupe .road,
-  .coupe .obj,
-  .coupe .obj-line,
-  .coupe .borne,
-  .coupe .pipe { transform-box: fill-box; }
-  .coupe .road { animation: coupe-tombe 0.5s ease-out 0.3s both; }
-  .coupe .obj, .coupe .obj-line { animation: coupe-tombe 0.5s ease-out 0.45s both; }
-  .coupe .borne { animation: coupe-tombe 0.45s cubic-bezier(0.3, 1.4, 0.5, 1) 0.65s both; }
-  .coupe .trench, .coupe .pipe { animation: coupe-montre 0.4s ease-out 0.75s both; }
-  .coupe .cable { --longueur: 320; stroke-dasharray: 320; animation: coupe-trait 0.6s ease-out 0.8s both; }
-  .coupe .lead, .coupe .tn, .coupe span { animation: coupe-montre 0.4s ease-out 1s both; }
+/* Le dessin garde ses proportions. Seul, il ne dépasse pas 800 px de large. C'est lui
+   que les noms et les traits interrogent pour savoir s'il est large ou étroit. */
+.coupe-dessin {
+  container: coupe / inline-size;
+  position: relative;
+  width: min(100%, 50rem);
+  aspect-ratio: 760 / 464;
 }
+.coupe-dessin > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  /* L'épaisseur d'un trait, en unités du dessin. Étroit, le dessin est réduit de moitié
+     ou plus : des traits plus forts, pour faire 1 px à l'écran. */
+  --ep: 3px;
+}
+
+.coupe .c-sol { fill: none; stroke: var(--c-terre); stroke-width: calc(var(--ep) * 1.25); }
+.coupe .c-hachures {
+  fill: none;
+  stroke: color-mix(in srgb, var(--c-terre) 45%, transparent);
+  stroke-width: calc(var(--ep) * 0.55);
+  /* Chaque hachure fait 46 de long : un seul tiret, qui la couvre. */
+  stroke-dasharray: 46;
+}
+.coupe .c-tn { fill: none; stroke: var(--c-doux); stroke-width: calc(var(--ep) * 0.6); stroke-dasharray: 7 6; }
+.coupe .c-voie { fill: var(--c-terre); }
+.coupe .c-beton { fill: var(--c-fond); stroke: var(--c-trait); stroke-width: var(--ep); stroke-linejoin: round; }
+.coupe .c-alveole { fill: none; stroke: var(--c-trait); stroke-width: 1px; }
+/* La borne : blanche, marquée en latérite, comme celles que l'équipe numérote à la
+   peinture. Sur le plan aussi : la face d'une borne ne change pas de couleur. */
+.coupe .c-borne { fill: var(--color-blanc); stroke: var(--color-encre); stroke-width: calc(var(--ep) * 0.6); }
+.coupe .c-marque { fill: var(--color-laterite); }
+.coupe .c-tranchee { fill: var(--c-fond); stroke: var(--c-doux); stroke-width: calc(var(--ep) * 0.6); stroke-dasharray: 6 5; }
+.coupe .c-tuyau { fill: var(--color-eau); stroke: var(--c-trait); stroke-width: var(--ep); }
+.coupe .c-cable { fill: none; stroke: var(--c-trait); stroke-width: calc(var(--ep) * 0.7); }
+.coupe .c-attache { fill: var(--c-trait); }
+/* Un trait de rappel est le plus fin du dessin. L'axe de la voie est un trait mixte
+   (tiret long, point), comme tous les axes du site. */
+.coupe .c-rappel { fill: none; stroke: var(--c-doux); stroke-width: calc(var(--ep) * 0.5); }
+.coupe .c-axe { fill: none; stroke: var(--c-doux); stroke-width: calc(var(--ep) * 0.5); stroke-dasharray: 14 4 2 4; }
+/* Un trait qui se tire a une longueur de 1 (pathLength) : un seul tiret le couvre. */
+.coupe .c-trace { stroke-dasharray: 1; }
+
+/* Les noms, écrits sur le dessin : jamais sous 12 px. Leur place est donnée en parts
+   du dessin (--xe, --ye : dessin étroit ; --x, --y : dessin large), leur bas posé
+   dessus. */
+.coupe-nom {
+  position: absolute;
+  left: var(--xe);
+  top: var(--ye);
+  translate: -50% -100%;
+  font-size: var(--text-etiquette);
+  line-height: 1.25;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--c-trait);
+}
+.coupe-nom[data-cale="gauche"] { translate: 0 -100%; }
+
+/* Deux jeux de pièces : pour le dessin étroit, pour le dessin large. */
+.coupe .coupe-large { display: none; }
+
+@container coupe (width >= 34rem) {
+  .coupe-dessin > svg { --ep: 2px; }
+  .coupe .coupe-large { display: inline; }
+  .coupe .coupe-etroit { display: none; }
+  .coupe-nom,
+  .coupe-nom[data-cale="gauche"] {
+    left: var(--x);
+    top: var(--y);
+    translate: -50% -100%;
+    font-size: var(--text-small);
+  }
+}
+
+/* Le cartouche du dessin : un filet, puis ce qu'il est. La méthode y ajoute une case. */
+.coupe-cartouche { border-top: 1px solid var(--r-ligne); }
+.coupe-case { margin: 0; padding-block: 0.75rem; color: var(--r-doux); }
+
+/* ------------------------------------------------------- La coupe qui se construit
+   Dans la méthode, un script (components/methode-etapes.tsx) pose data-vivante sur la
+   figure, puis data-posee sur chaque pièce dont l'étape est lue, et data-active sur le
+   nom de l'étape en cours. La feuille de style fait le mouvement.
+   Sans script, ou en mouvement réduit, rien de tout cela : le dessin est entier.
+
+   Ce qui se trace va à vitesse constante. Ce qui se pose tombe de 28 et se plante, dans
+   la courbe du site. --delai retarde une pièce dans son étape ; --duree règle un tracé.
+   Une étape qu'on remonte se défait vite, d'un seul geste. */
+.coupe[data-vivante] .c-trace { transition: stroke-dashoffset var(--duree, 0.9s) linear var(--delai, 0s); }
+.coupe[data-vivante] .c-hachures { transition: stroke-dashoffset 0.5s linear var(--delai, 0s); }
+.coupe[data-vivante] .c-pose {
+  transition:
+    opacity 0.3s ease var(--delai, 0s),
+    transform 0.7s var(--ease-pose) var(--delai, 0s);
+}
+/* Le poteau se lève depuis son pied ; la voie s'ouvre depuis son axe. */
+.coupe[data-vivante] .c-leve {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition:
+    opacity 0.2s ease var(--delai, 0s),
+    transform 0.8s var(--ease-pose) var(--delai, 0s);
+}
+.coupe[data-vivante] .c-ouvre {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  transition:
+    opacity 0.2s ease var(--delai, 0s),
+    transform 0.8s var(--ease-pose) var(--delai, 0s);
+}
+.coupe[data-vivante] .c-montre,
+.coupe[data-vivante] .coupe-nom {
+  transition:
+    opacity 0.45s ease var(--delai, 0s),
+    color 0.3s ease;
+}
+
+.coupe[data-vivante] [data-couche]:not([data-posee]) { transition-duration: 0.25s; transition-delay: 0s; }
+.coupe[data-vivante] .c-trace:not([data-posee]) { stroke-dashoffset: 1; }
+.coupe[data-vivante] .c-hachures:not([data-posee]) { stroke-dashoffset: 46; }
+.coupe[data-vivante] .c-pose:not([data-posee]) { opacity: 0; transform: translateY(-28px); }
+.coupe[data-vivante] .c-leve:not([data-posee]) { opacity: 0; transform: scaleY(0); }
+.coupe[data-vivante] .c-ouvre:not([data-posee]) { opacity: 0; transform: scaleX(0); }
+.coupe[data-vivante] .c-montre:not([data-posee]),
+.coupe[data-vivante] .coupe-nom:not([data-posee]) { opacity: 0; }
+
+/* L'étape en cours se voit sur le dessin : son nom prend la couleur d'accent, les
+   autres passent au second plan. Quand l'étape lue ne pose plus rien (le papier), la
+   coupe est entière (data-entiere) : tous ses noms reviennent au premier plan. */
+.coupe[data-vivante] .coupe-nom { color: var(--c-doux); }
+.coupe[data-vivante] .coupe-nom[data-active] { color: var(--c-terre); }
+.coupe[data-vivante][data-entiere] .coupe-nom { color: var(--c-trait); }

@@ -1,0 +1,123 @@
+/* Comprendre le foncier (direction v4, section 6 ; app/foncier/page.tsx). Importé par la
+   page. Trois pièces ont ici ce que les classes communes ne donnent pas :
+   - l'échelle des papiers est dans le premier écran : ses trois traits se tirent à
+     l'arrivée, l'un après l'autre ;
+   - l'avertissement redit les trois traits sous les trois statuts qu'il nomme ;
+   - la fiche des vérifications sépare ses lignes en pointillé : ce qui reste à vérifier.
+
+   Les trois traits sont ceux du plan, les mêmes partout (globals.css, « Traits ») :
+   pointillé, ce qui n'est pas sûr ; tirets, ce qui est en cours ; plein entre deux
+   bornes, ce qui est borné, acquis.
+
+   Chaque sélecteur part d'une classe « foncier- » : Next ne retire pas une feuille de
+   style quand on change de page, celle-ci ne doit rien toucher ailleurs.
+
+   L'ordre des couches est redit ici : si cette feuille arrivait avant celle du site, la
+   couche des composants ne doit pas passer devant celle de la base. */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* ------------------------------------------------- Les trois statuts, dans la phrase
+     Délibération, bail, titre foncier : chaque mot de l'avertissement repose sur le
+     trait de son document, celui de l'échelle des papiers (components/echelle-papiers.tsx).
+     Le trait part d'une butée ; celui du titre foncier court entre deux bornes.
+     Mêmes mesures que le mot coté des titres : dans une boîte de 1 em, la ligne de base
+     de Besley tombe à 0,91 em du haut (globals.css, « Le mot coté »). Aucun de ces mots
+     n'a de jambage : le trait passe juste dessous, sans toucher la ligne suivante. */
+  .foncier-statut {
+    --base: 0.91em;
+    /* Le côté d'une borne et la hauteur d'une butée : 7 px sur téléphone, 10 au bureau. */
+    --borne: clamp(7px, 0.18em, 10px);
+    position: relative;
+    display: inline-block;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .foncier-statut::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--base) + 0.15em - var(--borne) / 2);
+    height: var(--borne);
+  }
+  /* La butée, puis le trait. */
+  .foncier-statut[data-statut="delib"]::after {
+    background:
+      linear-gradient(currentColor, currentColor) 0 0 / 1.5px 100% no-repeat,
+      repeating-linear-gradient(90deg, currentColor 0 2px, transparent 2px 6px) 0 50% / 100% 1.5px no-repeat;
+  }
+  .foncier-statut[data-statut="bail"]::after {
+    background:
+      linear-gradient(currentColor, currentColor) 0 0 / 1.5px 100% no-repeat,
+      repeating-linear-gradient(90deg, currentColor 0 8px, transparent 8px 12px) 0 50% / 100% 1.5px no-repeat;
+  }
+  /* Les deux bornes (la face blanche, le filet d'encre), puis le trait plein de 2 px. */
+  .foncier-statut[data-statut="tf"]::after {
+    --face: calc(var(--borne) - 3px);
+    background:
+      linear-gradient(var(--color-blanc), var(--color-blanc)) 1.5px 50% / var(--face) var(--face) no-repeat,
+      linear-gradient(var(--color-blanc), var(--color-blanc)) calc(100% - 1.5px) 50% / var(--face) var(--face) no-repeat,
+      linear-gradient(var(--color-encre), var(--color-encre)) 0 50% / var(--borne) var(--borne) no-repeat,
+      linear-gradient(var(--color-encre), var(--color-encre)) 100% 50% / var(--borne) var(--borne) no-repeat,
+      linear-gradient(currentColor, currentColor) 0 50% / 100% 2px no-repeat;
+  }
+
+  /* Les trois traits se tirent l'un après l'autre quand la phrase entre à l'écran, dans
+     l'ordre de l'échelle, et vont au bout : components/traits.tsx pose data-trait, comme
+     pour tout trait qui se tire. Chaque trait attend son tour dans ses images clés. Sans
+     script ou en mouvement réduit, les trois sont là. */
+  @keyframes foncier-statut-1 {
+    from { clip-path: inset(-1em 100% -1em 0); }
+    40%, to { clip-path: inset(-1em 0 -1em 0); }
+  }
+  @keyframes foncier-statut-2 {
+    from, 30% { clip-path: inset(-1em 100% -1em 0); }
+    65%, to { clip-path: inset(-1em 0 -1em 0); }
+  }
+  @keyframes foncier-statut-3 {
+    from, 55% { clip-path: inset(-1em 100% -1em 0); }
+    to { clip-path: inset(-1em 0 -1em 0); }
+  }
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .foncier-statut[data-trait="attend"]::after { clip-path: inset(-1em 100% -1em 0); }
+    .foncier-statut[data-trait="tire"]::after { animation: foncier-statut-1 1.6s linear 0.2s backwards; }
+    .foncier-statut[data-trait="tire"][data-statut="bail"]::after { animation-name: foncier-statut-2; }
+    .foncier-statut[data-trait="tire"][data-statut="tf"]::after { animation-name: foncier-statut-3; }
+  }
+
+  /* ---------------------------------------------------- La fiche des vérifications
+     Entre deux lignes, un pointillé : la convention du plan pour ce qui n'est pas sûr.
+     C'est ce qui reste à vérifier. Ni case à cocher ni survol (revue 3) : une case vide
+     se lit « non coché ». */
+  .foncier-lignes > li + li {
+    background: repeating-linear-gradient(90deg, var(--r-axe) 0 2px, transparent 2px 6px) 0 0 / 100% 1px no-repeat;
+  }
+}
+
+/* ------------------------------------------------ L'échelle, dans le premier écran
+   Dans le composant, chaque ligne de base se tire pendant qu'elle entre à l'écran
+   (classe se-tire). Ici l'échelle est sous le titre de la page : au chargement, ses
+   traits sont déjà entrés, mais pas toujours de 340 px. À 1 366 × 768, ils restaient
+   tracés aux deux tiers, la borne de fin du titre foncier absente, jusqu'au premier
+   défilement (mesuré). Ils se tirent donc une fois, à l'arrivée, à vitesse constante :
+   pointillé, tirets, puis le trait plein jusqu'à sa borne.
+
+   Hors couche : la classe se-tire est un utilitaire, sa couche passe devant celle des
+   composants. Les trois règles valent à toutes les largeurs : dans une requête de
+   largeur, un changement de taille de la fenêtre (ou une capture de la page entière,
+   mesuré) relançait les deux derniers traits, qui s'effaçaient le temps de leur délai.
+   Sous 1 101 px, les documents s'empilent : les traits du bas sont tracés avant qu'on
+   y arrive. */
+@media (prefers-reduced-motion: no-preference) {
+  .foncier-echelle > li > .se-tire {
+    animation: tirer 0.45s linear 0.8s backwards;
+    animation-timeline: auto;
+  }
+  .foncier-echelle > li:nth-child(2) > .se-tire { animation-delay: 1.25s; }
+  /* Au bureau, il est deux fois plus long : il met deux fois plus de temps. */
+  .foncier-echelle > li:nth-child(3) > .se-tire {
+    animation-duration: 0.9s;
+    animation-delay: 1.7s;
+  }
+}

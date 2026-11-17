@@ -1,7 +1,9 @@
-// Fiches (recherche/allegement.md, partie 3) : /terrains/sakina-city/,
-// /terrains/sicap-keur-massar/, /terrains/lac-town/ et l'offre datée
-// /terrains/recasement-aibd/. Une route, quatre pages générées à l'export
-// (dynamicParams = false).
+// Fiches, direction v4 « Du plan au terrain » (recherche/revue-4/direction-v4.md,
+// section 6) : /terrains/sakina-city/, /terrains/sicap-keur-massar/, /terrains/lac-town/
+// et l'offre datée /terrains/recasement-aibd/. Une route, quatre pages générées à
+// l'export (dynamicParams = false). Chaque fiche s'ouvre sur un cartouche de plan
+// (borne 01), prend la forme de sa pièce (_composants/fiche-programme.tsx,
+// _composants/fiche-offre.tsx), puis se ferme sur les autres terrains et l'appel final.
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";

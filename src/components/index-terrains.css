@@ -1,0 +1,560 @@
+/* L'index des terrains (direction v4, pièce 8 ; components/index-terrains.tsx) et le
+   tirage qui suit le pointeur (components/apercu-terrain.tsx). Importé par le composant.
+
+   Un vrai tableau, qui change de forme avec la largeur :
+   - sous 761 px, une fiche par programme : le nom et sa vignette, puis ses cases en
+     lignes de cartouche (la clé à gauche, la valeur à droite) ;
+   - de 761 à 1 100 px, le nom et la vignette à gauche, les lignes de cartouche à droite ;
+   - dès 1 101 px, le tableau en colonnes : le nom et le lieu, le papier, les surfaces,
+     l'état, la vignette. En mode complet, une seconde ligne sous chaque programme :
+     ce qui est déjà fait, et le bouton WhatsApp.
+   Les couleurs passent par les rôles de la surface (--r-fort, --r-doux, --r-ligne,
+   --r-accent) : l'index se pose sur le sable comme sur le calque.
+
+   L'ordre des couches est redit ici : si cette feuille arrivait avant celle du site, la
+   couche des composants ne doit pas passer devant celle de la base. */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .index-terrains {
+    /* Entre deux colonnes. */
+    --index-pas: 1.5rem;
+    /* La dernière colonne : la vignette (4:3), ou la flèche quand le tirage suit la main. */
+    --index-fin: 6rem;
+    /* La bande bleue va jusqu'aux bords de l'écran tant que la gouttière est libre. */
+    --index-deborde: var(--spacing-gutter);
+    /* De combien le nom glisse quand la bande arrive : rien tant qu'elle déborde. */
+    --index-glisse: 0px;
+    /* Sous 1 101 px, chaque fiche s'ouvre par un trait fort : un filet ferme la dernière. */
+    border-bottom: 1px solid var(--r-ligne);
+  }
+
+  .index-table {
+    display: block;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .index-table > tbody { display: block; }
+  .index-table :where(th, td) {
+    padding: 0;
+    font-weight: inherit;
+    text-align: left;
+  }
+
+  /* Ce qui n'est que lu : les têtes de colonne sous 1 101 px, puis celles des colonnes
+     dont la valeur est écrite sous une autre (le lieu sous le nom). */
+  .index-tete,
+  .index-lu {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* --------------------------------------------------------------- Une ligne
+     Un programme (une rangée du tableau) ou l'offre datée, dessous. La ligne entière
+     mène à la fiche : le lien du nom s'étend sur elle (::after). --bleu vaut 0 au repos,
+     1 quand la ligne passe au bleu de plan : tout ce qui bouge en dépend. */
+  .index-ligne {
+    --bleu: 0;
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 1rem;
+    align-items: center;
+    padding-block: 1.25rem 0.75rem;
+    border-top: 1px solid var(--r-fort);
+  }
+
+  /* La bande : le bleu d'un tirage de plan. Elle se tire de gauche à droite (plus bas,
+     « Les temps »), puis s'efface sur place quand on quitte la ligne. */
+  .index-ligne::before {
+    content: "";
+    position: absolute;
+    inset: -1px calc(-1 * var(--index-deborde)) 0;
+    z-index: -1;
+    background: var(--color-plan);
+    opacity: var(--bleu);
+    clip-path: inset(0 calc((1 - var(--bleu)) * 100%) 0 0);
+  }
+
+  /* Au bleu : les rôles du plan, comme dans une surface plan (globals.css). Les pièces
+     posées dans la ligne (cote, bouton, lien) s'y habillent seules. Le carré d'état
+     garde son sens : plein reste plein, contour reste contour. Seule la teinte de
+     l'accent suit le fond. */
+  .index-ligne:active,
+  .index-ligne:has(.index-lien:focus-visible) {
+    --bleu: 1;
+    --r-fond: var(--color-plan);
+    --r-texte: color-mix(in srgb, var(--color-blanc) 78%, transparent);
+    --r-fort: var(--color-blanc);
+    --r-doux: color-mix(in srgb, var(--color-blanc) 78%, transparent);
+    --r-ligne: color-mix(in srgb, var(--color-blanc) 28%, transparent);
+    --r-axe: color-mix(in srgb, var(--color-blanc) 28%, transparent);
+    --r-accent: var(--color-laterite-vive);
+    --r-focus: var(--color-blanc);
+    color: var(--r-texte);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .index-ligne:hover {
+      --bleu: 1;
+      --r-fond: var(--color-plan);
+      --r-texte: color-mix(in srgb, var(--color-blanc) 78%, transparent);
+      --r-fort: var(--color-blanc);
+      --r-doux: color-mix(in srgb, var(--color-blanc) 78%, transparent);
+      --r-ligne: color-mix(in srgb, var(--color-blanc) 28%, transparent);
+      --r-axe: color-mix(in srgb, var(--color-blanc) 28%, transparent);
+      --r-accent: var(--color-laterite-vive);
+      --r-focus: var(--color-blanc);
+      color: var(--r-texte);
+    }
+  }
+
+  /* ------------------------------------------------------------- Les temps
+     Jamais de texte sombre sur le bleu, ni clair sur le sable : les lettres changent de
+     couleur là où la bande est, au moment où elle y est.
+     À l'aller, la bande se tire de gauche à droite, vite puis en se posant (elle a
+     couvert les trois quarts de la ligne en un dixième de seconde) : chaque colonne
+     passe au clair à son tour (--aller).
+     Au retour, elle s'efface sur place, en 0,16 s, et les lettres basculent d'un coup à
+     mi-chemin : avant, le blanc se lit sur le bleu encore dense ; après, l'encre se lit
+     sur le sable qui revient. Un fondu des lettres les ferait disparaître au milieu.
+     --delai est posé sur chaque case : il vaut l'un ou l'autre selon le sens. La
+     transition n'est mise que là où une couleur est posée : un texte qui hérite suit
+     déjà son parent. :where() : une classe du site (transition-bouton) passe devant. */
+  .index-ligne {
+    --retour: 0.07s;
+    transition: color 0.04s linear var(--retour);
+  }
+  .index-ligne::before { transition: opacity 0.16s ease, clip-path 0s linear 0.16s; }
+  .index-ligne > * { --delai: var(--retour); }
+  .index-ligne :where(.index-lien, .text-fort, .text-doux, .text-accent) {
+    transition: color 0.04s linear var(--delai, 0s);
+  }
+
+  .index-ligne:active,
+  .index-ligne:has(.index-lien:focus-visible) { transition: color 0.1s ease 0.04s; }
+  .index-ligne:active::before,
+  .index-ligne:has(.index-lien:focus-visible)::before { transition: clip-path 0.45s var(--ease-pose), opacity 0s; }
+  .index-ligne:active > *,
+  .index-ligne:has(.index-lien:focus-visible) > * { --delai: var(--aller, 0s); }
+  .index-ligne:active :where(.index-lien, .text-fort, .text-doux, .text-accent),
+  .index-ligne:has(.index-lien:focus-visible) :where(.index-lien, .text-fort, .text-doux, .text-accent) {
+    transition: color 0.1s ease var(--delai, 0s);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .index-ligne:hover { transition: color 0.1s ease 0.04s; }
+    .index-ligne:hover::before { transition: clip-path 0.45s var(--ease-pose), opacity 0s; }
+    .index-ligne:hover > * { --delai: var(--aller, 0s); }
+    .index-ligne:hover :where(.index-lien, .text-fort, .text-doux, .text-accent) {
+      transition: color 0.1s ease var(--delai, 0s);
+    }
+  }
+  /* Le moment où la bande atteint chaque colonne du tableau. */
+  .index-case[data-case="papier"],
+  .index-case[data-case="fait"] { --aller: 0.04s; }
+  .index-case[data-case="surfaces"] { --aller: 0.08s; }
+  .index-case[data-case="etat"],
+  .index-case[data-case="prix"],
+  .index-offre-etat { --aller: 0.12s; }
+
+  /* Le nom, et le lien qui couvre la ligne. */
+  .index-nom { display: block; min-width: 0; }
+  .index-lien { color: var(--r-fort); }
+  .index-lien::after {
+    content: "";
+    position: absolute;
+    inset: 0 calc(-1 * var(--index-deborde));
+    z-index: 1;
+  }
+  /* Au clavier, c'est la ligne entière qui porte le contour, en blanc sur sa bande. */
+  @supports selector(:has(a)) {
+    .index-lien:focus-visible { outline: none; }
+    .index-ligne:has(.index-lien:focus-visible)::before {
+      outline: 2px solid var(--color-blanc);
+      outline-offset: -5px;
+    }
+  }
+  /* Le nom glisse avec la bande. Le lien ne se transforme pas lui-même : il deviendrait
+     le repère de sa propre zone de clic, qui doit couvrir la ligne. */
+  .index-glisse {
+    display: inline-block;
+    translate: calc(var(--bleu) * var(--index-glisse)) 0;
+    transition: translate 0.5s var(--ease-pose);
+  }
+  /* Ce qui se clique dans la ligne passe devant le lien du nom. */
+  .index-ligne :where(a, button):not(.index-lien) {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* -------------------------------------------------------------- Les cases
+     Sous 1 101 px, une ligne de cartouche : la clé à gauche, la valeur à droite. La clé
+     double l'en-tête de colonne pour l'œil (les lecteurs d'écran ont l'en-tête). */
+  .index-case {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    column-gap: 1rem;
+    align-items: baseline;
+    min-width: 0;
+    padding-block: 0.75rem;
+    border-top: 1px solid var(--r-ligne);
+    transition: border-color 0.04s linear var(--delai, 0s);
+  }
+  .index-nom + .index-case { margin-top: 1.125rem; }
+  .index-valeur { min-width: 0; }
+  /* Mode complet : les cotes du lieu prennent toute la largeur, sous leur clé. */
+  .index-terrains[data-mode="complet"] .index-case[data-case="lieu"] {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.5rem;
+  }
+  /* Le bouton WhatsApp du mode complet : toute la largeur, sans clé. */
+  .index-case[data-case="prix"] {
+    display: block;
+    padding-top: 1rem;
+  }
+  .index-case[data-case="prix"] .index-cle { display: none; }
+
+  /* L'état : un carré de 8 px, posé sur la ligne de base, à la hauteur des capitales.
+     Plein dans la couleur d'accent : en vente. En contour : à demander. Le mot se coupe
+     en lignes égales, alignées après le carré. */
+  .index-etat {
+    display: flex;
+    align-items: baseline;
+    column-gap: 0.5rem;
+    text-wrap: balance;
+  }
+  .index-carre {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    background: var(--r-accent);
+    transition: background-color 0.04s linear var(--delai, 0s), box-shadow 0.04s linear var(--delai, 0s);
+  }
+  .index-carre[data-etat="a-demander"] {
+    background: none;
+    box-shadow: inset 0 0 0 1.5px var(--r-fort);
+  }
+
+  /* ------------------------------------------------------------- La vignette
+     Au doigt et au clavier, la photo du programme est dans la ligne. */
+  .index-photo {
+    grid-area: 1 / 2;
+    align-self: start;
+  }
+  /* Au bureau, elle rentre dans la bande comme le nom : de l'autre bord. */
+  .index-vignette {
+    position: relative;
+    display: block;
+    width: var(--index-fin);
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--color-attente);
+    translate: calc(var(--bleu) * -1 * var(--index-glisse)) 0;
+    transition: translate 0.5s var(--ease-pose);
+  }
+  /* La flèche du lien suit le nom, collée à son dernier mot (NomFleche,
+     components/liste-terrains.tsx) : sur une carte de téléphone comme dans le tableau,
+     elle dit que le nom mène à la fiche. Elle avance de 4 px quand la bande arrive. */
+  .index-fleche-nom { translate: calc(var(--bleu) * 4px) 0; }
+  /* L'autre flèche, au bout de la ligne : sur l'accueil seulement, au bureau et au
+     pointeur fin, là où le tirage remplace la vignette (plus bas). Elle prend alors la
+     place de celle du nom. */
+  .index-fleche { display: none; }
+
+  /* ------------------------------------------------------- L'offre datée
+     Sous le tableau : la date, le nom, la phrase de l'offre, la disponibilité. */
+  .index-offre {
+    display: block;
+    padding-bottom: 1.5rem;
+  }
+  .index-offre-nom { margin-top: 0.375rem; }
+  .index-offre-texte {
+    max-width: 40rem;
+    margin-top: 0.75rem;
+  }
+  .index-offre-etat { margin-top: 1rem; }
+  .index-offre-action { margin-top: 1.25rem; }
+
+  /* ------------------------------------------------------ De 761 à 1 100 px
+     Le nom et la vignette à gauche, les lignes de cartouche à droite. */
+  @media (width >= 47.5625rem) {
+    .index-terrains { --index-fin: 7.5rem; }
+    .index-ligne {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      column-gap: 2rem;
+      align-items: baseline;
+      padding-block: 1.75rem 1.25rem;
+    }
+    .index-nom { grid-area: 1 / 1; }
+    .index-photo {
+      grid-area: 2 / 1 / span 6 / auto;
+      margin-top: 1rem;
+    }
+    .index-case { grid-column: 2; }
+    .index-nom + .index-case {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+    }
+    .index-case[data-case="prix"] { padding-top: 1.125rem; }
+
+    .index-offre {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      padding-bottom: 2rem;
+    }
+    .index-offre-date { grid-area: 1 / 1; }
+    .index-offre-nom { grid-area: 2 / 1; }
+    .index-offre-texte {
+      grid-area: 1 / 2 / span 2 / auto;
+      margin-top: 0;
+    }
+    .index-offre-etat,
+    .index-offre-action { grid-column: 2; }
+  }
+
+  /* ------------------------------------------------------------ Dès 1 101 px
+     Le tableau en colonnes. La gouttière gauche est la place de la voie de lecture : la
+     bande reste dans la colonne du contenu, et le nom glisse de 20 px pour ne pas
+     toucher son bord. */
+  @media (width >= 68.8125rem) {
+    .index-terrains {
+      --index-fin: 6rem;
+      --index-deborde: 0px;
+      --index-glisse: 20px;
+      --index-colonnes: minmax(0, 3.6fr) minmax(0, 2.3fr) minmax(0, 2.1fr) minmax(0, 1.4fr) var(--index-fin);
+      border-bottom: 0;
+    }
+
+    /* Les têtes de colonne, entre un trait fort et un filet. */
+    .index-tete {
+      position: static;
+      display: block;
+      width: auto;
+      height: auto;
+      margin: 0;
+      overflow: visible;
+      clip-path: none;
+      white-space: normal;
+    }
+    .index-tete > tr {
+      display: grid;
+      grid-template-columns: var(--index-colonnes);
+      column-gap: var(--index-pas);
+      padding-block: 0.75rem;
+      border-top: 1px solid var(--r-fort);
+      border-bottom: 1px solid var(--r-ligne);
+    }
+    .index-tete [data-case="programme"] { grid-column: 1; }
+    .index-tete [data-case="papier"] { grid-column: 2; }
+    .index-tete [data-case="surfaces"] { grid-column: 3; }
+    .index-tete [data-case="etat"] { grid-column: 4; }
+
+    .index-ligne {
+      grid-template-columns: var(--index-colonnes);
+      grid-template-rows: auto 1fr;
+      column-gap: var(--index-pas);
+      padding-block: 1.75rem 2rem;
+      border-top: 0;
+      border-bottom: 1px solid var(--r-ligne);
+    }
+    .index-ligne::before { inset: -1px 0; }
+
+    .index-case {
+      display: block;
+      grid-row: 1 / span 2;
+      padding: 0;
+      border: 0;
+    }
+    .index-nom + .index-case { margin-top: 0; }
+    .index-cle { display: none; }
+
+    /* Le lieu, sous le nom : il glisse avec lui. */
+    .index-case[data-case="lieu"] {
+      grid-area: 2 / 1;
+      margin-top: 0.625rem;
+      translate: calc(var(--bleu) * var(--index-glisse)) 0;
+      transition: translate 0.5s var(--ease-pose);
+    }
+    .index-case[data-case="papier"] { grid-column: 2; }
+    .index-case[data-case="surfaces"] { grid-column: 3; }
+    .index-case[data-case="etat"] { grid-column: 4; }
+    .index-photo {
+      grid-area: 1 / 5 / span 2 / auto;
+      margin-top: 0;
+    }
+
+    /* Mode complet : une seconde ligne sous le programme. Ce qui est déjà fait sous le
+       papier et les surfaces, avec sa clé ; le bouton WhatsApp sous l'état. Un filet
+       les sépare de la première, d'un seul tenant. */
+    .index-terrains[data-mode="complet"] .index-ligne { grid-template-rows: auto 1fr auto; }
+    .index-terrains[data-mode="complet"] .index-case[data-case="lieu"] { grid-row: 2 / span 2; }
+    .index-case[data-case="fait"],
+    .index-case[data-case="prix"] {
+      grid-row: 3;
+      align-self: start;
+      margin-top: 1.5rem;
+      border-top: 1px solid var(--r-ligne);
+    }
+    .index-case[data-case="fait"] {
+      display: grid;
+      grid-column: 2 / 4;
+      padding-top: 1.125rem;
+    }
+    .index-case[data-case="fait"] .index-cle { display: block; }
+    .index-case[data-case="prix"] {
+      grid-column: 4 / 6;
+      margin-left: calc(-1 * var(--index-pas));
+      padding: 0.625rem 0 0 var(--index-pas);
+    }
+
+    /* L'offre datée, sur les colonnes du tableau : la date au-dessus du nom ; le nom,
+       la phrase et la disponibilité sur la même ligne de base. */
+    .index-offre {
+      grid-template-rows: auto auto auto;
+      padding-bottom: 2rem;
+    }
+    /* La date glisse avec le nom (qui glisse dans son lien, comme ceux du tableau). */
+    .index-offre-date {
+      translate: calc(var(--bleu) * var(--index-glisse)) 0;
+      transition: translate 0.5s var(--ease-pose), color 0.04s linear var(--delai, 0s);
+    }
+    .index-offre-texte { grid-area: 2 / 2 / auto / 4; }
+    .index-offre-etat {
+      grid-area: 2 / 4;
+      margin-top: 0;
+    }
+    /* Mode complet : pas de flèche au bout de la ligne, la disponibilité tient sur une
+       ligne ; le bouton WhatsApp vient sous la phrase de l'offre. */
+    .index-terrains[data-mode="complet"] .index-offre-etat { grid-column: 4 / 6; }
+    .index-offre-action {
+      grid-area: 3 / 2 / auto / 4;
+      align-self: start;
+      margin-top: 1.25rem;
+    }
+  }
+
+  /* --------------------------------- Dès 1 101 px, au pointeur fin, sur l'accueil
+     Le tirage suit la main (components/apercu-terrain.tsx pose data-tirage) : la
+     dernière colonne ne montre qu'une flèche, et le nom n'en porte plus. La vignette y
+     revient au clavier ; et au survol quand le tirage ne peut pas suivre (sans script, en
+     mouvement réduit). --vignette vaut 1 quand elle se montre. L'offre datée n'a pas de
+     photo : sa flèche reste. */
+  @media (width >= 68.8125rem) and (hover: hover) and (pointer: fine) {
+    .index-terrains[data-mode="index"] .index-fleche-nom { display: none; }
+    .index-terrains[data-mode="index"] .index-ligne { --vignette: 0; }
+    .index-terrains[data-mode="index"] .index-ligne[data-apercu]:hover { --vignette: 1; }
+    .index-terrains[data-mode="index"][data-tirage] .index-ligne[data-apercu]:hover { --vignette: 0; }
+    .index-terrains[data-mode="index"] .index-ligne[data-apercu]:has(.index-lien:focus-visible) { --vignette: 1; }
+
+    .index-terrains[data-mode="index"] .index-vignette {
+      opacity: var(--vignette);
+      scale: calc(0.92 + 0.08 * var(--vignette));
+      transition: opacity 0.25s ease, scale 0.5s var(--ease-pose), translate 0.5s var(--ease-pose);
+    }
+    .index-terrains[data-mode="index"] .index-fleche {
+      position: absolute;
+      top: 50%;
+      right: calc(var(--index-fin) / 2);
+      display: block;
+      color: var(--r-doux);
+      opacity: calc(1 - var(--vignette));
+      translate: calc(50% + var(--bleu) * 4px) -50%;
+      transition: opacity 0.25s ease, translate 0.4s var(--ease-pose), color 0.04s linear var(--retour);
+    }
+    /* Tout au bout de la ligne : la bande y arrive la dernière. */
+    .index-terrains[data-mode="index"] .index-ligne:hover .index-fleche {
+      color: var(--r-fort);
+      transition: opacity 0.25s ease, translate 0.4s var(--ease-pose), color 0.1s ease 0.2s;
+    }
+  }
+
+  /* ---------------------------------------------------------------- Le tirage
+     Un tirage photo posé sur le plan : une carte blanche, la photo, sa légende, penché
+     de 3°. Il suit le pointeur (--tx, --ty), à la place que le script lui donne. La
+     seule ombre portée du site (direction v4, « Couleurs »). */
+  .tirage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 45;
+    width: 24.5rem;
+    pointer-events: none;
+    transform: translate3d(var(--tx, 0px), var(--ty, 0px), 0);
+    will-change: transform;
+  }
+  /* Sur un écran bas, un tirage plus petit : il garde la place de se poser au-dessus ou
+     au-dessous de la ligne, sans la couvrir. */
+  @media (height < 50rem) {
+    .tirage { width: 20rem; }
+  }
+  /* Il se pose en se redressant, et repart de même : l'opacité, l'angle et l'échelle
+     sont animés ensemble, dans les deux sens. Rien ne saute. */
+  .tirage-carte {
+    display: grid;
+    padding: 0.625rem 0.625rem 0.75rem;
+    background: var(--color-blanc);
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--color-encre) 16%, transparent),
+      0 30px 56px -26px color-mix(in srgb, var(--color-encre) 60%, transparent);
+    opacity: 0;
+    rotate: -7deg;
+    scale: 0.94;
+    transform-origin: 10% 100%;
+    transition: opacity 0.26s ease, rotate 0.6s var(--ease-pose), scale 0.6s var(--ease-pose);
+  }
+  .tirage[data-montre] .tirage-carte {
+    opacity: 1;
+    rotate: -3deg;
+    scale: 1;
+  }
+  /* Une figure par programme, l'une sur l'autre. D'une ligne à la suivante, la photo
+     qui arrive se fond par-dessus celle qui part, restée entière dessous : pas de trou
+     entre les deux. Les légendes se relaient : celle qui part s'efface d'abord. */
+  .tirage-figure {
+    grid-area: 1 / 1;
+    margin: 0;
+    opacity: 0;
+    transition: opacity 0s linear 0.3s;
+  }
+  .tirage-figure[data-vue] {
+    z-index: 1;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+  }
+  .tirage-cadre {
+    position: relative;
+    display: block;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    background: var(--color-attente);
+  }
+  /* La légende à deux colonnes des photos du site. Sur le petit tirage, la nature de
+     l'image passe sous ce qu'on voit. */
+  .tirage-legende {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.125rem 1.25rem;
+    margin-top: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+  }
+  .tirage-vu {
+    flex: 1 1 11rem;
+    min-width: 0;
+  }
+  .tirage-figure[data-vue] .tirage-legende {
+    opacity: 1;
+    transition: opacity 0.18s ease 0.12s;
+  }
+}

@@ -23,6 +23,11 @@ export type Travail = {
   /** AAAA-MM, affiché en lettres : « Septembre 2024 ». */
   mois: string;
   texte: Fait;
+  /**
+   * Revue 3, registre de l'accueil : la mesure en grand (chiffre et unité), puis le
+   * reste de la phrase. Mêmes faits que `texte`, coupés autrement.
+   */
+  mesure: { chiffre: string; unite: string; suite: string };
   sources: Source[];
 };
 
@@ -33,6 +38,7 @@ export const TRAVAUX: Travail[] = [
     texte: f("Terrassement lancé sur 3 hectares à Kounoune.", "YouTube Hi1DiDoX_zA ; contenu-maquette §5 et §7", {
       date: "2024-09-07",
     }),
+    mesure: { chiffre: "3", unite: "hectares", suite: "Terrassement lancé à Kounoune." },
     sources: [{ libelle: "Vidéo YouTube du 7 septembre 2024", href: VIDEOS.terrassementKounoune.href }],
   },
   {
@@ -41,6 +47,7 @@ export const TRAVAUX: Travail[] = [
     texte: f("342 parcelles tracées sur un terrain de 9 hectares.", "Article publié par Saloum Immo, 19.10.2024 ; contenu-maquette §5 et §7", {
       date: "2024-10-19",
     }),
+    mesure: { chiffre: "342", unite: "parcelles", suite: "Tracées sur un terrain de 9 hectares." },
     sources: [{ libelle: "Article publié par Saloum Immo, 19 octobre 2024" }],
   },
   {
@@ -50,6 +57,7 @@ export const TRAVAUX: Travail[] = [
       date: "2025-10-02",
       lien: TIKTOK.electrification,
     }),
+    mesure: { chiffre: "17", unite: "poteaux", suite: "Électrification d’un projet de 53 parcelles." },
     sources: [{ libelle: "TikTok du 2 octobre 2025", href: TIKTOK.electrification }],
   },
   {
@@ -60,6 +68,11 @@ export const TRAVAUX: Travail[] = [
       "TikTok, 18.11.2025 et 20.11.2025 ; contenu-maquette §5 et §7",
       { date: "2025-11-18", lien: TIKTOK.adductionEau },
     ),
+    mesure: {
+      chiffre: "58",
+      unite: "parcelles",
+      suite: "Adduction d’eau. Visite de contrôle de SEN’EAU le 20 novembre 2025.",
+    },
     sources: [
       { libelle: "TikTok du 18 novembre 2025", href: TIKTOK.adductionEau },
       { libelle: "TikTok du 20 novembre 2025", href: TIKTOK.controleSenEau },

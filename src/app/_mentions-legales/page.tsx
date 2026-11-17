@@ -31,9 +31,9 @@ function lignes(l: LigneMention[]) {
     libelle: x.libelle,
     valeur:
       "manque" in x ? (
-        <span className="text-ink-2">À fournir.</span>
+        <span className="text-doux">À fournir.</span>
       ) : x.lien ? (
-        <a href={x.lien} className="text-trait underline underline-offset-4">
+        <a href={x.lien} className="text-accent underline underline-offset-4">
           {typo(x.valeur.texte)}
         </a>
       ) : (

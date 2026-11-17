@@ -9,6 +9,8 @@ type LienProps = {
   className?: string;
   "aria-label"?: string;
   "aria-current"?: "page";
+  /** Un repère pour le script des gestes (data-aimant) ou pour une feuille de style. */
+  [donnee: `data-${string}`]: string | undefined;
 };
 
 /** Lien interne par next/link (sous-chemin géré), sinon <a>. Même onglet partout. */
@@ -28,37 +30,48 @@ export function Lien({ href, children, ...reste }: LienProps) {
 }
 
 /**
- * Lien texte : bleu, 600, souligné. 44 px de haut au moins, hors du fil d'un
- * paragraphe. Un lien texte par bloc au plus (allegement.md, 2.9).
+ * La flèche des boutons et des liens : elle avance de 4 px au survol, dans la courbe
+ * du site. Le parent porte la classe `group`.
  */
-export function TextLink({
-  href,
-  children,
-  className,
-  tone = "trait",
-  ...reste
-}: LienProps & { tone?: "trait" | "inv" }) {
+export function Fleche({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 20 20"
+      className={cx("size-[1.125rem] flex-none transition-transform duration-400 ease-pose group-hover:translate-x-1", className)}
+    >
+      <path d="M3 10h13M11 5l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+/**
+ * Lien texte, hors du fil d'un paragraphe : souligné, dans la couleur du texte, 600,
+ * avec sa flèche. Au survol : la couleur d'accent de la surface (latérite sur clair,
+ * latérite vive sur le plan). 44 px de haut au moins. Un lien texte par bloc au plus.
+ */
+export function TextLink({ href, children, className, fleche = true, ...reste }: LienProps & { fleche?: boolean }) {
   return (
     <Lien
       href={href}
       className={cx(
-        "inline-flex min-h-11 items-center font-semibold underline decoration-1 underline-offset-4 hover:decoration-2",
-        tone === "trait" ? "text-trait" : "text-white",
+        "group inline-flex min-h-11 items-center gap-2 font-semibold underline decoration-1 underline-offset-4 transition-surface hover:text-accent hover:decoration-2",
         className,
       )}
       {...reste}
     >
       {typeof children === "string" ? typo(children) : children}
+      {fleche ? <Fleche /> : null}
     </Lien>
   );
 }
 
-/** Lien dans le fil d'une phrase : bleu, souligné. */
+/** Lien dans le fil d'une phrase : souligné, la couleur d'accent au survol. */
 export function InlineLink({ href, children, className, ...reste }: LienProps) {
   return (
     <Lien
       href={href}
-      className={cx("font-semibold text-trait underline decoration-1 underline-offset-4 hover:decoration-2", className)}
+      className={cx("font-medium underline decoration-1 underline-offset-4 transition-surface hover:text-accent hover:decoration-2", className)}
       {...reste}
     >
       {typeof children === "string" ? typo(children) : children}

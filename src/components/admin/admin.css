@@ -1,0 +1,1632 @@
+/* L'espace client de démonstration (direction v4, section 7 ; app/admin/). Importé par
+   app/admin/layout.tsx : cette feuille ne charge que là.
+
+   La même langue que le site : Besley pour les titres d'écran, l'étiquette, la voix des
+   mesures, les cartouches, les tableaux à filets, les boutons en latérite. En plus
+   sobre : ni croisillons ni planche au bleu dans les écrans de travail, rien qui
+   apparaisse ou se tire. Seul l'écran de connexion, le seuil, garde l'ouverture d'une
+   page du site.
+
+   Les conventions du plan servent ici comme ailleurs (globals.css, « Traits ») :
+   - pointillé : ce qui n'est pas sûr, ou pas réel. Le trait du bandeau « Données de
+     démonstration », la ligne d'un champ vide, le cadre du message de la maquette ;
+   - plein : ce qui est acquis. La ligne d'un champ rempli ;
+   - trait mixte : un axe. La limite d'un en-tête de bloc, la moyenne du profil ;
+   - hachures à 45° : le sol, sous le trait de terrain du profil des visites ;
+   - la cote : ce qui se mesure. Sous chaque ligne d'un classement ;
+   - la borne blanche : où l'on est. L'écran courant, la fiche ouverte, le jour lu.
+
+   L'ordre des couches est redit ici : si cette feuille arrivait avant celle du site, la
+   couche des composants ne doit pas passer devant celle de la base. */
+@layer theme, base, components, utilities;
+
+/* L'espace client n'a ni l'en-tête public, ni le pied, ni le lien d'évitement du site
+   (il a le sien). Le layout racine les monte pour toutes les pages : ils sont retirés
+   ici, dès qu'un écran de l'espace client est dans la page. Hors couche : cette règle
+   passe devant toutes les classes. La voie de lecture, elle, se retire seule. */
+body:has(.admin) > .entete,
+body:has(.admin) > #pied,
+body:has(.admin) > .skip {
+  display: none;
+}
+
+@layer components {
+  /* Une ancre s'arrête sous ce qui reste collé en haut : la barre des écrans et le
+     bandeau sur téléphone, le bandeau seul au bureau. */
+  html:has(.admin) { scroll-padding-top: 5.75rem; }
+  @media (width >= 68.8125rem) {
+    html:has(.admin) { scroll-padding-top: 3.75rem; }
+  }
+
+  .admin {
+    /* La hauteur de la barre des écrans (téléphone) et celle du bandeau. */
+    --admin-nav: 2.75rem;
+    --admin-bandeau: 2rem;
+    min-height: 100dvh;
+  }
+  @media (width >= 68.8125rem) {
+    .admin { --admin-bandeau: 2.25rem; }
+  }
+
+  /* ---------------------------------------------------------- Le carré d'état
+     Le carré de l'index des terrains. Plein, dans la couleur d'accent : ce qui appelle
+     un geste. En contour : ce qui est au repos, ou ce qui n'est pas réel. */
+  .admin-carre {
+    flex: none;
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    box-shadow: inset 0 0 0 1.5px currentColor;
+  }
+  .admin-carre[data-plein] {
+    background: var(--r-accent);
+    box-shadow: none;
+  }
+  .admin-etat {
+    display: inline-flex;
+    align-items: baseline;
+    column-gap: 0.5rem;
+    color: var(--r-fort);
+    white-space: nowrap;
+  }
+  .admin-etat[data-etat="traitee"] { color: var(--r-doux); }
+
+  /* --------------------------------------------------------------- Le bandeau
+     « Données de démonstration » : une ligne, collée en haut de l'écran, sur un trait en
+     pointillé. Le détail s'ajoute dès 761 px, la fin de phrase au bureau. */
+  .admin-bandeau {
+    position: sticky;
+    top: var(--admin-nav);
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    column-gap: 0.625rem;
+    min-height: var(--admin-bandeau);
+    margin: 0;
+    padding: 0.25rem var(--spacing-gutter);
+    background-color: color-mix(in srgb, var(--color-calque) 94%, transparent);
+    background-image: repeating-linear-gradient(90deg, var(--color-encre-2) 0 2px, transparent 2px 6px);
+    background-position: 0 100%;
+    background-size: 100% 1px;
+    background-repeat: no-repeat;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: var(--color-encre);
+    white-space: nowrap;
+  }
+  .admin-bandeau-detail,
+  .admin-bandeau-fin { display: none; }
+  @media (width >= 68.8125rem) {
+    .admin-bandeau { top: 0; }
+    .admin-bandeau-detail {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+  /* La fin de phrase, quand la ligne a la place de tout dire (1 344 px). */
+  @media (width >= 84rem) {
+    .admin-bandeau-fin {
+      display: block;
+      margin-left: auto;
+      padding-left: 1.5rem;
+    }
+  }
+
+  /* ----------------------------------------------------------------- Le cadre
+     Sur téléphone, une barre en haut, sur le bleu de plan : le logo et les deux sorties
+     (ils partent avec la page), puis les trois écrans en ligne (ils restent collés),
+     puis le bandeau. La barre n'a pas de boîte à elle (display: contents) : ses trois
+     parts se rangent dans la grille du cadre, et la ligne des écrans peut rester collée
+     sur toute la hauteur de la page.
+     Dès 1 101 px, la barre devient une colonne étroite, à gauche, sur toute la hauteur. */
+  .admin-cadre {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .admin-barre { display: contents; }
+
+  .admin-marque {
+    grid-area: 1 / 1;
+    display: flex;
+    align-items: center;
+    column-gap: 0.875rem;
+    min-height: 3.5rem;
+    padding: 0.5rem 0 0.5rem var(--spacing-gutter);
+    background: var(--color-plan);
+  }
+  /* Le logo officiel n'est jamais recoloré : sur le plan, il a sa plaque de calque. */
+  .admin-plaque {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    padding: 0.3125rem 0.625rem;
+    border-radius: 2px;
+    background: var(--color-calque);
+  }
+  .admin-plaque img {
+    width: auto;
+    height: 2rem;
+  }
+  .admin-marque-nom {
+    display: none;
+    margin: 0;
+    color: var(--r-doux);
+  }
+
+  .admin-sorties {
+    grid-area: 1 / 2;
+    display: flex;
+    align-items: center;
+    column-gap: 1.25rem;
+    margin: 0;
+    padding: 0 var(--spacing-gutter) 0 1rem;
+    list-style: none;
+    background: var(--color-plan);
+  }
+  .admin-sortie {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-size: var(--text-small);
+    line-height: var(--text-small--line-height);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    white-space: nowrap;
+    transition: color 0.15s ease;
+  }
+  .admin-sortie:hover { color: var(--r-fort); }
+  .admin-sortie-long { display: none; }
+
+  .admin-nav {
+    grid-area: 2 / 1 / auto / -1;
+    position: sticky;
+    top: 0;
+    z-index: 31;
+    border-top: 1px solid var(--r-ligne);
+    background: var(--color-plan);
+  }
+  .admin-nav-ecrans {
+    display: flex;
+    column-gap: 1.5rem;
+    margin: 0;
+    padding: 0 var(--spacing-gutter);
+    list-style: none;
+  }
+  .admin-nav-lien {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    column-gap: 0.5rem;
+    min-height: var(--admin-nav);
+    font-size: var(--text-menu);
+    line-height: var(--text-menu--line-height);
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color 0.15s ease;
+  }
+  .admin-nav-lien:hover,
+  .admin-nav-lien[aria-current] { color: var(--r-fort); }
+  /* Sur la barre du téléphone, l'écran courant porte le trait plein de l'en-tête du site. */
+  .admin-nav-ecrans > li > .admin-nav-lien[aria-current]::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 2px;
+    background: var(--r-accent);
+  }
+  .admin-nav-compte {
+    color: var(--r-accent);
+    font-size: var(--text-small);
+    line-height: 1;
+  }
+  .admin-nav-borne,
+  .admin-nav-rubriques { display: none; }
+  /* Sous 360 px, les trois écrans se resserrent pour tenir sur la ligne. */
+  @media (width < 22.5rem) {
+    .admin-nav-ecrans { column-gap: 0.875rem; }
+    .admin-nav-lien { font-size: var(--text-small); }
+  }
+
+  .admin-ecran {
+    grid-area: 4 / 1 / auto / -1;
+    min-width: 0;
+    padding: 1.75rem var(--spacing-gutter) 4.5rem;
+    outline: none;
+  }
+  .admin-cadre > .admin-bandeau { grid-area: 3 / 1 / auto / -1; }
+
+  @media (width >= 47.5625rem) {
+    .admin-marque-nom { display: block; }
+    .admin-sortie-long { display: inline; }
+    .admin-sortie-court { display: none; }
+    .admin-ecran { padding-top: 2.25rem; }
+  }
+
+  @media (width >= 68.8125rem) {
+    .admin-cadre {
+      grid-template-columns: 15rem minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
+      min-height: 100dvh;
+    }
+    .admin-barre {
+      grid-area: 1 / 1 / span 2 / auto;
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      align-self: start;
+      height: 100dvh;
+      overflow-y: auto;
+      background: var(--color-plan);
+    }
+    .admin-marque {
+      flex-direction: column;
+      align-items: flex-start;
+      row-gap: 1rem;
+      min-height: 0;
+      padding: 1.5rem 1.25rem 1.375rem;
+      background: none;
+    }
+    .admin-plaque img { height: 2.5rem; }
+
+    .admin-nav {
+      position: static;
+      flex: 1;
+      padding-block: 0.75rem;
+      background: none;
+    }
+    .admin-nav-ecrans {
+      flex-direction: column;
+      padding: 0;
+    }
+    .admin-nav-lien {
+      display: flex;
+      padding-inline: 1.25rem;
+    }
+    /* La borne de l'écran courant : un carré blanc, comme celles plantées au pied du site. */
+    .admin-nav-borne {
+      display: block;
+      flex: none;
+      width: 7px;
+      height: 7px;
+      margin-right: 0.25rem;
+    }
+    .admin-nav-lien[aria-current="page"] .admin-nav-borne { background: var(--color-blanc); }
+    .admin-nav-ecrans > li > .admin-nav-lien[aria-current]::after { content: none; }
+    .admin-nav-compte { margin-left: auto; }
+    .admin-nav-rubriques {
+      display: block;
+      margin: 0 0 0.5rem;
+      padding: 0;
+      list-style: none;
+    }
+    .admin-nav-rubrique {
+      min-height: 2.25rem;
+      padding-left: 2.25rem;
+      font-size: var(--text-small);
+      font-weight: 400;
+    }
+
+    .admin-sorties {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 0.75rem 0 1rem;
+      border-top: 1px solid var(--r-ligne);
+      background: none;
+    }
+    .admin-sortie {
+      display: flex;
+      padding-inline: 1.25rem;
+    }
+
+    .admin-cadre > .admin-bandeau { grid-area: 1 / 2; }
+    .admin-ecran {
+      grid-area: 2 / 2;
+      padding: 2.75rem var(--spacing-gutter) 6rem;
+    }
+  }
+
+  /* ------------------------------------------------------------------ L'écran
+     Une colonne de 1 216 px au plus, calée à gauche : au-delà, les tableaux se
+     distendent. Les blocs se suivent, chacun sous sa borne. */
+  .admin-page { max-width: 84rem; }
+
+  /* ------------------------------------------------------ L'en-tête d'un bloc
+     La borne, le nom, la limite en trait mixte, la quantité. Le bloc mesure sa propre
+     largeur : étroit (sous 432 px), la quantité passe sous la ligne, à droite ; plus
+     large, tout tient sur une ligne. */
+  .tete-bloc { container-type: inline-size; }
+  .tete-bloc-rang {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.5rem 0.875rem;
+    align-items: center;
+    color: var(--r-doux);
+  }
+  .tete-bloc-ligne {
+    display: flex;
+    column-gap: 0.875rem;
+    align-items: center;
+    min-width: 0;
+  }
+  .tete-bloc-quantite {
+    grid-column: 2;
+    justify-self: end;
+    margin: 0;
+  }
+  @container (width >= 27rem) {
+    .tete-bloc-rang { display: flex; }
+    .tete-bloc-ligne { display: contents; }
+    /* Sur une ligne, le nom ne se coupe pas : c'est la limite qui cède la place. */
+    .tete-bloc-ligne > h2 { white-space: nowrap; }
+    .tete-bloc-quantite { flex: none; }
+  }
+
+  .admin-tete {
+    display: flex;
+    flex-direction: column;
+    row-gap: 1.25rem;
+  }
+  .admin-tete-reglage { flex: none; }
+  @media (width >= 47.5625rem) {
+    .admin-tete {
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+      column-gap: 2rem;
+    }
+  }
+
+  .admin-bloc { margin-top: 3.25rem; }
+  @media (width >= 68.8125rem) {
+    .admin-bloc { margin-top: 4rem; }
+  }
+  /* La grille du tableau de bord : douze colonnes au bureau. Un bloc prend toute la
+     largeur, sauf le large (sept colonnes) et l'étroit (cinq) : deux de front, en
+     quinconce d'une rangée à l'autre. */
+  .admin-grille {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (width >= 68.8125rem) {
+    .admin-grille {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: 3rem;
+      align-items: start;
+    }
+    .admin-grille > * { grid-column: span 12; }
+    .admin-grille > .admin-large { grid-column: span 7; }
+    .admin-grille > .admin-etroit { grid-column: span 5; }
+  }
+
+  .admin-note {
+    display: flex;
+    align-items: baseline;
+    column-gap: 0.5rem;
+  }
+
+  /* La période du tableau de bord : ses dates à gauche, le choix à droite. */
+  .admin-reglage {
+    display: flex;
+    flex-direction: column;
+    row-gap: 1rem;
+    margin-top: 0.75rem;
+  }
+  .admin-periode {
+    margin: 0;
+    font-size: var(--text-chapeau);
+    line-height: var(--text-chapeau--line-height);
+  }
+  @media (width >= 47.5625rem) {
+    .admin-reglage {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      column-gap: 2rem;
+    }
+  }
+
+  /* ---------------------------------------------------------------- Les choix
+     Une période, un filtre : de vrais boutons radio, invisibles, étendus à leur case.
+     La case choisie est pleine, à l'encre. */
+  .segments {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .segments-rang {
+    display: flex;
+    border: 1.5px solid var(--r-fort);
+  }
+  .segment {
+    position: relative;
+    display: inline-flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding-inline: 1rem;
+    font-size: var(--text-menu);
+    line-height: var(--text-menu--line-height);
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .segment + .segment { border-left: 1.5px solid var(--r-fort); }
+  .segment input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .segment:has(input:checked) {
+    background: var(--r-fort);
+    color: var(--r-fond);
+  }
+  .segment:has(input:focus-visible) {
+    z-index: 1;
+    outline: 2px solid var(--r-focus);
+    outline-offset: 3px;
+  }
+  .segment-compte { margin-left: 0.25rem; }
+  /* Sous 360 px, trois cases de front se resserrent. */
+  @media (width < 22.5rem) {
+    .segment {
+      padding-inline: 0.5rem;
+      font-size: var(--text-small);
+    }
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .segment:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--r-fort) 8%, transparent); }
+  }
+  @media (width >= 47.5625rem) {
+    .segments-rang { display: inline-flex; }
+    .segment {
+      flex: none;
+      padding-inline: 1.25rem;
+    }
+  }
+
+  /* ----------------------------------------------------------- Les compteurs
+     Les quatre tuiles du trafic, dans un cartouche : le nombre en grand, dans la voix
+     des mesures. */
+  .admin-tuile { padding-block: 1rem 1.125rem; }
+  .admin-tuile-nombre {
+    margin: 0.25rem 0 0;
+    font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+    line-height: 1;
+  }
+  @media (width >= 68.8125rem) {
+    .admin-tuile { padding-block: 1.25rem 1.375rem; }
+  }
+
+  /* ---------------------------------------------------------------- Le profil
+     Les visites par jour, en profil en long (components/admin/profil.tsx). Une feuille
+     de calque. À gauche l'échelle, puis le plan : les paliers en filets, la moyenne en
+     trait mixte, le sol en hachures sous le trait de terrain, en latérite. Tout est
+     placé par deux variables sans unité (--x, --y, de 0 à 1) que le composant écrit. */
+  .profil {
+    /* La hauteur du plan. */
+    --profil-haut: 11rem;
+    margin: 1.25rem 0 0;
+    padding: 1rem 1rem 0;
+    border: 1px solid var(--color-filet);
+    background: var(--color-calque);
+  }
+  .profil-tete {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1.5rem;
+  }
+  .profil-cadre {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    margin-top: 1.75rem;
+  }
+  .profil-echelle {
+    position: relative;
+    height: var(--profil-haut);
+  }
+  .profil-echelle > span {
+    position: absolute;
+    top: calc(var(--y) * 100%);
+    left: 0;
+    translate: 0 -50%;
+  }
+  .profil-plan {
+    position: relative;
+    height: var(--profil-haut);
+    cursor: crosshair;
+    /* Le doigt lit le profil de gauche à droite ; de haut en bas, il fait défiler la page. */
+    touch-action: pan-y;
+    outline-offset: 6px;
+  }
+  .profil-palier,
+  .profil-moyenne {
+    position: absolute;
+    inset-inline: 0;
+    top: calc(var(--y) * 100%);
+    height: 1px;
+  }
+  .profil-palier { background: var(--color-filet); }
+  /* La ligne de base : le zéro, à l'encre. */
+  .profil-palier:first-child { background: var(--color-encre); }
+  .profil-moyenne { color: var(--color-encre-2); }
+  .profil-sol {
+    position: absolute;
+    inset: 0;
+    color: color-mix(in srgb, var(--color-laterite) 60%, transparent);
+  }
+  .profil-trait {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .profil-trait polyline {
+    fill: none;
+    stroke: var(--color-laterite);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .profil-sommet,
+  .profil-lecture {
+    position: absolute;
+    top: calc(var(--y) * 100%);
+    left: calc(var(--x) * 100%);
+    pointer-events: none;
+  }
+  /* La borne : un carré blanc, un filet d'encre, et le calque autour pour la détacher du trait. */
+  .profil-borne {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--color-encre);
+    background: var(--color-blanc);
+    box-shadow: 0 0 0 2px var(--color-calque);
+  }
+  .profil-valeur {
+    position: absolute;
+    bottom: 11px;
+    left: 0;
+    translate: -50% 0;
+    color: var(--color-encre);
+    font-size: var(--text-small);
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .profil-sommet[data-bord="debut"] .profil-valeur { translate: -4px 0; }
+  .profil-sommet[data-bord="fin"] .profil-valeur { translate: calc(-100% + 4px) 0; }
+  /* Pendant la lecture d'un jour, la plaque dit les valeurs : celle du sommet se tait. */
+  .profil-plan[data-lecture] .profil-valeur { visibility: hidden; }
+
+  /* La lecture d'un jour : une ligne de rappel sur toute la hauteur, la borne sur le
+     trait, et en haut la plaque du jour (ses visites, sa date). */
+  .profil-rappel {
+    position: absolute;
+    top: calc(var(--y) * var(--profil-haut) * -1);
+    left: -0.5px;
+    width: 1px;
+    height: var(--profil-haut);
+    background: var(--color-encre);
+  }
+  .profil-plaque {
+    position: absolute;
+    top: calc(var(--y) * var(--profil-haut) * -1 - 1.25rem);
+    z-index: 2;
+    display: grid;
+    row-gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-encre);
+    background: var(--color-calque);
+    white-space: nowrap;
+  }
+  .profil-plaque[data-cote="droite"] { left: 10px; }
+  .profil-plaque[data-cote="gauche"] { right: 10px; }
+
+  .profil-jours {
+    grid-column: 2;
+    position: relative;
+    height: 1.5rem;
+    margin-top: 0.625rem;
+  }
+  .profil-jours > span {
+    position: absolute;
+    top: 0;
+    left: calc(var(--x) * 100%);
+    translate: -50% 0;
+    white-space: nowrap;
+  }
+  .profil-jours > span[data-bord="debut"] { translate: 0 0; }
+  .profil-jours > span[data-bord="fin"] { translate: -100% 0; }
+
+  /* Les chiffres en tableau, sous le dessin : repliés, puis dans un cadre qui défile. */
+  .profil-table {
+    margin: 0.75rem -1rem 0;
+    padding-inline: 1rem;
+    border-top: 1px solid var(--color-filet);
+  }
+  .profil-table > summary {
+    display: flex;
+    align-items: center;
+    column-gap: 0.625rem;
+    min-height: 2.75rem;
+    font-size: var(--text-small);
+    line-height: var(--text-small--line-height);
+    font-weight: 600;
+    list-style: none;
+    cursor: pointer;
+  }
+  .profil-table > summary::-webkit-details-marker { display: none; }
+  .profil-table > summary::before {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    margin-inline: 2px 3px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    rotate: -45deg;
+    transition: rotate 0.3s var(--ease-pose);
+  }
+  .profil-table[open] > summary::before { rotate: 45deg; }
+  .profil-table-titre {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+  .profil-table-cadre {
+    max-height: 17rem;
+    margin-bottom: 1rem;
+    overflow-y: auto;
+    border-top: 1px solid var(--color-encre);
+    border-bottom: 1px solid var(--color-filet);
+  }
+  .profil-table table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  .profil-table :where(th, td) {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--color-filet);
+    font-weight: 400;
+  }
+  .profil-table tbody tr:last-child :where(th, td) { border-bottom: 0; }
+  .profil-table :where(td, thead th:last-child) { text-align: right; }
+  .profil-table thead th {
+    position: sticky;
+    top: 0;
+    padding-block: 0.625rem;
+    background: var(--color-calque);
+  }
+
+  @media (width < 47.5625rem) {
+    /* Sur téléphone : le premier et le dernier jour seulement. */
+    .profil-jours > span:not([data-bord]) { display: none; }
+  }
+  @media (width < 80.0625rem) {
+    /* Sous 1 281 px, cinq jours nommés se toucheraient : il en reste trois. */
+    .profil-jours > span[data-second] { display: none; }
+  }
+  @media (width >= 47.5625rem) {
+    .profil {
+      --profil-haut: 15rem;
+      padding: 1.25rem 1.5rem 0;
+    }
+    .profil-cadre { grid-template-columns: 2.75rem minmax(0, 1fr); }
+    .profil-table {
+      margin-inline: -1.5rem;
+      padding-inline: 1.5rem;
+    }
+  }
+
+  /* ----------------------------------------------------------- Les classements
+     Les pages les plus vues, la provenance, les appareils : un vrai tableau, dont les
+     lignes sont des grilles (les rôles lui gardent sa nature). Sous chaque ligne, sa
+     cote : un trait de latérite et ses deux butées, long comme la ligne pèse sur la
+     plus grande de la liste (--mesure, de 0 à 1). Elle se pose sur le filet. */
+  .classement {
+    display: block;
+    width: 100%;
+    margin-top: 1.25rem;
+    border-collapse: collapse;
+  }
+  .classement > :where(thead, tbody) { display: block; }
+  .classement :where(th, td) {
+    padding: 0;
+    font-weight: inherit;
+    text-align: left;
+  }
+  .classement-tete,
+  .classement-ligne {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 4.75rem 3.25rem;
+    column-gap: 1rem;
+    align-items: baseline;
+  }
+  .classement-tete {
+    padding-bottom: 0.625rem;
+    border-bottom: 1px solid var(--r-fort);
+  }
+  .classement-tete > :nth-child(n + 2),
+  .classement-ligne > td { text-align: right; }
+  .classement-ligne {
+    position: relative;
+    padding-block: 0.8125rem;
+    border-bottom: 1px solid var(--r-ligne);
+  }
+  .classement-ligne > th {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.75rem;
+    min-width: 0;
+  }
+  .classement-ligne::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: calc(var(--mesure) * 100%);
+    height: 7px;
+    color: var(--r-accent);
+    /* Le trait, puis les deux butées. */
+    background:
+      linear-gradient(currentColor, currentColor) 0 50% / 100% 1.5px no-repeat,
+      linear-gradient(currentColor, currentColor) 0 0 / 1.5px 100% no-repeat,
+      linear-gradient(currentColor, currentColor) 100% 0 / 1.5px 100% no-repeat;
+  }
+
+  /* --------------------------------------------- Les dernières demandes (tableau de bord)
+     Un registre court : la date en marge, le nom et l'objet, l'état. */
+  .recentes,
+  .registre {
+    margin: 1.25rem 0 0;
+    padding: 0;
+    border-top: 1px solid var(--r-fort);
+    list-style: none;
+  }
+  .recente {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.375rem 1rem;
+    align-items: start;
+    padding-block: 0.875rem;
+    border-bottom: 1px solid var(--r-ligne);
+  }
+  .recente-date {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    column-gap: 0.625rem;
+    margin: 0;
+  }
+  .recente > .admin-etat { margin-top: 0.25rem; }
+  @media (width >= 47.5625rem) {
+    .recente { grid-template-columns: 11.5rem minmax(0, 1fr) auto; }
+    .recente-date {
+      grid-column: auto;
+      flex-direction: column;
+      row-gap: 0.125rem;
+    }
+  }
+
+  /* Les raccourcis vers les rubriques de contenus. Sur téléphone, une ligne par
+     rubrique. Dès 761 px, un cartouche : deux cases de front, puis trois au bureau.
+     Chaque case trace son bord droit et son bord bas, le cadre coupe ceux du tour. */
+  .raccourcis {
+    margin: 1.25rem 0 0;
+    padding: 0;
+    border-top: 1px solid var(--r-fort);
+    list-style: none;
+  }
+  .raccourci {
+    display: flex;
+    align-items: center;
+    column-gap: 1rem;
+    min-height: 3.5rem;
+    padding-block: 0.875rem;
+    border-bottom: 1px solid var(--r-ligne);
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+  .raccourci:hover .titre { color: var(--r-accent); }
+  @media (width >= 47.5625rem) {
+    .raccourcis {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      overflow: hidden;
+      border: 1px solid var(--color-filet);
+      background: var(--color-calque);
+    }
+    .raccourcis > li {
+      display: flex;
+      margin: 0 -1px -1px 0;
+      border-right: 1px solid var(--color-filet);
+      border-bottom: 1px solid var(--color-filet);
+    }
+    .raccourci {
+      flex: 1;
+      align-items: flex-start;
+      padding: 1.125rem 1.25rem 1.25rem;
+      border-bottom: 0;
+    }
+    .raccourci > svg { margin-top: 0.4375rem; }
+    .raccourci-tous { align-items: center; }
+    .raccourci-tous > svg { margin-top: 0; }
+    @media (hover: hover) and (pointer: fine) {
+      .raccourci:hover { background: var(--color-blanc); }
+    }
+  }
+  @media (width >= 68.8125rem) {
+    .raccourcis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .raccourci { padding: 1.375rem 1.5rem 1.5rem; }
+  }
+
+  /* ------------------------------------------------- Le registre des demandes
+     Chaque ligne est un <details>. Sur téléphone, une fiche : la date et l'état, le nom,
+     l'objet, le début du message. Au bureau, cinq colonnes sous leurs têtes. */
+  .registre-tete { display: none; }
+  .demande { border-bottom: 1px solid var(--r-ligne); }
+  .demande-ligne {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "date etat"
+      "nom nom"
+      "objet objet"
+      "extrait extrait";
+    gap: 0.25rem 1rem;
+    align-items: baseline;
+    padding-block: 1rem;
+    list-style: none;
+    cursor: pointer;
+  }
+  .demande-ligne::-webkit-details-marker { display: none; }
+  .demande-date {
+    grid-area: date;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.625rem;
+  }
+  .demande-etat {
+    grid-area: etat;
+    justify-self: end;
+  }
+  .demande-nom {
+    grid-area: nom;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.125rem 0.75rem;
+    min-width: 0;
+    margin-top: 0.375rem;
+  }
+  .demande-objet { grid-area: objet; }
+  .demande-extrait {
+    grid-area: extrait;
+    min-width: 0;
+    /* La place du chevron, au bout de la ligne. */
+    padding-right: 2rem;
+    overflow: hidden;
+    font-size: var(--text-small);
+    line-height: var(--text-small--line-height);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* Le chevron : fermé, il pointe vers le bas ; ouvert, vers le haut. */
+  .demande-chevron {
+    position: absolute;
+    right: 4px;
+    bottom: 1.5rem;
+    width: 8px;
+    height: 8px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    rotate: 45deg;
+    transition: rotate 0.3s var(--ease-pose), translate 0.3s var(--ease-pose);
+  }
+  .demande[open] .demande-chevron {
+    rotate: 225deg;
+    translate: 0 4px;
+  }
+  /* Ouverte, la fiche donne le message entier : son début n'a plus à se lire deux fois. */
+  .demande[open] .demande-extrait { visibility: hidden; }
+  @media (hover: hover) and (pointer: fine) {
+    .demande-ligne:hover .demande-nom > :first-child {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 4px;
+    }
+  }
+
+  /* La fiche d'une demande ouverte : une feuille de calque, sous sa ligne. */
+  .demande-fiche {
+    margin-bottom: 1.25rem;
+    padding: 1rem 1rem 1.125rem;
+    border: 1px solid var(--color-filet);
+    background: var(--color-calque);
+  }
+  .demande-gestes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+    margin-top: 1.25rem;
+  }
+
+  .registre-vide {
+    margin: 1.25rem 0 0;
+    padding-block: 1.5rem;
+    border-top: 1px solid var(--r-fort);
+    border-bottom: 1px solid var(--r-ligne);
+  }
+  /* Le pied du registre : ce que ce navigateur garde. Rien encore, et comment faire
+     arriver une demande ; ou leur compte, et le bouton qui les efface. Dans un cadre en
+     pointillé : ce qui n'est pas réel, une demande de la maquette ne part pas. */
+  .registre-essai,
+  .fiche-admin-message[data-dit] {
+    --trait-h: repeating-linear-gradient(90deg, var(--r-fort) 0 2px, transparent 2px 6px);
+    --trait-v: repeating-linear-gradient(180deg, var(--r-fort) 0 2px, transparent 2px 6px);
+    background:
+      var(--trait-h) 0 0 / 100% 1.5px no-repeat,
+      var(--trait-h) 0 100% / 100% 1.5px no-repeat,
+      var(--trait-v) 0 0 / 1.5px 100% no-repeat,
+      var(--trait-v) 100% 0 / 1.5px 100% no-repeat;
+  }
+  .registre-essai {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 2rem;
+    max-width: 52rem;
+    margin-top: 1.75rem;
+    padding: 0.875rem 1.125rem;
+    /* Il reçoit le focus quand le bouton « Effacer » part : un repère, pas une cible. */
+    outline: none;
+  }
+  .registre-essai > p {
+    flex: 1 1 18rem;
+    margin: 0;
+  }
+
+  @media (width >= 68.8125rem) {
+    .registre-tete,
+    .demande-ligne {
+      display: grid;
+      grid-template-columns: 12.25rem minmax(0, 14rem) minmax(0, 13rem) minmax(0, 1fr) 6.75rem 1rem;
+      grid-template-areas: "date nom objet extrait etat chevron";
+      column-gap: 1.5rem;
+    }
+    .registre-tete {
+      margin-top: 1.75rem;
+      padding-bottom: 0.625rem;
+    }
+    .registre-tete + .registre { margin-top: 0; }
+    .demande-ligne { padding-block: 1.125rem; }
+    .demande-date {
+      flex-direction: column;
+      row-gap: 0.125rem;
+    }
+    .demande-nom {
+      flex-direction: column;
+      margin-top: 0;
+    }
+    .demande-etat { justify-self: start; }
+    .demande-extrait {
+      padding-right: 0;
+      font-size: inherit;
+      line-height: inherit;
+    }
+    .demande-chevron {
+      position: static;
+      grid-area: chevron;
+      align-self: start;
+      margin-top: 0.4375rem;
+    }
+    /* La fiche s'aligne sur la colonne du nom. */
+    .demande-fiche {
+      margin-left: 13.75rem;
+      padding: 1.25rem 1.75rem 1.5rem;
+    }
+  }
+
+  /* ------------------------------------------------ Les rubriques de contenus
+     Un tableau, une ligne par rubrique : son nom en Besley, ce qu'elle contient, où
+     elle s'affiche. La ligne entière mène à la rubrique. Sous 1 101 px, les têtes de
+     colonne ne sont que lues, les cases s'empilent. */
+  .rubriques {
+    display: block;
+    width: 100%;
+    margin-top: 1.25rem;
+    border-top: 1px solid var(--r-fort);
+    border-collapse: collapse;
+  }
+  .rubriques > :where(thead, tbody) { display: block; }
+  .rubriques :where(th, td) {
+    padding: 0;
+    font-weight: inherit;
+    text-align: left;
+  }
+  .rubriques-tete {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .rubrique {
+    position: relative;
+    display: grid;
+    row-gap: 0.5rem;
+    padding: 1.25rem 2.75rem 1.25rem 0;
+    border-bottom: 1px solid var(--r-ligne);
+    transition: color 0.15s ease;
+  }
+  .rubrique-lien { transition: color 0.15s ease; }
+  /* Le lien du nom s'étend sur la ligne. */
+  .rubrique-lien::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+  .rubrique-lien:hover { color: var(--r-accent); }
+  .rubrique-fleche {
+    position: absolute;
+    top: 50%;
+    right: 0.25rem;
+    display: block;
+    translate: 0 -50%;
+    color: var(--r-fort);
+  }
+  @media (width >= 68.8125rem) {
+    .rubriques-tete,
+    .rubrique {
+      display: grid;
+      grid-template-columns: minmax(0, 5fr) minmax(0, 5fr) minmax(0, 3fr);
+      column-gap: 2.5rem;
+      align-items: baseline;
+    }
+    .rubriques-tete {
+      position: static;
+      width: auto;
+      height: auto;
+      padding: 0.75rem 2.75rem 0.75rem 0;
+      overflow: visible;
+      clip-path: none;
+      border-bottom: 1px solid var(--r-ligne);
+    }
+    .rubrique { padding-block: 1.625rem; }
+  }
+
+  /* ---------------------------------------------------------------- L'éditeur
+     Une rubrique : la liste de ses fiches, et la fiche ouverte. Sur téléphone, l'une ou
+     l'autre (data-vue). Au bureau, la liste à gauche, collée, la fiche à droite. */
+  .editeur {
+    display: grid;
+    row-gap: 2rem;
+    margin-top: 2.5rem;
+  }
+  .editeur-liste {
+    min-width: 0;
+    outline: none;
+  }
+  /* Le compte des fiches, au-dessus de la liste : une étiquette, sans borne ni limite. */
+  .editeur-compte { margin: 0; }
+  .editeur-liste > ol {
+    margin: 1.25rem 0 0;
+    padding: 0;
+    border-top: 1px solid var(--r-fort);
+    list-style: none;
+  }
+  .editeur-item {
+    display: flex;
+    align-items: center;
+    column-gap: 0.625rem;
+    min-height: 3.5rem;
+    padding-block: 0.625rem;
+    border-bottom: 1px solid var(--r-ligne);
+    transition: background-color 0.15s ease;
+  }
+  .editeur-item-nom {
+    display: flex;
+    align-items: baseline;
+    column-gap: 0.625rem;
+    margin-bottom: 0.125rem;
+    color: var(--r-fort);
+    font-weight: 600;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .editeur-item-borne { display: none; }
+  /* Sur téléphone, chaque ligne s'ouvre : un chevron le dit, au bout. */
+  .editeur-item::after {
+    content: "";
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin-inline: 0.25rem 4px;
+    border-top: 1.5px solid currentColor;
+    border-right: 1.5px solid currentColor;
+    rotate: 45deg;
+  }
+  .editeur-item-modifie {
+    flex: none;
+    color: var(--r-fort);
+  }
+  .editeur-fiches { min-width: 0; }
+  .editeur-legende {
+    max-width: 40rem;
+    margin: 1rem 0 0;
+  }
+  /* La légende de la colonne « Source et date » ne se lit que sous une fiche ouverte
+     qui porte cette colonne. Sans script, toutes les fiches se suivent : elle reste. */
+  .editeur-fiches:not(:has(> .fiche-admin[data-sources]:not([data-fermee]))) > .editeur-legende { display: none; }
+
+  @media (width < 68.8125rem) {
+    .editeur[data-vue="liste"] .editeur-fiches,
+    .editeur[data-vue="fiche"] .editeur-liste { display: none; }
+  }
+  @media (width >= 68.8125rem) {
+    .editeur {
+      grid-template-columns: 15.5rem minmax(0, 1fr);
+      column-gap: 2.5rem;
+      align-items: start;
+    }
+    .editeur[data-seule] { grid-template-columns: minmax(0, 1fr); }
+    /* La liste reste en vue pendant qu'on parcourt une longue fiche. Trop longue pour
+       l'écran, elle défile dans sa colonne. */
+    .editeur-liste {
+      position: sticky;
+      top: calc(var(--admin-bandeau) + 1.5rem);
+      max-height: calc(100dvh - var(--admin-bandeau) - 3rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    .editeur-item { padding-inline: 0.75rem 0.625rem; }
+    .editeur-item::after { content: none; }
+    .editeur-item-borne {
+      display: block;
+      flex: none;
+      width: 7px;
+      height: 7px;
+      border: 1px solid transparent;
+    }
+    /* La fiche ouverte : sa ligne passe au calque, une borne devant. */
+    .editeur-item[aria-current] { background: var(--color-calque); }
+    .editeur-item[aria-current] .editeur-item-borne {
+      border-color: var(--color-encre);
+      background: var(--color-blanc);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .editeur-item:hover { background: color-mix(in srgb, var(--color-calque) 70%, transparent); }
+    }
+  }
+
+  /* ------------------------------------------------------------------ La fiche
+     Une feuille de calque : son en-tête (ce qu'elle est, son nom, son état), ses
+     groupes de champs, puis le geste, collé au bas de l'écran tant que la fiche y est. */
+  .fiche-admin {
+    --fiche-marge: 1.125rem;
+    min-width: 0;
+    border: 1px solid var(--color-filet);
+    background: var(--color-calque);
+    outline: none;
+  }
+  /* Une seule fiche à la fois : les autres attendent, hors de l'écran et de la lecture. */
+  .fiche-admin[data-fermee] { display: none; }
+  .fiche-admin-retour {
+    display: inline-flex;
+    align-items: center;
+    column-gap: 0.5rem;
+    min-height: 2.75rem;
+    margin: 0.25rem var(--fiche-marge) 0;
+    font-weight: 600;
+  }
+  .fiche-admin-tete {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.625rem 1.5rem;
+    padding: 1rem var(--fiche-marge) 1.125rem;
+    border-bottom: 1px solid var(--r-ligne);
+  }
+  .fiche-admin-corps { padding: 1.5rem var(--fiche-marge) 0; }
+  .fiche-admin-colonnes { display: none; }
+
+  .groupe-admin {
+    min-width: 0;
+    margin: 0 0 1.75rem;
+    padding: 0;
+    border: 0;
+  }
+  .groupe-admin > legend {
+    display: block;
+    width: 100%;
+    padding: 0 0 0.625rem;
+    border-bottom: 1px solid var(--r-fort);
+  }
+
+  /* Une ligne : la clé, le champ, puis la source et la date du fait. */
+  .champ-admin {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 0.875rem;
+  }
+  .champ-admin-cle {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.875rem;
+  }
+  .champ-admin-cle > label { color: var(--r-doux); transition: color 0.15s ease; }
+  /* Le champ où l'on écrit : sa clé prend la couleur d'accent, avec sa ligne. */
+  .champ-admin:focus-within .champ-admin-cle > label { color: var(--r-accent); }
+  .champ-admin-modifie {
+    display: inline-flex;
+    align-items: baseline;
+    column-gap: 0.375rem;
+    margin: 0;
+  }
+  .champ-admin-fixe {
+    min-height: 2.75rem;
+    margin: 0;
+    padding-block: 0.5rem 0.4375rem;
+    color: var(--r-fort);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  /* Sous le champ : la clé « Source », la source, puis la date, à la suite. */
+  .champ-admin-source {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.625rem;
+    margin-top: 0.375rem;
+  }
+  .champ-admin-source > p { margin: 0; }
+
+  /* La ligne où écrire. Pas de cadre : une feuille, pas un écran. Pointillé tant que le
+     champ est vide, pleine une fois rempli ; latérite quand on y écrit ou qu'on l'a
+     modifié. Deux variables règlent le trait : sa couleur, son épaisseur. */
+  .saisie {
+    --saisie-couleur: var(--color-encre-2);
+    --saisie-epais: 1.5px;
+    --saisie-trait: repeating-linear-gradient(90deg, var(--saisie-couleur) 0 2px, transparent 2px 6px);
+    appearance: none;
+    display: block;
+    width: 100%;
+    min-height: 2.75rem;
+    margin: 0;
+    padding: 0.5rem 0 0.4375rem;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    background-image: var(--saisie-trait);
+    background-position: 0 100%;
+    background-size: 100% var(--saisie-epais);
+    background-repeat: no-repeat;
+    color: var(--r-fort);
+    font: inherit;
+    line-height: 1.45;
+    caret-color: var(--r-accent);
+  }
+  .saisie::placeholder {
+    color: var(--r-doux);
+    opacity: 1;
+  }
+  .saisie[data-rempli] {
+    --saisie-epais: 1px;
+    --saisie-trait: linear-gradient(var(--saisie-couleur), var(--saisie-couleur));
+  }
+  .champ-admin[data-modifie] .saisie {
+    --saisie-couleur: var(--r-accent);
+    --saisie-epais: 1.5px;
+  }
+  /* Le focus : la ligne passe en latérite, 2 px, et le champ prend le contour du site.
+     La ligne seule ne suffit pas : un champ modifié a déjà la sienne en latérite, à un
+     demi-pixel près. Le contour dit lequel a le focus. */
+  .saisie:focus-visible {
+    --saisie-couleur: var(--r-accent);
+    --saisie-epais: 2px;
+    --saisie-trait: linear-gradient(var(--saisie-couleur), var(--saisie-couleur));
+    outline: 2px solid var(--r-focus);
+    outline-offset: 4px;
+  }
+
+  /* Un texte de plusieurs lignes : une ligne sous chaque ligne, comme sur une fiche de
+     papier. Le fond défile avec le texte (local). */
+  .saisie-lignes {
+    --saisie-pas: 1.75rem;
+    min-height: var(--saisie-pas);
+    margin-top: 0.375rem;
+    padding: 0;
+    overflow: auto;
+    resize: vertical;
+    line-height: var(--saisie-pas);
+    background-image: linear-gradient(0deg, var(--saisie-couleur) 0 var(--saisie-epais), transparent var(--saisie-epais));
+    background-position: 0 0;
+    background-size: 100% var(--saisie-pas);
+    background-repeat: repeat;
+    background-attachment: local;
+    /* Là où le navigateur le sait, le champ prend la hauteur de son texte : plus besoin
+       de poignée pour l'agrandir. */
+    field-sizing: content;
+  }
+  @supports (field-sizing: content) {
+    .saisie-lignes { resize: none; }
+  }
+  .saisie-lignes:not([data-rempli]) {
+    background-image: repeating-linear-gradient(90deg, var(--saisie-couleur) 0 2px, transparent 2px 6px);
+    background-position: 0 calc(var(--saisie-pas) - var(--saisie-epais));
+    background-size: 100% var(--saisie-epais);
+    background-repeat: repeat-x;
+  }
+
+  /* Un choix dans une liste : la même ligne, et un chevron. Le motif ne peut pas lire
+     une variable : la couleur de l'encre y est écrite (%23 vaut #). */
+  .saisie-choix {
+    padding-right: 1.75rem;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 4.25 6 8.25 10 4.25' fill='none' stroke='%230F1F36' stroke-width='1.5'/%3E%3C/svg%3E"),
+      var(--saisie-trait);
+    background-position: right 0.25rem center, 0 100%;
+    background-size: 0.75rem 0.75rem, 100% var(--saisie-epais);
+    cursor: pointer;
+  }
+
+  /* Le geste : « Enregistrer », collé au bas de l'écran tant que la fiche y est. */
+  .fiche-admin-gestes {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin: 0.5rem calc(var(--fiche-marge) * -1) 0;
+    padding: 0.875rem var(--fiche-marge);
+    border-top: 1px solid var(--r-fort);
+    background-color: color-mix(in srgb, var(--color-calque) 94%, transparent);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  /* Le message de la maquette : en clair, dans son cadre en pointillé (plus haut). */
+  .fiche-admin-message {
+    margin: 0;
+    color: var(--r-fort);
+    font-weight: 600;
+  }
+  .fiche-admin-message[data-dit] { padding: 0.5625rem 0.875rem; }
+
+  /* L'aperçu d'une photo : son cadre, sur le fond d'attente, et sa légende à deux colonnes. */
+  /* Petit : c'est un aperçu, et certaines photos montrent des visages (312 px au plus,
+     comme la plus petite photo de l'accueil). */
+  .apercu {
+    max-width: 19.5rem;
+    margin: 0 0 1.75rem;
+  }
+  .apercu-cadre {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--color-attente);
+  }
+  .apercu-cadre > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (width >= 47.5625rem) {
+    .fiche-admin { --fiche-marge: 1.75rem; }
+    /* La clé à gauche, le champ à droite. */
+    .champ-admin {
+      grid-template-columns: 12rem minmax(0, 1fr);
+      column-gap: 1.5rem;
+      align-items: start;
+    }
+    .champ-admin-cle {
+      flex-direction: column;
+      padding-top: 0.75rem;
+    }
+    .champ-admin-source { grid-column: 2; }
+    .saisie-lignes { margin-top: 0.5rem; }
+  }
+  @media (width >= 68.8125rem) {
+    .fiche-admin-retour { display: none; }
+  }
+  /* Dès 1 281 px, la source et la date ont leur colonne, sous sa tête. */
+  @media (width >= 80.0625rem) {
+    .fiche-admin { --fiche-marge: 2rem; }
+    .champ-admin { column-gap: 1.75rem; }
+    .champ-admin[data-sources] { grid-template-columns: 12rem minmax(0, 1fr) 12.5rem; }
+    .fiche-admin-colonnes {
+      display: grid;
+      grid-template-columns: 12rem minmax(0, 1fr);
+      column-gap: 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .fiche-admin-colonnes[data-sources] { grid-template-columns: 12rem minmax(0, 1fr) 12.5rem; }
+    .champ-admin[data-sources] .champ-admin-source {
+      display: block;
+      grid-column: 3;
+      grid-row: 1;
+      margin-top: 0;
+      padding-top: 0.6875rem;
+    }
+    .champ-admin[data-sources] .champ-admin-valeur {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .champ-admin-source-cle { display: none; }
+  }
+
+  /* Couleurs forcées (contraste élevé du système) : les fonds en dégradé peuvent sauter.
+     La ligne devient une bordure, le focus un contour. */
+  @media (forced-colors: active) {
+    .saisie { border-bottom: 1px solid; }
+    .saisie:focus-visible { outline: 2px solid; outline-offset: 2px; }
+    .segment:has(input:checked) { outline: 2px solid; outline-offset: -4px; }
+    .registre-essai,
+    .fiche-admin-message[data-dit] { border: 1px dotted; }
+    .classement-ligne::after { border-bottom: 2px solid; }
+  }
+
+  /* -------------------------------------------------------------- La connexion
+     Le seuil de l'espace client. Sur téléphone : le bandeau, une bande de plan (le logo,
+     la devise, le trait de terrain), puis l'écran. Au bureau : le plan à gauche, sur
+     toute la hauteur, l'écran à droite. */
+  .connexion {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    min-height: 100dvh;
+  }
+  .connexion > .admin-bandeau { top: 0; }
+  .connexion-plan {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    row-gap: 1.75rem;
+    align-items: flex-start;
+    padding: 1.25rem var(--spacing-gutter) 3.5rem;
+    background: var(--color-plan);
+  }
+  .connexion-devise > .titre {
+    max-width: 22rem;
+    margin: 0;
+    color: var(--r-fort);
+    font-size: clamp(1.5rem, 6.6vw, 2rem);
+    line-height: 1.15;
+  }
+  .connexion-devise > .etiquette { margin-bottom: 0; }
+  /* Le trait de terrain, au pied du plan : ses bornes au droit des marges. */
+  .connexion-terrain {
+    position: absolute;
+    inset: auto 0 0;
+  }
+  .connexion-borne {
+    position: absolute;
+    top: -12px;
+    /* Au-dessus des hachures : leur masque les ferait passer devant les bornes. */
+    z-index: 1;
+    width: 10px;
+    height: 20px;
+    border: 1px solid var(--color-encre);
+    background: var(--color-blanc);
+  }
+  .connexion-borne:first-child { left: var(--spacing-gutter); }
+  .connexion-borne:nth-child(2) { right: var(--spacing-gutter); }
+
+  .connexion-ecran {
+    padding: 2.5rem var(--spacing-gutter) 4rem;
+    outline: none;
+  }
+  .connexion-gestes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.75rem;
+    margin-top: 1.75rem;
+  }
+
+  /* La fiche d'accès : deux champs dessinés, une cote en pointillé sans valeur. */
+  .acces {
+    max-width: 34rem;
+    margin-top: 2rem;
+    border: 1px solid var(--color-filet);
+    background: var(--color-calque);
+  }
+  .acces-tete {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1.5rem;
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid var(--r-ligne);
+  }
+  .acces-tete > p { margin: 0; }
+  .acces-champs {
+    display: grid;
+    row-gap: 1.125rem;
+    margin: 0;
+    padding: 1.375rem 1.25rem 0.375rem;
+    list-style: none;
+  }
+  .acces-champs > li {
+    display: grid;
+    grid-template-columns: 8.25rem minmax(0, 1fr);
+    column-gap: 1rem;
+    align-items: center;
+  }
+  .acces-cote {
+    display: flex;
+    align-items: center;
+    height: 12px;
+    color: var(--r-doux);
+  }
+  .acces-cote > span {
+    flex: none;
+    width: 1.5px;
+    height: 100%;
+    background-color: currentColor;
+  }
+  .acces-cote > .pointille {
+    flex: 1;
+    height: 1.5px;
+    background-color: transparent;
+  }
+  .acces-phrase {
+    margin: 0;
+    padding: 1rem 1.25rem 1.25rem;
+  }
+
+  @media (width >= 68.8125rem) {
+    .connexion {
+      grid-template-columns: minmax(22rem, 5fr) minmax(0, 7fr);
+      grid-template-rows: auto 1fr;
+    }
+    .connexion > .admin-bandeau { grid-column: 1 / -1; }
+    .connexion-plan {
+      justify-content: space-between;
+      padding: 2.5rem var(--spacing-gutter) 7rem;
+    }
+    .connexion-plan > .admin-plaque img { height: 2.75rem; }
+    .connexion-devise > .titre {
+      max-width: 26rem;
+      font-size: clamp(2rem, 3.1vw, 2.75rem);
+    }
+    .connexion-ecran {
+      display: flex;
+      align-items: center;
+      padding: 4rem var(--spacing-gutter) 5rem clamp(2.5rem, 5vw, 5.5rem);
+    }
+    .connexion-colonne {
+      width: 100%;
+      max-width: 42rem;
+    }
+  }
+}

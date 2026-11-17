@@ -1,190 +1,211 @@
-import { BoutonAppel, BoutonWhatsApp } from "@/components/boutons";
-import { CarteVideo, type Couverture } from "@/components/carte-video";
-import { EnTete } from "@/components/en-tete";
-import { Cadre } from "@/components/photo";
-import { Borne } from "@/components/reperes";
-import { Section } from "@/components/section";
-import { TextLink } from "@/components/text-link";
-import { VignetteTerrain } from "@/components/vignette-terrain";
-import { LIBELLES } from "@/content/messages";
-import { PROGRAMMES, RECASEMENT_AIBD, type Programme } from "@/content/programmes";
-import type { CleVideo } from "@/content/videos";
-import { cx } from "@/lib/base";
-import { NOTE, T3 } from "@/lib/classes";
-import { typo } from "@/lib/format";
+// Fiches des trois programmes, direction v4 « Du plan au terrain »
+// (recherche/revue-4/direction-v4.md, section 6). Toutes s'ouvrent sur le même cartouche
+// de plan (borne 01) et se ferment sur les autres terrains, puis l'appel final, avec le
+// bouton WhatsApp du programme. Entre les deux, chacune prend la forme de sa pièce :
+// - Sakina City, autour de son titre mère : TF 15026/R en très grand dans le cartouche,
+//   sur son trait plein entre deux bornes ; la voirie et la visite virtuelle, sur le
+//   calque ; puis le papier qu'on achète, sur une planche au bleu ;
+// - Sicap Keur Massar, autour de ses lots : leurs numéros sur des plaques de borne dans
+//   le cartouche, la vue au drone en grand, puis le tableau des lots sur une planche au
+//   bleu, et les deux vidéos des lots, sur le calque ;
+// - Lac Town, autour de sa vue au drone : son statut en cote pointillée dans le
+//   cartouche, la vue en grand avec les axes de ses voies et la lunette, sur le calque ;
+//   puis son calendrier en frise, sur l'aplat de latérite.
+// Le rythme des fonds : jamais deux sombres de suite, toujours du clair avant le pied.
+// Les bornes des en-têtes de section se suivent sur chaque fiche.
+//
+// Une seule action par fiche : le WhatsApp du programme, en tête et dans l'appel final.
+// Sicap Keur Massar le redit en contour au pied de la planche des lots, là où on lit que
+// certains ont pu partir.
 
-/** Fil d'Ariane des fiches. */
-export const ARIANE = { href: "/terrains/", libelle: "Terrains" };
+import { AppelFinal } from "@/components/appel-final";
+import { BoutonWhatsApp } from "@/components/boutons";
+import { CaseCartouche } from "@/components/cartouche";
+import { CadrePhoto } from "@/components/photo";
+import {
+  APPELS,
+  LEGENDE_QUARTIER,
+  MOT_CALENDRIER,
+  PAPIER,
+  PLANCHES,
+  PRIX_SUR_DEMANDE,
+  QUANTITE_LOTS,
+  REPERES_PAPIER,
+  SECTIONS,
+  TITRES_FICHE,
+} from "@/content/pages/fiches";
+import { PROGRAMMES, type Programme } from "@/content/programmes";
+import { AutresTerrains, Videos, Visite } from "./blocs";
+import { Calendrier } from "./calendrier";
+import { Lots, PlaquesLots } from "./lots";
+import { Action, CartouchePlan, OuvertureFiche } from "./ouverture";
+import { Papier } from "./papier";
+import { Vue } from "./vue";
 
-/**
- * Couverture des vidéos d'une fiche : la photo du reportage de la collaboratrice, qui
- * n'est pas ailleurs sur la page. Les autres vidéos : le quadrillage d'un plan.
- */
-const COUVERTURES: Partial<Record<CleVideo, Couverture>> = {
-  reelLotsSKM: { photo: "ig-DfAoxMkAbKR" },
-};
+export function FicheProgramme({ programme: p }: { programme: Programme }) {
+  if (p.slug === "sakina-city") return <FicheSakina p={p} />;
+  if (p.slug === "sicap-keur-massar") return <FicheSicap p={p} />;
+  return <FicheLacTown p={p} />;
+}
 
-/**
- * Largeurs du cadre d'une carte vidéo de la fiche : 416 px au plus (max-w-[26rem]),
- * deux par ligne dès 761 px. La capture de la collaboratrice y est dessinée à 555 px.
- */
-const SIZES_VIDEO =
-  "(min-width: 1376px) 416px, (min-width: 1101px) 31vw, (min-width: 912px) 416px, (min-width: 761px) 46vw, (min-width: 456px) 416px, 90vw";
+/** Les deux autres programmes, dans l'ordre du site. */
+function autres(p: Programme) {
+  return PROGRAMMES.filter((x) => x.slug !== p.slug);
+}
 
-/**
- * La grande photo de la fiche : pleine largeur (1 360 × 600 au bureau, 3:2 sur
- * mobile, bord à bord). Sakina City : deux photos de même hauteur, côte à côte dès
- * 761 px. Le panneau 2534 à 440 px de large au plus (au-delà, son texte se lit),
- * la voirie 2413-droite à 600 px au plus : 437 × 325 et 600 × 325 au bureau.
- */
-function Visuel({ p }: { p: Programme }) {
-  if (p.photoFiche) {
-    return (
-      <div className="entree mt-10 grid max-w-[66.3125rem] gap-y-8 [--delai:0.15s] tab:grid-cols-[437fr_600fr] tab:items-start tab:gap-x-6 desk:mt-14">
-        <Cadre
-          id={p.photo}
-          preload
-          legende
-          bord
-          ratio="aspect-[4/3] tab:aspect-[437/325]"
-          sizes="(min-width: 1440px) 437px, (min-width: 761px) 40vw, 100vw"
-        />
-        <Cadre
-          id={p.photoFiche}
-          ratio="aspect-[846/458]"
-          legende
-          bord
-          sizes="(min-width: 1440px) 600px, (min-width: 761px) 55vw, 100vw"
-        />
-      </div>
-    );
-  }
-  return (
-    <Cadre
-      id={p.photo}
-      preload
-      legende
-      bord
-      ratio="aspect-[3/2] tab:aspect-[2/1] desk:aspect-[1360/600]"
-      sizes="(min-width: 1440px) 1360px, 100vw"
-      className="entree mt-10 [--delai:0.15s] desk:mt-14"
-    />
-  );
+/** L'action d'un programme : « Prix sur demande », puis son WhatsApp. */
+function ActionProgramme({ p }: { p: Programme }) {
+  return <Action ligne={PRIX_SUR_DEMANDE.texte} label={p.libelleWhatsApp} message={p.message} nom={p.nom} />;
 }
 
 /**
- * Fiche d'un programme (revue 2) : en-tête (fil d'Ariane, nom, chapeau, statut), la
- * grande photo, puis deux colonnes. À gauche, les faits en cartes, les lots, les
- * vidéos. À droite, une colonne collante : statut, prix, WhatsApp, appel, foncier.
- * Dessous, les autres terrains en vignettes.
+ * Les deux dernières pièces de chaque fiche : les autres terrains, puis l'appel final.
+ * `coupe` : la largeur du titre de l'appel, quand sa phrase doit se couper après sa
+ * question et pas un mot plus loin.
  */
-export function FicheProgramme({ programme: p }: { programme: Programme }) {
-  const autres = PROGRAMMES.filter((x) => x.slug !== p.slug);
-  const statut = (p.statutFiche ?? p.statut).texte;
-  // Le prix n'a pas sa carte : la colonne d'action dit déjà « Prix sur demande ».
-  const faits = p.fiche.filter((l) => l.libelle !== "Prix");
+function Fin({ p, numero, coupe }: { p: Programme; numero: [string, string]; coupe?: string }) {
+  const appel = APPELS[p.slug];
   return (
-    <Section labelledBy="t-page" rythme="ouverture">
-      {/* Le statut foncier en tête, une fois : les cartes de faits ne le redisent pas. */}
-      <EnTete ariane={ARIANE} titre={p.nom} chapeau={p.chapeau.texte} className="entree">
-        <p className="mt-5 inline-flex items-center gap-2.5 bg-paper-2 px-3.5 py-2.5 font-semibold">
-          <span aria-hidden="true" className={cx("size-2.5 flex-none", p.foncier === "titre" ? "bg-trait" : "border-[1.5px] border-ink-2")} />
-          {typo(statut)}
-        </p>
-      </EnTete>
+    <>
+      <AutresTerrains numero={numero[0]} nom={SECTIONS.autres} titre={TITRES_FICHE.autres} programmes={autres(p)} />
+      <AppelFinal
+        classeTitre={coupe}
+        numero={numero[1]}
+        nom={SECTIONS.appel}
+        phrase={appel.texte}
+        mot={appel.mot}
+        bouton={<BoutonWhatsApp label={p.libelleWhatsApp} message={p.message} ariaLabel={`${p.libelleWhatsApp}, ${p.nom}`} />}
+      />
+    </>
+  );
+}
 
-      <Visuel p={p} />
+function FicheSakina({ p }: { p: Programme }) {
+  return (
+    <>
+      {/* 01. Le cartouche de plan : le titre mère d'abord. */}
+      <OuvertureFiche
+        nom={p.nom}
+        planche={{ nom: PLANCHES[p.slug].nom, quantite: PLANCHES[p.slug].quantite?.texte }}
+        situation={p.situation?.texte}
+        cotes={p.cotes}
+        chapeau={p.presentation.texte}
+        action={<ActionProgramme p={p} />}
+        cartouche={<CartouchePlan nom={p.nom} references={p.references} />}
+      />
 
-      <div className="mt-12 grid gap-y-14 desk:mt-16 desk:grid-cols-12 desk:gap-x-6">
-        <div className="desk:col-span-8">
-          <h2 className={T3}>{typo("L’essentiel")}</h2>
-          <dl className="mt-5 grid gap-4 tab:grid-cols-2">
-            {faits.map((l, i) => (
-              <div
-                key={l.libelle}
-                className={cx(
-                  "border border-rule bg-paper p-5 transition-colors duration-300 hover:border-trait",
-                  i % 2 === 1 ? "reveler-2" : "reveler",
-                  // Une dernière carte seule sur sa ligne prend toute la largeur.
-                  i === faits.length - 1 && faits.length % 2 === 1 && "tab:col-span-2",
-                )}
-              >
-                <dt className="flex items-center gap-2 text-small font-semibold text-ink-2">
-                  <Borne />
-                  {l.libelle}
-                </dt>
-                <dd className="mt-2 tabular-nums">{typo(l.valeur.texte)}</dd>
-              </div>
-            ))}
-          </dl>
-          {p.noteFiche ? <p className={cx(NOTE, "mt-4")}>{typo(p.noteFiche.texte)}</p> : null}
+      {/* 02. La voirie en photo, la visite virtuelle en vidéo. */}
+      <Visite numero="02" photo={p.photoFiche ?? p.photo} titre={TITRES_FICHE.visiteSakina} videos={p.videos} />
 
-          {p.lots ? (
-            <section aria-labelledby="t-lots" className="reveler mt-12">
-              <h2 id="t-lots" className={T3}>
-                {p.lots.titre}
-              </h2>
-              <ul className="mt-5 grid gap-3 tabular-nums tab:grid-cols-3">
-                {p.lots.lignes.map((l) => (
-                  <li key={l.texte} className="border-l-4 border-borne bg-paper-2 px-4 py-3">
-                    {typo(l.texte)}
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-4 text-ink-2">{typo(p.lots.avertissement.texte)}</p>
-            </section>
-          ) : null}
+      {/* 03. Le papier qu'on achète, sur la planche au bleu. */}
+      <Papier cle="tf" titre={PAPIER.tf} numero="03" repere={REPERES_PAPIER["sakina-city"].texte} />
 
-          {p.videos.length ? (
-            <section aria-labelledby="t-videos" className="mt-14">
-              <h2 id="t-videos" className={T3}>
-                En vidéo
-              </h2>
-              <ul className="mt-5 grid gap-6 tab:grid-cols-2">
-                {/* 416 px au plus, les deux cartes à la même largeur : sur mobile, la capture
-                    de la collaboratrice serait sinon dessinée au-delà de ses 899 px. */}
-                {p.videos.map((cle, i) => (
-                  <li key={cle} className={i === 1 ? "reveler-2" : "reveler"}>
-                    <CarteVideo cle={cle} couverture={COUVERTURES[cle]} sizes={SIZES_VIDEO} className="max-w-[26rem]" />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-        </div>
+      <Fin p={p} numero={["04", "05"]} />
+    </>
+  );
+}
 
-        {/* La colonne collante : tout ce qu'il faut pour passer à l'action. */}
-        <aside aria-label={`Contacter Saloum Immo pour ${p.nom}`} className="desk:col-span-4">
-          <div className="border border-ink p-6 desk:sticky desk:top-[calc(var(--spacing-header)+24px)] desk:p-7">
-            <p className="text-small font-semibold text-ink-2">{p.nom}</p>
-            <p className="mt-1 text-h3 leading-snug font-semibold">Prix sur demande</p>
-            <p className="mt-2 text-ink-2">{typo("Demandez le prix et les lots disponibles sur WhatsApp.")}</p>
-            <div className="mt-6 flex flex-col gap-3">
-              <BoutonWhatsApp label={LIBELLES.programme} message={p.message} bloc={false} className="w-full" />
-              <BoutonAppel bloc={false} className="w-full" />
-            </div>
-            <p className="mt-5 border-t border-rule pt-4">
-              <TextLink href="/foncier/">Vérifier les documents avec nous</TextLink>
-            </p>
-          </div>
-        </aside>
-      </div>
+function FicheSicap({ p }: { p: Programme }) {
+  // La seconde vidéo est le reel : la fiche en montre une image.
+  const reel = p.videos[1];
+  const lots = p.lots;
+  return (
+    <>
+      {/* 01. Le cartouche de plan : le papier, puis les lots sur leurs plaques. Dessous,
+          la vue au drone en grand. 2616 fait 2 000 px de large : elle tient le conteneur
+          (1 360 px au plus). Sur mobile, le cadre 4:3 la dessine par sa hauteur, 1,19
+          fois la largeur de l'écran. Vue oblique : ni repères de cadrage ni plan dessus. */}
+      <OuvertureFiche
+        nom={p.nom}
+        planche={{
+          nom: PLANCHES[p.slug].nom,
+          // La quantité se compte dans la liste des lots.
+          quantite: lots ? `${lots.liste.length} ${QUANTITE_LOTS}` : undefined,
+        }}
+        situation={p.situation?.texte}
+        cotes={p.cotes}
+        chapeau={p.presentation.texte}
+        note={p.autreNom?.texte}
+        action={<ActionProgramme p={p} />}
+        cartouche={
+          <CartouchePlan
+            nom={p.nom}
+            references={p.references}
+            apresPrincipale={
+              lots ? (
+                <CaseCartouche cle={lots.titre} className="col-span-2">
+                  <PlaquesLots liste={lots.liste} />
+                </CaseCartouche>
+              ) : null
+            }
+          />
+        }
+      >
+        <CadrePhoto
+          id={p.photo}
+          bascule
+          bord
+          ratio="aspect-[4/3] tab:aspect-[16/9] desk:aspect-[2/1]"
+          texteLegende={LEGENDE_QUARTIER}
+          sizes="(min-width: 1440px) 1360px, (min-width: 1101px) calc(100vw - 80px), (min-width: 761px) calc(100vw - 56px), 119vw"
+          className="apparait mt-14 desk:mt-20"
+        />
+      </OuvertureFiche>
 
-      <section aria-labelledby="t-autres" className="mt-20 desk:mt-28">
-        <h2 id="t-autres" className={T3}>
-          Autres terrains
-        </h2>
-        <ul className="mt-5 grid gap-4 tab:grid-cols-3">
-          {autres.map((a, i) => (
-            <li key={a.slug} className={i === 1 ? "reveler-2" : "reveler"}>
-              <VignetteTerrain href={a.href} nom={a.nom} detail={a.statut.texte} photo={a.photo} />
-            </li>
-          ))}
-          <li className="reveler-3">
-            <VignetteTerrain href={RECASEMENT_AIBD.href} nom={RECASEMENT_AIBD.nom} detail={RECASEMENT_AIBD.etiquette} />
-          </li>
-        </ul>
-      </section>
-    </Section>
+      {/* 02. Les lots, sur la planche au bleu : la pièce de cette fiche. */}
+      {lots ? (
+        <Lots
+          numero="02"
+          lots={lots}
+          action={
+            <BoutonWhatsApp
+              variante="contour"
+              label={p.libelleWhatsApp}
+              message={p.message}
+              ariaLabel={`${p.libelleWhatsApp}, ${p.nom}`}
+            />
+          }
+        />
+      ) : null}
+
+      {/* 03. Les deux vidéos des lots, en lignes, et une image tirée du reel. */}
+      <Videos
+        numero="03"
+        titre={TITRES_FICHE.videosSicap}
+        videos={p.videos}
+        image={reel ? { photo: "ig-DfAoxMkAbKR", cle: reel } : undefined}
+      />
+
+      <Fin p={p} numero={["04", "05"]} />
+    </>
+  );
+}
+
+function FicheLacTown({ p }: { p: Programme }) {
+  return (
+    <>
+      {/* 01. Le cartouche de plan : le statut d'abord, en cote pointillée. */}
+      <OuvertureFiche
+        nom={p.nom}
+        planche={{ nom: PLANCHES[p.slug].nom, quantite: PLANCHES[p.slug].quantite?.texte }}
+        situation={p.situation?.texte}
+        cotes={p.cotes}
+        chapeau={p.presentation.texte}
+        action={<ActionProgramme p={p} />}
+        cartouche={<CartouchePlan nom={p.nom} references={p.references} />}
+        noteCartouche={p.noteFiche?.texte}
+      />
+
+      {/* 02. La vue au drone, ses axes et la lunette, sur le calque. */}
+      <Vue numero="02" dejaFait={p.dejaFait.texte} />
+
+      {/* 03. Le calendrier, sur la latérite. */}
+      {p.calendrier ? <Calendrier numero="03" titre={p.calendrier.titre.texte} mot={MOT_CALENDRIER} jalons={p.calendrier.jalons} /> : null}
+
+      {/* « Un terrain à Lac Town ? Demandez les prix. » : le titre fait 9,5 fois son corps
+          de large, la phrase s'y coupe après le nom, puis après la question. Plus large,
+          « Demandez » remontait sur la ligne du nom et laissait « les prix. » seul. */}
+      <Fin p={p} numero={["04", "05"]} coupe="max-w-[9.5em]" />
+    </>
   );
 }

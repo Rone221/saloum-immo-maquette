@@ -1,8 +1,7 @@
 import type { CSSProperties } from "react";
 import manifeste from "../../public/photos/photos.json";
-import { PHOTOS, type PhotoId } from "@/content/photos";
+import { NATURES, PHOTOS, type PhotoId } from "@/content/photos";
 import { asset, cx } from "@/lib/base";
-import { NOTE } from "@/lib/classes";
 import { typo } from "@/lib/format";
 
 type Entree = { largeur: number; hauteur: number; variantes: number[] };
@@ -126,27 +125,56 @@ export function sizesRecadree(id: PhotoId, ratioCadre: number, sizesCadre: strin
 }
 
 /**
- * Photo dans un cadre au ratio fixe, recadrée (object-fit: cover), avec sa
- * légende dessous si `legende`. La légende décrit la scène, sans lieu ni programme.
+ * La légende d'une photo (direction v4, pièce 14) : deux colonnes en étiquette. À
+ * gauche, ce qu'on voit (la légende de content/photos.ts, sans son point final, ou
+ * `texte`) ; à droite, la nature de l'image (« Photo de chantier », « Vue au drone »,
+ * « Image tirée d'une vidéo », « Photo sur place »), lue dans la fiche de la photo :
+ * elle ne s'écrit pas à la main. À poser dans la <figure> de la photo.
+ * Jamais un nom de lieu ou de programme que la fiche de la photo ne permet pas.
+ */
+export function LegendePhoto({ id, texte, className }: { id: PhotoId; texte?: string; className?: string }) {
+  // Une étiquette n'est pas une phrase : sans point final.
+  const gauche = (texte ?? PHOTOS[id].legende)?.replace(/\.$/, "");
+  return (
+    <figcaption className={cx("etiquette mt-3 flex items-baseline justify-between gap-x-6 text-doux", className)}>
+      <span className="min-w-0 flex-1">{gauche ? typo(gauche) : null}</span>
+      {/* Sous une photo étroite, la nature passe sur deux lignes plutôt que de pousser la légende. */}
+      <span className="max-w-[42%] text-right">{typo(NATURES[PHOTOS[id].nature])}</span>
+    </figcaption>
+  );
+}
+
+/**
+ * Le cadre de photo v4 : angles vifs, fond `attente` tant que l'image n'est pas là,
+ * la photo recadrée (object-fit: cover) au ratio donné, et dessous sa légende à deux
+ * colonnes. Pas de texte posé sur une photo, sauf l'ouverture d'accueil.
+ * `bascule` : une grande photo penche de 2° au pointeur fin, pas plus
+ * (components/gestes.tsx) ; une par page au plus.
  * Sur mobile, `bord` pose la photo bord à bord (la légende garde la gouttière).
  */
-export function Cadre({
+export function CadrePhoto({
   id,
   sizes,
   ratio = "aspect-[4/3]",
-  legende = false,
+  legende = true,
+  texteLegende,
   bord = false,
+  bascule = false,
   preload,
   position,
   className,
 }: {
   id: PhotoId;
+  /** Largeur dessinée de l'image (voir Photo). */
   sizes: string;
   /** Classes du cadre : ratio, hauteur, selon la largeur. */
   ratio?: string;
+  /** La légende à deux colonnes (par défaut). */
   legende?: boolean;
-  /** Bord à bord sous 761 px (toutes les photos seules : allegement.md, 2.8). */
+  /** Ce qu'on voit, si ce n'est pas la légende de la fiche. */
+  texteLegende?: string;
   bord?: boolean;
+  bascule?: boolean;
   preload?: boolean;
   position?: string;
   className?: string;
@@ -156,12 +184,13 @@ export function Cadre({
       className={cx("m-0", bord && "-mx-gutter tab:mx-0 [&_figcaption]:px-gutter tab:[&_figcaption]:px-0", className)}
       style={plafond(id)}
     >
-      <span className={cx("relative block overflow-hidden bg-paper-2", ratio)}>
+      <span
+        data-bascule={bascule ? "" : undefined}
+        className={cx("relative block overflow-hidden bg-attente", bascule && "bascule", ratio)}
+      >
         <Photo id={id} fill sizes={sizes} preload={preload} position={position} className="object-cover" />
       </span>
-      {legende && PHOTOS[id].legende ? (
-        <figcaption className={cx(NOTE, "mt-3")}>{typo(PHOTOS[id].legende)}</figcaption>
-      ) : null}
+      {legende ? <LegendePhoto id={id} texte={texteLegende} /> : null}
     </figure>
   );
 }

@@ -9,17 +9,25 @@ const MOIS = [
 /** « juillet » dans « 8 juillet 2026 » : un nom de mois entier, pas le début d'un mot. */
 const MOIS_SUIVANT = new RegExp(`(?=(?:${MOIS.join("|")})(?![\\p{L}]))`, "u").source;
 
+/** Espace fine insécable (U+202F). */
+const FINE = " ";
+
 /**
- * Espaces insécables : avant « : ; ? ! », à l'intérieur des guillemets,
- * entre les groupes de chiffres (46 000, 77 400 75 75), dans une fourchette
- * (6 à 10, 150 à 237), avant une unité ou un multiple (3 km, 29 hectares,
- * 10 millions FCFA), dans une durée (7 min 26), entre « sortie » et son numéro
- * (sortie 10), entre le jour et le mois (8 juillet, 1er juin).
+ * Espaces fines insécables (règle de l'Imprimerie nationale) : avant « ; ? ! »,
+ * à l'intérieur des guillemets, entre les groupes de milliers (46 000, 2 560).
+ * Espaces insécables pleines : avant « : », dans un numéro de téléphone
+ * (77 400 75 75), dans une fourchette (6 à 10, 150 à 237), avant une unité ou un
+ * multiple (3 km, 29 hectares, 10 millions FCFA), dans une durée (7 min 26), entre
+ * « sortie » et son numéro (sortie 10), entre le jour et le mois (8 juillet, 1er juin).
  */
 export function typo(texte: string): string {
   return texte
-    .replace(/ ([:;?!»])/g, `${NBSP}$1`)
-    .replace(/« /g, `«${NBSP}`)
+    .replace(/ :/g, `${NBSP}:`)
+    .replace(/ ([;?!»])/g, `${FINE}$1`)
+    .replace(/« /g, `«${FINE}`)
+    // Un numéro de téléphone garde des espaces pleines, avant les milliers.
+    .replace(/\b(\d{2}) (\d{3}) (\d{2}) (\d{2})\b/g, `$1${NBSP}$2${NBSP}$3${NBSP}$4`)
+    .replace(/(\d) (?=\d{3}(?!\d))/g, `$1${FINE}`)
     .replace(/(\d) (?=\d)/g, `$1${NBSP}`)
     .replace(/(\d) à (?=\d)/g, `$1${NBSP}à${NBSP}`)
     .replace(/(\d) (?=(?:m²|ha|hectares?|km|min|h|millions?|milliards?|FCFA)(?![\p{L}]))/gu, `$1${NBSP}`)

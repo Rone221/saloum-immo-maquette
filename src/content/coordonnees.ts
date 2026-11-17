@@ -9,9 +9,11 @@ export type Rubrique = { libelle: string; href: string };
 /** Ordre et libellés fixes, sans numéro (allegement.md, partie 3). */
 export const NAVIGATION: Rubrique[] = [
   { libelle: "Terrains", href: "/terrains/" },
-  { libelle: "Aménager mon terrain", href: "/amenager/" },
+  // Le nom du menu est celui du h1 (analyse, point 55). « Acheter depuis l'étranger »
+  // en entier ne tient pas dans l'en-tête à 1 101 px : le menu en garde la fin.
+  { libelle: "Aménager votre terrain", href: "/amenager/" },
   { libelle: "Comprendre le foncier", href: "/foncier/" },
-  { libelle: "Diaspora", href: "/diaspora/" },
+  { libelle: "Depuis l’étranger", href: "/diaspora/" },
   { libelle: "À propos", href: "/a-propos/" },
   { libelle: "Contact", href: "/contact/" },
 ];

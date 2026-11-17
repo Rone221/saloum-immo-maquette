@@ -17,10 +17,10 @@ export function Faits({ lignes, className }: { lignes: LigneFaits[]; className?:
           key={l.libelle}
           className={cx(
             "grid grid-cols-[6.5rem_minmax(0,1fr)] items-baseline gap-x-4 py-3.5 first:pt-0 last:pb-0 tab:grid-cols-[8.5rem_minmax(0,1fr)] tab:gap-x-6 desk:py-4",
-            i > 0 && "border-t border-rule",
+            i > 0 && "border-t border-ligne",
           )}
         >
-          <dt className="text-small text-ink-2">{l.libelle}</dt>
+          <dt className="text-small text-doux">{l.libelle}</dt>
           <dd>{l.valeur}</dd>
         </div>
       ))}

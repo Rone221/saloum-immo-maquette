@@ -1,0 +1,397 @@
+/* L'ouverture de l'accueil (direction v4, pièce 3) et sa lunette.
+   Importé par components/ouverture-plan.tsx et components/lunette.tsx.
+
+   Deux mises en page.
+   Empilée, sous 1 101 px : la photo en haut, sous un voile qui monte du bas ; le titre
+   dessus ; le chapeau, le bouton et le cartouche dessous, sur le bleu de plan.
+   Plein cadre, dès 1 101 px : la photo bord à bord, tout le texte en bas, sur le pied
+   du voile ; le cartouche en bas à droite, comme sur une planche.
+
+   Entre l'en-tête de planche et le titre, il reste une fenêtre : la photo y est
+   claire, et c'est là, et là seulement, que les axes des voies se tracent. Aucun axe
+   ne passe donc en travers du titre, à aucune largeur : la fenêtre est un bloc de la
+   mise en page, elle suit le texte toute seule.
+
+   L'ordre des couches ne dépend pas de l'ordre de chargement des feuilles. */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .ouv {
+    /* Du haut de l'écran au haut de l'en-tête de planche : l'en-tête du site est en
+       surimpression, il lui faut sa hauteur d'air (notice des fondations, partie 8). */
+    --ouv-tete: calc(var(--spacing-header) + 0.75rem);
+    /* Hauteur de l'en-tête de planche : deux rangs sous 640 px (la nature de l'image
+       passe sous la limite), un seul au-dessus (components/en-tete-section.tsx). */
+    --ouv-planche: 3.25rem;
+    /* Hauteur de la fenêtre, mise en page empilée : 46 % de la largeur, moins quand
+       l'écran est bas, pour que le bouton reste dans le premier écran. */
+    --ouv-fenetre: clamp(10.5rem, min(46vw, 100svh - 34rem), 22rem);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--color-plan);
+  }
+  @media (width >= 40rem) {
+    .ouv { --ouv-planche: 1.75rem; }
+  }
+
+  /* Le cadre : ce que la photo couvre. Empilée, c'est lui le repère des fonds. */
+  .ouv-cadre { position: relative; }
+  .ouv-haut {
+    padding-top: var(--ouv-tete);
+    padding-bottom: 0.75rem;
+  }
+  /* Sur la photo, les étiquettes de l'en-tête de planche sont en blanc plein. */
+  .ouv-planche { --r-doux: var(--color-blanc); }
+
+  /* ------------------------------------------------------------ Les fonds
+     Deux boîtes de même taille, repérées sur le cadre (empilée) ou sur l'ouverture
+     entière (plein cadre) : l'une porte la photo, son voile et ses croisillons, sous
+     le texte ; l'autre, dans la fenêtre, porte le tracé. Chacune est un conteneur :
+     la feuille s'y mesure en cqw et en cqh. */
+  .ouv-fond {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    container-type: size;
+  }
+  .ouv-fond-trace {
+    z-index: auto;
+    overflow: visible;
+  }
+
+  /* --------------------------------------------------------- La feuille
+     La photo et le tracé de ses axes : la même boîte, au ratio de l'original
+     (2 560 × 1 707), donc le dessin tombe sur la photo au pixel près.
+     Repli, sans unités de conteneur : la boîte est le cadre, la photo recadrée au
+     centre, comme le dessin (preserveAspectRatio « xMidYMid slice »). */
+  .ouv-feuille {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+  }
+  @supports (width: 1cqw) {
+    /* Empilée. La photo est calée en haut. Sa hauteur est la plus grande de trois :
+       couvrir la largeur ; descendre 72 px sous la fenêtre, là où le voile est plein ;
+       mettre la voie du milieu 44 px sous le haut de la fenêtre (elle est à 698 px du
+       haut de l'original). L'axe nord-sud (x = 1 341) est au milieu de l'écran. */
+    .ouv-feuille {
+      --bas: calc(var(--ouv-tete) + var(--ouv-planche) + var(--ouv-fenetre));
+      --hi: max(100cqw * 1707 / 2560, var(--bas) + 4.5rem, (var(--ouv-tete) + var(--ouv-planche) + 2.75rem) * 1707 / 698);
+      --wi: calc(var(--hi) * 2560 / 1707);
+      inset: 0 auto auto clamp(100cqw - var(--wi), 50cqw - var(--wi) * 1341 / 2560, 0px);
+      width: var(--wi);
+      height: var(--hi);
+    }
+  }
+
+  /* Le voile, empilée : il monte du bas. Léger dans la fenêtre, presque plein sous la
+     première ligne du titre, plein 64 px plus bas : la photo se fond dans le bleu. En
+     haut, de quoi lire l'en-tête de planche. */
+  .ouv-voile {
+    --bas: calc(var(--ouv-tete) + var(--ouv-planche) + var(--ouv-fenetre));
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-plan) 56%, transparent) 0,
+        color-mix(in srgb, var(--color-plan) 48%, transparent) calc(var(--ouv-tete) + var(--ouv-planche)),
+        color-mix(in srgb, var(--color-plan) 14%, transparent) calc(var(--ouv-tete) + var(--ouv-planche) + 3rem),
+        color-mix(in srgb, var(--color-plan) 26%, transparent) calc(var(--bas) - 3.5rem),
+        color-mix(in srgb, var(--color-plan) 80%, transparent) var(--bas),
+        var(--color-plan) calc(var(--bas) + 4rem)
+      );
+  }
+
+  /* Les croisillons clairs, à droite seulement. */
+  .ouv-croisillons {
+    position: absolute;
+    inset: 0;
+    -webkit-mask-image: linear-gradient(90deg, transparent 40%, #000 76%);
+    mask-image: linear-gradient(90deg, transparent 40%, #000 76%);
+  }
+
+  /* --------------------------------------------------------- La fenêtre
+     Bord à bord. Le tracé y est découpé : il se fond en haut, sous l'en-tête de
+     planche, et en bas, avant le titre. Le masque et le découpage valent pour tout ce
+     que le bloc contient, même posé hors de lui : le fond du tracé a la taille du
+     cadre, on n'en voit que ce qui passe dans la fenêtre. */
+  .ouv-fenetre {
+    height: var(--ouv-fenetre);
+    margin-inline: calc(50% - 50vw);
+    clip-path: inset(0);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 1.75rem, #000 calc(100% - 2.25rem), transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 1.75rem, #000 calc(100% - 2.25rem), transparent 100%);
+  }
+
+  /* Les axes des voies : le trait mixte du site (tiret long, point), à l'écran et non
+     dans le repère de la photo. Il garde la même épaisseur à toutes les échelles. */
+  .ouv-axe {
+    fill: none;
+    stroke: var(--color-blanc);
+    stroke-width: 1.5px;
+    stroke-dasharray: 14 4 2 4;
+    vector-effect: non-scaling-stroke;
+  }
+  /* Le masque d'un axe : un trait large, à pathLength="1", qui le découvre d'un bout à
+     l'autre. Au repos, l'axe est entier : c'est l'état sans mouvement. */
+  .ouv-axe-masque {
+    fill: none;
+    stroke: var(--color-blanc);
+    stroke-width: 90;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+  @keyframes ouv-tracer { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  /* Ce qui se trace va à vitesse constante : la durée de chaque axe suit sa longueur. */
+  @media (prefers-reduced-motion: no-preference) {
+    .ouv-axe-masque { animation: ouv-tracer var(--t, 1.1s) linear var(--d, 0s) both; }
+  }
+
+  /* ----------------------------------------------------------- Le texte */
+  .ouv-bas {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    padding-top: 0.75rem;
+    padding-bottom: 2.5rem;
+  }
+  .ouv-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.875rem 2rem;
+    margin-top: 1.25rem;
+  }
+
+  /* Les repères de cadrage : au bureau seulement, où la photo va d'un bord à l'autre. */
+  .ouv-repere { display: none; }
+
+  /* ------------------------------------------------ Plein cadre, dès 1 101 px */
+  @media (width >= 68.8125rem) {
+    .ouv {
+      /* Les repères de cadrage passent entre l'en-tête du site et celui de la planche. */
+      --ouv-tete: calc(var(--spacing-header) + 2.25rem);
+      /* Sous la fenêtre : le titre sur deux lignes, le chapeau sur trois, le bouton, les
+         marges. Une estimation : elle ne sert qu'à cadrer la photo et à poser le voile,
+         le texte ne dépend pas d'elle. */
+      --ouv-bloc: calc(var(--text-hero) * 2.08 + var(--text-chapeau) * 4.2 + 9.25rem);
+      /* La voie du milieu passe au moins 72 px au-dessus du titre ; la voie haute a au
+         moins 40 px d'air sous l'en-tête de planche, ou elle sort de la fenêtre. */
+      --ouv-m: 4.5rem;
+      --ouv-air: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      min-height: min(100vh, 56rem);
+      min-height: min(100svh, 56rem);
+    }
+    .ouv-cadre {
+      position: static;
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+    }
+    .ouv-haut {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      padding-bottom: 0;
+    }
+    .ouv-fenetre {
+      flex: 1 1 auto;
+      height: auto;
+      min-height: 6rem;
+      -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 1.75rem, #000 calc(100% - 3.5rem), transparent 100%);
+      mask-image: linear-gradient(180deg, transparent 0, #000 1.75rem, #000 calc(100% - 3.5rem), transparent 100%);
+    }
+
+    @supports (width: 1cqw) {
+      /* La feuille couvre l'ouverture. Elle grossit au besoin pour que la voie haute,
+         photo calée en haut, ait son air sous l'en-tête de planche (elle est à 349 px
+         du haut de l'original).
+         Puis elle se cale en hauteur. `--reste` : la place qui reste dans la fenêtre
+         une fois logées la voie haute et la voie du milieu. Assez de place : les deux
+         voies sont là, celle du milieu à `--ouv-m` du titre au moins. Pas assez : la
+         feuille remonte de quoi sortir la voie haute de la fenêtre (8 px au-dessus),
+         plutôt que de la laisser à cheval sur le bord. Le facteur 1 000 fait la
+         bascule : une longueur négative éteint le terme, une positive le laisse passer. */
+      .ouv-feuille {
+        --bas: calc(100cqh - var(--ouv-bloc));
+        --f: calc(var(--bas) - var(--ouv-tete) - var(--ouv-planche));
+        --hi: max(100cqw * 1707 / 2560, 100cqh, (var(--ouv-tete) + var(--ouv-planche) + var(--ouv-air)) * 1707 / 349);
+        --reste: calc(var(--f) - var(--hi) * 349 / 1707);
+        --m: max(var(--ouv-m), var(--reste) / 2, min(var(--reste) + 8px, (var(--ouv-m) + var(--ouv-air) - var(--reste)) * 1000));
+        top: clamp(100cqh - var(--hi), var(--bas) - var(--m) - var(--hi) * 698 / 1707, 0px);
+        left: clamp(100cqw - var(--wi), 52.38cqw - var(--wi) * 1341 / 2560, 0px);
+      }
+    }
+
+    /* Le voile : de la gauche (88 %) vers la droite (20 %), vite éclairci pour que le
+       lotissement se voie dans la fenêtre ; un pied à 60 % sous tout le texte, qui
+       s'efface dans le bas de la fenêtre ; en haut, de quoi lire l'en-tête de planche. */
+    .ouv-voile {
+      background-image:
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--color-plan) 52%, transparent) 0,
+          color-mix(in srgb, var(--color-plan) 40%, transparent) calc(var(--ouv-tete) + var(--ouv-planche)),
+          transparent calc(var(--ouv-tete) + var(--ouv-planche) + 4.5rem)
+        ),
+        linear-gradient(
+          0deg,
+          color-mix(in srgb, var(--color-plan) 60%, transparent) 0,
+          color-mix(in srgb, var(--color-plan) 60%, transparent) var(--ouv-bloc),
+          color-mix(in srgb, var(--color-plan) 24%, transparent) calc(var(--ouv-bloc) + 2.5rem),
+          transparent calc(var(--ouv-bloc) + 6rem)
+        ),
+        linear-gradient(
+          90deg,
+          color-mix(in srgb, var(--color-plan) 88%, transparent) 0,
+          color-mix(in srgb, var(--color-plan) 62%, transparent) 16%,
+          color-mix(in srgb, var(--color-plan) 36%, transparent) 36%,
+          color-mix(in srgb, var(--color-plan) 24%, transparent) 60%,
+          color-mix(in srgb, var(--color-plan) 20%, transparent) 100%
+        );
+    }
+
+    /* Le bas : le chapeau et le bouton à gauche, le cartouche à droite, alignés par le pied. */
+    .ouv-bas {
+      display: grid;
+      grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
+      align-items: end;
+      column-gap: 3rem;
+      padding-top: 1.5rem;
+    }
+    .ouv-cartouche {
+      justify-self: end;
+      width: min(100%, 39rem);
+    }
+
+    /* Les quatre repères de cadrage, aux angles du contenu : la vue est verticale, la
+       convention est juste. À gauche, ils laissent la gouttière à la voie de lecture. */
+    .ouv-repere {
+      --bord: max(var(--spacing-gutter), calc(50% - var(--container-wrap) / 2));
+      display: block;
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border: 0 solid color-mix(in srgb, var(--color-blanc) 78%, transparent);
+      pointer-events: none;
+    }
+    .ouv-repere-hg { left: var(--bord); top: calc(var(--spacing-header) + 0.75rem); border-width: 1px 0 0 1px; }
+    .ouv-repere-hd { right: var(--bord); top: calc(var(--spacing-header) + 0.75rem); border-width: 1px 1px 0 0; }
+    .ouv-repere-bg { left: var(--bord); bottom: 1rem; border-width: 0 0 1px 1px; }
+    .ouv-repere-bd { right: var(--bord); bottom: 1rem; border-width: 0 1px 1px 0; }
+  }
+
+  /* ---------------------------------------------------------- La lunette
+     Un disque qui grossit la photo sous le pointeur (components/lunette.tsx). Le
+     script écrit sa place (--x, --y), son rayon (--r), le fond du disque et le nom de
+     ce qu'il vise ; la feuille de style dessine. Fermée tant que le script ne l'ouvre
+     pas : sans script, au doigt, au clavier, elle n'existe pas. */
+  .lunette {
+    --r: 88px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 3;
+    translate: var(--x, 0px) var(--y, 0px);
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.18s ease, visibility 0s linear 0.18s;
+  }
+  .lunette[data-ouverte] {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.18s ease;
+  }
+  /* La monture : un jonc sombre autour du disque, pour le détacher d'une photo claire. */
+  .lunette::before {
+    content: "";
+    position: absolute;
+    left: calc(-1 * var(--r) - 3px);
+    top: calc(-1 * var(--r) - 3px);
+    width: calc(2 * var(--r) + 6px);
+    height: calc(2 * var(--r) + 6px);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-plan) 60%, transparent);
+  }
+  .lunette-disque {
+    position: absolute;
+    left: calc(-1 * var(--r));
+    top: calc(-1 * var(--r));
+    width: calc(2 * var(--r));
+    height: calc(2 * var(--r));
+    overflow: hidden;
+    border-radius: 50%;
+    background-color: var(--color-plan);
+    background-repeat: no-repeat;
+  }
+  .lunette-disque::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1.5px solid var(--color-blanc);
+    border-radius: 50%;
+  }
+  /* Les axes, grossis comme la photo : le même trait mixte, deux fois plus fort. */
+  .lunette-trace {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .lunette-trace path {
+    fill: none;
+    stroke: var(--color-blanc);
+    stroke-width: 3px;
+    stroke-dasharray: 28 8 4 8;
+    vector-effect: non-scaling-stroke;
+  }
+  /* Le réticule : quatre fils qui s'arrêtent avant le centre, et le point visé. */
+  .lunette-reticule {
+    --fil: color-mix(in srgb, var(--color-blanc) 78%, transparent);
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(var(--fil), var(--fil)) 50% 0 / 1px calc(50% - 9px) no-repeat,
+      linear-gradient(var(--fil), var(--fil)) 50% 100% / 1px calc(50% - 9px) no-repeat,
+      linear-gradient(var(--fil), var(--fil)) 0 50% / calc(50% - 9px) 1px no-repeat,
+      linear-gradient(var(--fil), var(--fil)) 100% 50% / calc(50% - 9px) 1px no-repeat,
+      linear-gradient(var(--color-blanc), var(--color-blanc)) 50% 50% / 3px 3px no-repeat;
+  }
+  /* Le nom de ce qu'on vise, sous le disque, au bout d'un trait de rappel. Hors des
+     voies, ni l'un ni l'autre. */
+  .lunette-rappel {
+    position: absolute;
+    left: -0.5px;
+    top: var(--r);
+    width: 1px;
+    height: 12px;
+    background: var(--color-blanc);
+    opacity: 0;
+  }
+  .lunette-nom {
+    position: absolute;
+    left: 0;
+    top: calc(var(--r) + 12px);
+    translate: -50% 0;
+    padding: 6px 10px;
+    border: 1px solid color-mix(in srgb, var(--color-blanc) 28%, transparent);
+    background: color-mix(in srgb, var(--color-plan) 78%, transparent);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: var(--color-blanc);
+    white-space: nowrap;
+    opacity: 0;
+  }
+  .lunette[data-nomme] :is(.lunette-rappel, .lunette-nom) { opacity: 1; }
+  /* La lunette ouverte tient lieu de pointeur. */
+  [data-lunette-ouverte] { cursor: none; }
+}

@@ -1,7 +1,6 @@
 // Identité, coordonnées, réseaux et fondateur.
 
 import { ADRESSE_EMAIL, NUMERO_FIXE, NUMERO_MOBILE } from "./coordonnees";
-import type { PhotoId } from "./photos";
 import { f, fv, type Fait } from "./types";
 
 // Navigation et numéro WhatsApp : dans coordonnees.ts, sans `Fait`, parce que les
@@ -91,6 +90,23 @@ export const FONDATEUR = {
     "Il a commencé à l’aéroport Léopold Sédar Senghor, comme agent de nettoyage. Il y a appris seul le français et l’anglais. Ensuite Dakar Catering, le change, puis la vente et la location de véhicules. En 2022, il crée Saloum Immo.",
     "contenu-maquette §2, parcours publié sur son site, résumé",
   ),
-  /** Capture de l'interview (899 px de large : jamais affichée plus grande). */
-  photo: "ig-DZUeyGKPdj_" as PhotoId,
+  /**
+   * Le parcours publié, en registre, les années en marge : la même liste sur l'accueil
+   * et sur À propos. Résumé, jamais recopié (contenu-maquette §2). « Au départ » et
+   * « Ensuite » : la source ne date ni l'aéroport ni le change. Une étape datée porte sa
+   * date dans son fait.
+   */
+  parcours: [
+    {
+      quand: "Au départ",
+      texte: fv(
+        "Agent de nettoyage à l’aéroport Léopold Sédar Senghor, il y apprend seul le français et l’anglais.",
+        "contenu-maquette §2, parcours publié sur son site, résumé",
+      ),
+    },
+    { quand: "2004 à 2008", texte: fv("Il travaille chez Dakar Catering.", "contenu-maquette §2", { date: "2004" }) },
+    { quand: "Ensuite", texte: fv("Il est cambiste pendant plusieurs années.", "contenu-maquette §2") },
+    { quand: "2015", texte: fv("Il passe à la vente et à la location de véhicules.", "contenu-maquette §2", { date: "2015" }) },
+    { quand: "2022", texte: fv("Il crée Saloum Immo.", "contenu-maquette §2 (année de création à valider)", { date: "2022" }) },
+  ],
 };

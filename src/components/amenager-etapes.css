@@ -1,0 +1,96 @@
+/* La planche des étapes, page Aménager (direction v4, pièce 9, en grand ;
+   components/amenager-etapes.tsx). C'est la planche de la méthode : son cadre, sa coupe
+   collée et son cartouche viennent de methode.css. Ici, seulement ce qui change :
+   - au bureau, la planche se partage en deux moitiés : le terrain (les photos) à
+     gauche, le plan (la coupe) à droite ;
+   - une étape empile son nom, sa phrase, puis ses photos, bien plus grandes que sur
+     l'accueil.
+   Chaque règle porte .methode-grande : elle passe devant celles de methode.css quel
+   que soit l'ordre de chargement des deux feuilles, et ne touche pas la planche de
+   l'accueil.
+
+   L'ordre des couches est redit ici : si cette feuille arrivait avant celle du site, la
+   couche des composants ne doit pas passer devant celle de la base. */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* -------------------------------------------------------------- Une étape
+     Son nom, sa phrase, ses photos, l'un sous l'autre. Les gouttières sont celles des
+     étapes de la méthode. */
+  .methode-grande .mg-etape { padding: 1.75rem var(--spacing-gutter) 2rem; }
+  .methode-grande .mg-etape + .mg-etape { border-top: 1px solid var(--r-ligne); }
+  /* La phrase laisse sa place à la cote qui se tire sous le nom de l'étape lue. */
+  .methode-grande .mg-phrase {
+    max-width: 34rem;
+    margin-top: 1.125rem;
+  }
+  .methode-grande .mg-suite { margin-top: 0.75rem; }
+
+  /* ------------------------------------------------------------- Les photos
+     Une grille de deux colonnes : un portrait en prend une, un paysage ou une bande
+     les deux. En une colonne d'écran, elles tiennent dans 552 px : deux portraits de
+     270 px, jamais plus larges que leur fichier. */
+  .methode-grande .mg-photos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem 0.75rem;
+    max-width: 34.5rem;
+    margin-top: 1.25rem;
+  }
+  .methode-grande .mg-figure { margin: 0; }
+  .methode-grande .mg-figure-large { grid-column: 1 / -1; }
+  /* Un portrait seul garde sa colonne : sa légende prend celle du voisin, calée en bas. */
+  .methode-grande .mg-figure-seule {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: inherit;
+    column-gap: inherit;
+    align-items: end;
+  }
+  .methode-grande .mg-cadre {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: var(--color-attente);
+  }
+  .methode-grande .mg-legende {
+    margin-top: 0.625rem;
+    color: var(--r-doux);
+  }
+  .methode-grande .mg-figure-seule .mg-legende { margin-top: 0; }
+
+  /* ------------------------------------------------- Dès 761 px : le cadre */
+  @media (width >= 47.5625rem) {
+    .methode-grande .mg-etape { padding: 2rem 1.75rem 2.25rem; }
+    .methode-grande .mg-photos { column-gap: 1rem; }
+  }
+
+  /* ------------------------------------------- Dès 1 101 px : deux moitiés
+     Le terrain à gauche, le plan à droite, à parts égales. C'est la liste qui fait la
+     hauteur de la planche : la coupe, plus courte, reste collée pendant toute la
+     lecture. */
+  @media (width >= 68.8125rem) {
+    .methode.methode-grande { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    /* La coupe est moins large que sur l'accueil : la case de l'étape lue se resserre
+       (le plus long nom, « Voies et bordures », y tient), et « Coupe de principe · sans
+       échelle » garde sa ligne dès 1 366 px. */
+    .methode-grande .methode-figure .coupe-cartouche { grid-template-columns: minmax(0, 1fr) minmax(0, 16rem); }
+    .methode-grande .mg-etape { padding: 2.5rem 2rem 2.75rem; }
+    .methode-grande .mg-photos {
+      max-width: none;
+      margin-top: 1.75rem;
+    }
+    /* Le papier, sans photo, garde de la hauteur : la coupe est encore collée quand il
+       est lu (elle se tient au milieu de l'écran, l'étape s'allume à 45 % de sa
+       hauteur). Son lien se cale en bas. */
+    .methode-grande .mg-papier {
+      display: flex;
+      flex-direction: column;
+      min-height: 22rem;
+    }
+    .methode-grande .mg-suite {
+      margin-top: auto;
+      padding-top: 1rem;
+    }
+  }
+}

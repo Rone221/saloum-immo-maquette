@@ -1,5 +1,5 @@
 // Vidéos publiées par Saloum Immo (contenu-maquette §9 ; dates et durées
-// retrouvées dans l'inventaire). Toute vidéo s'ouvre sur sa plateforme, dans
+// retrouvées dans l'inventaire, reseaux.md et instagram.md). Toute vidéo s'ouvre sur sa plateforme, dans
 // le même onglet : pas de lecteur intégré, pas de vignette tirée de YouTube.
 // Un seul bloc « Vidéos » par page, trois entrées au plus (allegement.md, 2.9).
 
@@ -41,6 +41,7 @@ export const VIDEOS = {
     plateforme: "YouTube",
     titre: "Lancement de Lac Town",
     date: "2026-03-30",
+    duree: "3 min 08",
     href: yt("qtAHrgDQd4U"),
     source: "contenu-maquette §5 et §9",
   },
@@ -49,6 +50,7 @@ export const VIDEOS = {
     plateforme: "YouTube",
     titre: "Visite commentée de Lac Town",
     date: "2026-05-21",
+    duree: "2 min 14",
     href: yt("Wq8pwLDb4L0"),
     source: "contenu-maquette §9",
   },
@@ -56,6 +58,7 @@ export const VIDEOS = {
     id: "HFnSMeaCXNI",
     plateforme: "YouTube",
     titre: "Visite virtuelle de Sakina City",
+    duree: "9 min 25",
     href: yt("HFnSMeaCXNI"),
     source: "contenu-maquette §9",
   },
@@ -64,14 +67,17 @@ export const VIDEOS = {
     plateforme: "YouTube",
     titre: "Les lots de Sicap Keur Massar",
     date: "2026-06-10",
+    duree: "2 min 02",
     href: yt("SG020Z9tq3o"),
     source: "contenu-maquette §9 (titrée « Paradise City » par le client)",
   },
   reelLotsSKM: {
     id: "DfAoxMkAbKR",
     plateforme: "Instagram",
-    titre: "Une collaboratrice présente un lot de Sicap Keur Massar",
+    // Le reel en présente deux (instagram.md, n° 10) : seul 2175 est publié dans contenu-maquette.
+    titre: "Une collaboratrice présente des lots de Sicap Keur Massar",
     date: "2026-10-27",
+    duree: "3 min 17",
     href: "https://www.instagram.com/saloum_immo/reel/DfAoxMkAbKR/",
     source: "contenu-maquette §5 ; Instagram",
   },
@@ -90,7 +96,7 @@ export const VIDEOS = {
     titre: "Le NICAD expliqué en vidéo",
     duree: "1 min 12",
     href: yt("Rrfi4zPWsbY"),
-    source: "contenu-maquette §6 ; inventaire",
+    source: "contenu-maquette §6",
   },
   terrassementKounoune: {
     id: "Hi1DiDoX_zA",
@@ -98,6 +104,7 @@ export const VIDEOS = {
     // « Lancement » : le 7 septembre 2024, le terrassement est lancé sur 3 hectares, pas fini.
     titre: "Lancement du terrassement sur 3 hectares à Kounoune",
     date: "2024-09-07",
+    duree: "7 min 28",
     href: yt("Hi1DiDoX_zA"),
     source: "contenu-maquette §5",
   },
@@ -105,10 +112,19 @@ export const VIDEOS = {
 
 export type CleVideo = keyof typeof VIDEOS;
 
-/** « Saloum Immo en quelques minutes (1 min 58) » */
+/** « Saloum Immo en quelques minutes (1 min 58) » : pour un nom accessible. */
 export function titreVideo(cle: CleVideo): string {
   const v: Video = VIDEOS[cle];
   return v.duree ? `${v.titre} (${v.duree})` : v.titre;
+}
+
+/**
+ * « YouTube · 1 min 58 » : la ligne sous le titre d'une vidéo, la même sur toutes les
+ * pages (revue 3). La plateforme, puis la durée quand on l'a ; jamais la date.
+ */
+export function metaVideo(cle: CleVideo): string {
+  const v: Video = VIDEOS[cle];
+  return v.duree ? `${v.plateforme} · ${v.duree}` : v.plateforme;
 }
 
 /** « À regarder avant d'appeler » (page Diaspora), dans cet ordre. */

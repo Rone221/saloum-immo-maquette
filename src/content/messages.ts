@@ -20,6 +20,8 @@ export const MESSAGES = {
   },
   diaspora: { texte: "Bonjour, je vis à l’étranger. Je voudrais voir en vidéo les terrains disponibles." },
   question: { texte: "Bonjour, j’ai une question sur vos terrains." },
+  /** Page Comprendre le foncier : son appel final parle d'un doute sur un papier, pas d'un terrain à vendre. */
+  documents: { texte: "Bonjour, je voudrais faire vérifier les documents d’un terrain." },
   bayakh: { texte: "Bonjour, je voudrais des informations sur le site de Bayakh." },
   niague: { texte: "Bonjour, je voudrais des informations sur le projet de Niague." },
 } satisfies Record<string, Message>;
@@ -32,7 +34,7 @@ export const LIBELLES = {
   programme: "Prix et lots libres sur WhatsApp",
   /** Pied d'une carte de programme, où la place manque. Nom accessible : `programmeCourt`, puis le nom. */
   programmeCourt: "Prix sur WhatsApp",
-  recasementAibd: "Demander la disponibilité sur WhatsApp",
+  recasementAibd: "Disponibilité sur WhatsApp",
   proprietaire: "Décrire mon terrain sur WhatsApp",
   diaspora: "Commencer sur WhatsApp",
   autreSite: "Demander",

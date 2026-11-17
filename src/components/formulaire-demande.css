@@ -1,0 +1,278 @@
+/* La fiche de demande (direction v4, section 7 ; components/formulaire-demande.tsx).
+   Importé par le composant.
+
+   Une feuille de calque, comme une fiche de renseignements : un libellé en étiquette,
+   puis une ligne où écrire. Les conventions du plan y servent (globals.css, « Traits ») :
+   - pointillé : la ligne d'un champ vide, ce qui n'est pas sûr ;
+   - plein : la ligne d'un champ rempli, ce qui est acquis ;
+   - latérite, 2 px : la ligne du champ où l'on écrit, et celle d'un champ en faute.
+   Après l'envoi, la même feuille porte le récépissé.
+
+   La fiche mesure sa propre largeur (conteneur) : deux champs de front, puis les trois
+   choix sur une ligne, quand elle a la place, où qu'on la pose.
+
+   L'ordre des couches est redit ici : si cette feuille arrivait avant celle du site, la
+   couche des composants ne doit pas passer devant celle de la base. */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .fiche {
+    /* La marge de la feuille. */
+    --fiche-marge: 1.25rem;
+    /* La ligne à remplir : plus légère que le texte. */
+    --fiche-ligne: var(--color-encre-2);
+    /* Le pas des lignes du message : une ligne de texte, une ligne pointillée. */
+    --fiche-pas: 2rem;
+    container-type: inline-size;
+    border: 1px solid var(--color-filet);
+    background: var(--color-calque);
+  }
+  @media (width >= 47.5625rem) {
+    .fiche { --fiche-marge: 2rem; }
+  }
+  @media (width >= 80.0625rem) {
+    .fiche { --fiche-marge: 2.5rem; }
+  }
+
+  /* L'en-tête : le nom de la fiche, et son état avec son carré. */
+  .fiche-tete {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.25rem 1.5rem;
+    padding: 0.875rem var(--fiche-marge);
+    border-bottom: 1px solid var(--r-ligne);
+  }
+  .fiche-etat {
+    display: inline-flex;
+    align-items: baseline;
+    column-gap: 0.5rem;
+  }
+  /* Le carré d'état de l'index des terrains : en contour, ce qui reste à faire ; plein,
+     dans la couleur d'accent, ce qui est fait. */
+  .fiche-carre {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    box-shadow: inset 0 0 0 1.5px var(--r-fort);
+  }
+  .fiche-carre[data-plein] {
+    background: var(--r-accent);
+    box-shadow: none;
+  }
+
+  .fiche-corps { padding: 1.75rem var(--fiche-marge) var(--fiche-marge); }
+
+  /* ------------------------------------------------------------- Les champs */
+  .fiche-champs {
+    display: grid;
+    gap: 1.75rem 2.5rem;
+  }
+  .champ {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .champ-libelle {
+    color: var(--r-doux);
+    transition: color 0.15s ease;
+  }
+  /* Le champ où l'on écrit : son libellé prend la couleur d'accent, avec sa ligne. */
+  .champ:focus-within .champ-libelle { color: var(--r-accent); }
+  .champ-facultatif { font-weight: 500; }
+
+  /* La ligne où écrire. Pas de cadre : une feuille, pas un écran. */
+  .champ-saisie {
+    appearance: none;
+    display: block;
+    width: 100%;
+    min-height: 3rem;
+    margin: 0.125rem 0 0;
+    padding: 0.5rem 0;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    background-image: repeating-linear-gradient(90deg, var(--fiche-ligne) 0 2px, transparent 2px 6px);
+    background-position: 0 100%;
+    background-size: 100% 1.5px;
+    background-repeat: no-repeat;
+    color: var(--r-fort);
+    font: inherit;
+    font-size: 1.1875rem;
+    line-height: 1.4;
+    caret-color: var(--r-accent);
+  }
+  .champ-saisie[data-rempli] { background-image: linear-gradient(var(--r-fort), var(--r-fort)); }
+  /* Le focus : la ligne passe en latérite, pleine, 2 px, et le champ prend le contour du
+     site. La ligne seule ne suffit pas : un champ en faute a la même, et après un envoi
+     refusé on ne verrait plus lequel a le focus. */
+  .champ-saisie:focus-visible {
+    outline: 2px solid var(--r-focus);
+    outline-offset: 4px;
+    background-image: linear-gradient(var(--r-accent), var(--r-accent));
+    background-size: 100% 2px;
+  }
+  .champ-saisie[aria-invalid="true"] {
+    background-image: linear-gradient(var(--r-accent), var(--r-accent));
+    background-size: 100% 2px;
+  }
+  /* Un champ rempli par le navigateur : il le peint à sa couleur, par-dessus la ligne.
+     Deux ombres intérieures la remettent : le calque de la fiche, puis le trait plein
+     d'un champ rempli. */
+  .champ-saisie:-webkit-autofill {
+    -webkit-text-fill-color: var(--r-fort);
+    box-shadow: inset 0 -1.5px 0 0 var(--r-fort), inset 0 0 0 100px var(--color-calque);
+  }
+
+  /* Le message : quatre lignes pointillées, comme sur une fiche de papier. Le fond
+     défile avec le texte (local) : les lignes restent sous les mots. Le motif ne peut
+     pas lire une variable : la couleur de la ligne (encre-2) y est écrite (%23 vaut #). */
+  .champ-lignes {
+    min-height: calc(var(--fiche-pas) * 4);
+    margin-top: 0.375rem;
+    padding: 0;
+    overflow: auto;
+    resize: vertical;
+    line-height: var(--fiche-pas);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='32'%3E%3Crect y='30.5' width='2' height='1.5' fill='%234A566B'/%3E%3C/svg%3E");
+    background-position: 0 0;
+    background-size: 6px var(--fiche-pas);
+    background-repeat: repeat;
+    background-attachment: local;
+  }
+  .champ-lignes[data-rempli] {
+    background-image: linear-gradient(0deg, var(--r-fort) 0 1.5px, transparent 1.5px);
+    background-size: 100% var(--fiche-pas);
+  }
+  .champ-lignes:focus-visible {
+    background-image: linear-gradient(0deg, var(--r-accent) 0 2px, transparent 2px);
+    background-size: 100% var(--fiche-pas);
+  }
+
+  /* Une erreur : un carré plein, puis la phrase, en clair. La couleur ne dit pas tout
+     seule : le texte est là, lié à son champ. */
+  .champ-erreur {
+    display: flex;
+    align-items: baseline;
+    column-gap: 0.5rem;
+    margin-top: 0.5rem;
+    color: var(--r-accent);
+    font-size: var(--text-small);
+    font-weight: 600;
+    line-height: var(--text-small--line-height);
+  }
+  .champ-erreur::before {
+    content: "";
+    flex: none;
+    width: 8px;
+    height: 8px;
+    background: currentColor;
+  }
+
+  /* ------------------------------------------------------------- Les choix
+     Trois cases à cocher, une seule à la fois : de vrais boutons radio, invisibles,
+     étendus à toute la ligne (44 px de haut au moins). La case est carrée, comme une
+     borne : face blanche, filet d'encre ; cochée, un carré plein de latérite. */
+  .choix {
+    display: grid;
+    column-gap: 2rem;
+  }
+  .choix-case {
+    position: relative;
+    display: flex;
+    align-items: center;
+    column-gap: 0.75rem;
+    min-height: 3.25rem;
+    padding-block: 0.625rem;
+    font-size: 1.0625rem;
+    line-height: 1.3;
+    cursor: pointer;
+  }
+  .choix-radio {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .choix-marque {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 1.5px solid var(--r-fort);
+    background: var(--color-blanc);
+    transition: border-color 0.15s ease;
+  }
+  .choix-marque::after {
+    content: "";
+    width: 0.5rem;
+    height: 0.5rem;
+    background: var(--r-accent);
+    scale: 0;
+    transition: scale 0.25s var(--ease-pose);
+  }
+  .choix-radio:checked + .choix-marque::after { scale: 1; }
+  /* Au clavier, le contour est sur la case : le bouton radio lui-même ne se voit pas. */
+  .choix-radio:focus-visible + .choix-marque {
+    outline: 2px solid var(--r-focus);
+    outline-offset: 3px;
+  }
+  .choix-ligne {
+    position: absolute;
+    inset: auto 0 0;
+    height: 1.5px;
+    background-image: repeating-linear-gradient(90deg, var(--fiche-ligne) 0 2px, transparent 2px 6px);
+  }
+  .choix-radio:checked ~ .choix-ligne { background-image: linear-gradient(var(--r-fort), var(--r-fort)); }
+  @media (hover: hover) and (pointer: fine) {
+    .choix-case:hover .choix-marque { border-color: var(--r-accent); }
+  }
+
+  /* --------------------------------------------------------------- L'envoi */
+  .fiche-envoi {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.875rem 1.5rem;
+    margin-top: 2.25rem;
+  }
+
+  /* ------------------------------------------------------------ Le récépissé
+     La mention de la maquette, dans un cadre en pointillé : quatre traits, les mêmes
+     que la ligne d'un champ vide. */
+  .fiche-mention {
+    --trait-h: repeating-linear-gradient(90deg, var(--r-fort) 0 2px, transparent 2px 6px);
+    --trait-v: repeating-linear-gradient(180deg, var(--r-fort) 0 2px, transparent 2px 6px);
+    margin-top: 1.5rem;
+    padding: 1rem 1.125rem;
+    background:
+      var(--trait-h) 0 0 / 100% 1.5px no-repeat,
+      var(--trait-h) 0 100% / 100% 1.5px no-repeat,
+      var(--trait-v) 0 0 / 1.5px 100% no-repeat,
+      var(--trait-v) 100% 0 / 1.5px 100% no-repeat;
+  }
+
+  /* --------------------------------------- Selon la largeur de la fiche elle-même */
+  @container (width >= 36rem) {
+    .fiche-champs { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .fiche-large { grid-column: 1 / -1; }
+  }
+  @container (width >= 52rem) {
+    .choix { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  /* Couleurs forcées (contraste élevé du système) : les fonds en dégradé peuvent
+     sauter. La ligne devient une bordure, le focus un contour. */
+  @media (forced-colors: active) {
+    .champ-saisie { border-bottom: 1px solid; }
+    .champ-saisie:focus-visible { outline: 2px solid; outline-offset: 2px; }
+    .choix-ligne { border-bottom: 1px solid; }
+    .choix-radio:checked + .choix-marque { background: Highlight; }
+    .fiche-mention { border: 1px dotted; }
+  }
+}

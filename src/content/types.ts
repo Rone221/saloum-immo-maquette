@@ -21,7 +21,7 @@ export function f(texte: string, source: string, autres: Partial<Omit<Fait, "tex
   return { texte, source, statut: "ok", ...autres };
 }
 
-/** Même chose, pour un fait à faire valider par le client. */
+/** Même chose, pour un fait à valider. */
 export function fv(texte: string, source: string, autres: Partial<Omit<Fait, "texte" | "source" | "statut">> = {}): Fait {
   return { texte, source, ...autres, statut: "a-valider" };
 }

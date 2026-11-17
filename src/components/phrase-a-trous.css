@@ -1,0 +1,204 @@
+/* La phrase à trous (direction v4, section 6, « Aménager » ; components/phrase-a-trous.tsx) :
+   le message prêt des propriétaires, écrit en grand, et ses deux trous devenus deux
+   champs posés sur une cote. Importé par le composant.
+
+   Les couleurs passent par les rôles de la surface (--r-fort, --r-doux, --r-accent,
+   --r-focus) : la phrase prend les habits de la section où on la pose. Sur la latérite,
+   tout est blanc ; sur le sable ou le calque, les saisies et leurs cotes sont en
+   latérite, comme un mot coté.
+
+   L'ordre des couches est redit ici : si cette feuille arrivait avant celle du site, la
+   couche des composants ne doit pas passer devant celle de la base. */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* ------------------------------------------------------------- La phrase
+     Deux moitiés, qui ne se coupent qu'entre elles : « J'ai un terrain à … , » puis
+     « d'environ … m². ». Au bureau, elles tiennent sur une ligne tant que le lieu est
+     court ; sur téléphone, le lieu passe sous son amorce. Tout s'aligne sur la ligne de
+     base du texte : les champs aussi, leur cote et leur clé pendent dessous.
+     Le corps : 30 px à 390, 52 px dès 1 445. */
+  .pat-phrase {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.75rem 0.3em;
+    margin: 0;
+    font-size: clamp(1.875rem, 3.6vw, 3.25rem);
+    line-height: 1.3;
+    color: var(--r-fort);
+  }
+  .pat-groupe {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.3em;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .pat-texte { white-space: nowrap; }
+
+  /* Un champ et la ponctuation qui le suit. */
+  .pat-colle {
+    display: flex;
+    align-items: baseline;
+    min-width: 0;
+    max-width: 100%;
+  }
+  /* Le second champ et son unité. En affiche, l'enveloppe ne compte pas : ses deux
+     morceaux restent des pièces de la rangée (l'unité peut passer à la ligne). */
+  .pat-suite { display: contents; }
+  /* La virgule colle au dernier mot. Quand on écrit dans le champ, elle s'écarte, le
+     temps de la saisie : le contour du focus passe entre le mot et elle. */
+  .pat-ponct { transition: translate 0.25s var(--ease-pose); }
+  .pat-trou:focus-within + .pat-ponct { translate: max(0.16em, 7px) 0; }
+
+  /* ---------------------------------------------------------------- Un trou
+     La boîte (le champ et sa cote), puis la clé. La ligne de base du trou est celle de
+     son champ. Vide, le blanc fait 6,5 em (le lieu) ou 3,2 em (la surface). */
+  .pat-trou {
+    --pat-blanc: 6.5em;
+    /* La hauteur de la cote, sous le champ : celle de ses deux butées. */
+    --pat-cote: 11px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+  }
+  .pat-trou-court { --pat-blanc: 3.2em; }
+
+  /* La boîte prend la largeur de la saisie, jamais plus que la ligne : au-delà, le champ
+     défile. Vide, elle garde son blanc. Dès la première lettre, le blanc se referme sur
+     le mot : la phrase se compose, la virgule et le point viennent se coller. */
+  .pat-boite {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: fit-content;
+    min-width: 0.6em;
+    max-width: 100%;
+    transition: min-width 0.35s var(--ease-pose);
+  }
+  .pat-boite[data-saisie=""] { min-width: var(--pat-blanc); }
+  /* Le gabarit : la saisie, invisible, dans la lettre du champ. Seule sa largeur compte.
+     Un rien de plus, pour le curseur : au-delà, la virgule s'écarterait du dernier mot.
+     Il vient après le champ (::after) : la ligne de base de la boîte reste celle du
+     champ, le premier de la grille. */
+  .pat-boite::after {
+    content: attr(data-saisie);
+    grid-area: 1 / 1;
+    height: 0;
+    padding-right: 2px;
+    overflow: hidden;
+    white-space: pre;
+    visibility: hidden;
+  }
+  /* Le champ : la lettre de la phrase, dans la couleur d'accent. Sa ligne est assez
+     haute pour les jambages (ils descendent de 0,26 em sous la ligne).
+     Sous cette ligne, la prise du doigt : le champ descend sur sa cote, qu'il laisse
+     voir (il n'a pas de fond), et plus bas s'il le faut, jusqu'à 44 px de haut quand la
+     lettre est petite. On vise le trait, on touche le champ. La mise en page n'en sait
+     rien : la marge négative rend ce que la prise ajoute, la cote reste à sa place.
+     La hauteur reste celle de la ligne (boîte comptée sans la prise) : plus haute que
+     sa ligne, la saisie serait recentrée par le navigateur. */
+  .pat-champ {
+    --pat-prise: max(var(--pat-cote), 2.75rem - 1.4em);
+    grid-area: 1 / 1;
+    box-sizing: content-box;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: 1.4em;
+    margin: 0 0 calc(-1 * var(--pat-prise));
+    padding: 0 0 var(--pat-prise);
+    font: inherit;
+    line-height: 1.4;
+    letter-spacing: inherit;
+    color: var(--r-accent);
+    caret-color: currentColor;
+    appearance: none;
+  }
+  /* Le focus se pose sur la boîte entière, le champ et sa cote : un contour autour du
+     champ seul passerait sur la cote. */
+  .pat-champ:focus-visible { outline: none; }
+  .pat-boite:focus-within {
+    outline: 2px solid var(--r-focus);
+    outline-offset: 3px;
+  }
+
+  /* La cote : deux butées et un trait. Pointillé : ce qui n'est pas encore dit. Elle
+     laisse passer le doigt et le pointeur : dessous, c'est le champ qui les prend. */
+  .pat-cote {
+    display: flex;
+    align-items: center;
+    height: var(--pat-cote);
+    color: var(--r-accent);
+    pointer-events: none;
+  }
+  .pat-cote::before,
+  .pat-cote::after {
+    content: "";
+    flex: none;
+    width: 1.5px;
+    height: 100%;
+    background: currentColor;
+  }
+  /* Deux tracés dans le même trait : le plein, replié à gauche, par-dessus le pointillé. */
+  .pat-trait {
+    flex: 1;
+    height: 1.5px;
+    background-image:
+      linear-gradient(currentColor, currentColor),
+      repeating-linear-gradient(90deg, currentColor 0 2px, transparent 2px 6px);
+    background-repeat: no-repeat;
+    background-size: 0 100%, 100% 100%;
+  }
+  /* Plein : ce qui est dit. Le trait se tire de gauche à droite, à vitesse constante,
+     dès que le champ n'est plus vide. Il se replie d'un coup si on efface tout. */
+  .pat-champ:not(:placeholder-shown) + .pat-cote .pat-trait {
+    background-size: 100% 100%, 100% 100%;
+    transition: background-size 0.4s linear;
+  }
+
+  /* La clé du champ : son <label>, en étiquette, sous la cote. Elle ne compte pas dans
+     la largeur du trou (largeur nulle, le mot déborde) : sous une saisie plus courte
+     qu'elle (« 2 ha »), elle écarterait le point de la phrase. */
+  .pat-cle {
+    width: 0;
+    margin-top: 0.625rem;
+    font-family: var(--font-sans);
+    white-space: nowrap;
+    color: var(--r-doux);
+    cursor: text;
+  }
+
+  /* Le bouton, sous la phrase : toute la largeur sur téléphone, comme partout. */
+  .pat-action {
+    display: flex;
+    margin-top: 1.75rem;
+  }
+  @media (width >= 68.8125rem) {
+    .pat-action { margin-top: 2.5rem; }
+  }
+
+  /* ------------------------------------------------------- Le message entier
+     Parmi d'autres messages, dans le fil d'un texte (la page Contact) : le message
+     s'écrit de sa salutation à sa dernière phrase, et se coupe au mot, comme un
+     paragraphe. Son corps et sa lettre sont ceux du texte où on le pose. Deux blocs ne
+     se coupent pas : un champ et sa virgule, le second champ et son unité. Chacun est
+     une boîte dans la ligne, jamais plus large qu'elle : au-delà, le champ défile. */
+  .pat-entier .pat-phrase {
+    display: block;
+    font-size: inherit;
+    line-height: inherit;
+  }
+  .pat-entier .pat-groupe { display: inline; }
+  .pat-entier .pat-texte { white-space: inherit; }
+  .pat-entier .pat-colle { display: inline-flex; }
+  .pat-entier .pat-suite {
+    display: inline-flex;
+    align-items: baseline;
+    min-width: 0;
+    max-width: 100%;
+    white-space: nowrap;
+  }
+}

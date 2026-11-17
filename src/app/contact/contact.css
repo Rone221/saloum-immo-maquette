@@ -1,0 +1,33 @@
+/* Page Contact (app/contact/page.tsx) : ce que les classes du site ne dessinent pas.
+   Importé par la page.
+
+   L'ordre des couches est redit ici : si cette feuille arrivait avant celle du site, la
+   couche des composants ne doit pas passer devant celle de la base. */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* Un trou dans un message à compléter (« j'ai un terrain à …, d'environ … m² »). Les
+     points restent écrits : WhatsApp les recevra tels quels. Dessous, une cote sans
+     valeur : deux butées et un trait en pointillé, dans la couleur d'accent. C'est le
+     signe du site pour ce qu'on ne sait pas encore, le même que le statut foncier de
+     Lac Town dans l'index des terrains. Ici, c'est au visiteur de le dire. */
+  .trou {
+    position: relative;
+    display: inline-block;
+    min-width: 3em;
+    color: var(--r-doux);
+    line-height: 1.1;
+    text-align: center;
+  }
+  .trou::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 -0.16em;
+    height: 0.42em;
+    /* Le trait, puis les deux butées. */
+    background:
+      repeating-linear-gradient(90deg, var(--r-accent) 0 2px, transparent 2px 6px) 0 50% / 100% 1.5px no-repeat,
+      linear-gradient(var(--r-accent), var(--r-accent)) 0 0 / 1.5px 100% no-repeat,
+      linear-gradient(var(--r-accent), var(--r-accent)) 100% 0 / 1.5px 100% no-repeat;
+  }
+}

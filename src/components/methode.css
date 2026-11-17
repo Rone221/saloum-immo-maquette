@@ -1,0 +1,254 @@
+/* La méthode (direction v4, pièce 9 ; components/methode.tsx) : une planche au bleu
+   encadrée, les étapes à gauche, la coupe d'une voie collée à droite, qui se construit
+   avec l'étape lue (components/methode-etapes.tsx). Importé par le composant.
+
+   Trois formes, selon la largeur :
+   - sous 761 px, la planche va d'un bord de l'écran à l'autre : la coupe en haut,
+     collée sous l'en-tête, les étapes dessous ;
+   - de 761 à 1 100 px, la même colonne, dans son cadre ;
+   - dès 1 101 px, deux colonnes dans le cadre : les étapes, un filet, puis la coupe et
+     son cartouche, collés pendant toute la lecture des étapes.
+   Les couleurs passent par les rôles de la surface (--r-fond, --r-fort, --r-doux,
+   --r-ligne, --r-accent) : la planche prend les habits de la section où on la pose.
+
+   L'ordre des couches est redit ici : si cette feuille arrivait avant celle du site, la
+   couche des composants ne doit pas passer devant celle de la base. */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* ------------------------------------------------------------- La planche
+     Une feuille unie, sans croisillons : dessous, il y a du texte et un dessin. Son
+     cadre est un filet de 1 px. Sur téléphone, il se réduit à ses deux traits du haut
+     et du bas : les côtés sont les bords de l'écran. */
+  .methode {
+    margin-inline: calc(var(--spacing-gutter) * -1);
+    border-block: 1px solid var(--r-ligne);
+    background: var(--r-fond);
+  }
+
+  /* --------------------------------------------------------------- La coupe
+     La figure : le dessin, puis son cartouche. Elle a son fond : en une colonne, les
+     étapes passent dessous. */
+  .methode-figure {
+    /* La hauteur du cartouche, pour le calcul de la place du dessin : deux lignes sur
+       téléphone, une au-delà. */
+    --cartouche: 4.75rem;
+    /* Largeur sur hauteur du dessin (components/coupe.tsx : 760 sur 464). */
+    --rapport: 1.638;
+    border-bottom: 1px solid var(--r-ligne);
+    background: var(--r-fond);
+  }
+  /* En une colonne, la figure fait 38 % de la hauteur de l'écran, cartouche compris :
+     c'est sa hauteur qui donne sa largeur au dessin, jamais plus que la colonne. Un
+     plancher de 272 px : en dessous, les noms de 12 px se toucheraient. */
+  .methode-figure .coupe-dessin {
+    width: min(100%, 36rem, max(17rem, (38vh - var(--cartouche)) * var(--rapport)));
+    width: min(100%, 36rem, max(17rem, (38svh - var(--cartouche)) * var(--rapport)));
+    margin-inline: auto;
+  }
+  /* Le script tourne : la coupe se colle sous l'en-tête du site et y reste tant que
+     les étapes défilent. Sans script, elle reste dans le fil de la page : entière et
+     immobile, elle ne ferait que prendre la place de la lecture. Son dernier trait est
+     fort : c'est sous lui que les étapes passent. */
+  .methode[data-vivante] .methode-figure {
+    position: sticky;
+    top: var(--spacing-header);
+    z-index: 2;
+    border-bottom-color: var(--r-fort);
+  }
+
+  /* Le cartouche : « Coupe de principe · sans échelle », puis l'étape lue. */
+  .methode-figure .coupe-cartouche { display: grid; }
+  .methode-figure .coupe-case {
+    display: flex;
+    align-items: center;
+    column-gap: 0.75rem;
+    min-height: 2.25rem;
+    padding: 0.3125rem var(--spacing-gutter);
+  }
+  .methode-figure .coupe-case + .coupe-case { border-top: 1px solid var(--r-ligne); }
+  .methode-lue-nom {
+    display: inline-block;
+    font-weight: 600;
+    color: var(--r-fort);
+  }
+  /* L'étape en cours prend la couleur d'accent, ici comme dans la liste et sur le
+     dessin. À chaque changement, le nom se pose : le script alterne data-pair, la
+     feuille de style alterne deux animations jumelles, donc la rejoue. */
+  .methode[data-vivante] .methode-lue-nom {
+    color: var(--r-accent);
+    animation: methode-nom-a 0.4s var(--ease-pose);
+  }
+  .methode[data-vivante] .methode-lue-nom[data-pair] { animation-name: methode-nom-b; }
+  @keyframes methode-nom-a { from { opacity: 0; translate: 0 0.4em; } }
+  @keyframes methode-nom-b { from { opacity: 0; translate: 0 0.4em; } }
+
+  /* -------------------------------------------------------------- Les étapes
+     Une étape : son nom et sa phrase à gauche, la photo du geste à droite, la nature
+     de l'image en bas à gauche, au pied de la photo. */
+  .methode-etape {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 6.5rem;
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "nom photo"
+      "phrase photo"
+      "nature photo";
+    column-gap: 1rem;
+    padding: 1.75rem var(--spacing-gutter);
+  }
+  .methode-etape + .methode-etape { border-top: 1px solid var(--r-ligne); }
+  /* Le papier n'a pas de photo : son texte prend toute la largeur. */
+  .methode-etape-nue { display: block; }
+
+  .methode-nom { grid-area: nom; }
+  .methode-phrase { grid-area: phrase; margin-top: 0.75rem; }
+  .methode-etape-nue .methode-phrase { max-width: 34rem; }
+  .methode-suite { margin-top: 0.75rem; }
+
+  /* La photo du geste : un cadre net, 4:5, angles vifs. Jamais plus grande que son
+     fichier : 200 px de large au plus. */
+  .methode-cadre {
+    grid-area: photo;
+    position: relative;
+    display: block;
+    align-self: start;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--color-attente);
+  }
+  .methode-nature {
+    grid-area: nature;
+    align-self: end;
+    margin-top: 0.75rem;
+    color: var(--r-doux);
+  }
+
+  /* L'étape en cours, dans la liste : son nom devient un mot coté (globals.css, « Le
+     mot coté »). Il prend la couleur d'accent et une cote se tire dessous, sous les
+     jambages. Mêmes mesures que le mot coté des titres : la ligne de base de Besley
+     est à 0,91 em du haut d'une boîte de 1 em. */
+  .methode-mot {
+    position: relative;
+    display: inline-block;
+    line-height: 1;
+    transition: color 0.3s ease;
+  }
+  .methode-mot::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(0.91em + 0.28em);
+    height: calc(0.12em + 1.5px);
+    /* Le trait, puis les deux butées. */
+    background:
+      linear-gradient(var(--r-accent), var(--r-accent)) 0 50% / 100% 1.5px no-repeat,
+      linear-gradient(var(--r-accent), var(--r-accent)) 0 0 / 1.5px 100% no-repeat,
+      linear-gradient(var(--r-accent), var(--r-accent)) 100% 0 / 1.5px 100% no-repeat;
+    /* Repliée à gauche tant que l'étape n'est pas lue. Elle se tire à vitesse constante. */
+    clip-path: inset(-1em 100% -1em 0);
+    transition: clip-path 0.45s linear;
+  }
+  .methode[data-vivante] [data-courante] .methode-mot { color: var(--r-accent); }
+  .methode[data-vivante] [data-courante] .methode-mot::after { clip-path: inset(-1em 0 -1em 0); }
+
+  /* ------------------------------------------------- Dès 761 px : le cadre */
+  @media (width >= 47.5625rem) {
+    .methode {
+      position: relative;
+      margin-inline: 0;
+      border: 1px solid var(--r-ligne);
+    }
+    /* Quatre bornes aux angles du cadre, à cheval sur son filet : la planche est bornée,
+       comme une parcelle sur son plan. Les mêmes que celle qui ferme la limite d'un
+       en-tête de section : 7 px, face blanche, filet d'encre. */
+    .methode::before {
+      --face: linear-gradient(var(--color-blanc), var(--color-blanc));
+      --tour: linear-gradient(var(--color-encre), var(--color-encre));
+      content: "";
+      position: absolute;
+      inset: -4px;
+      z-index: 3;
+      pointer-events: none;
+      background:
+        var(--face) 1px 1px / 5px 5px no-repeat,
+        var(--face) calc(100% - 1px) 1px / 5px 5px no-repeat,
+        var(--face) 1px calc(100% - 1px) / 5px 5px no-repeat,
+        var(--face) calc(100% - 1px) calc(100% - 1px) / 5px 5px no-repeat,
+        var(--tour) 0 0 / 7px 7px no-repeat,
+        var(--tour) 100% 0 / 7px 7px no-repeat,
+        var(--tour) 0 100% / 7px 7px no-repeat,
+        var(--tour) 100% 100% / 7px 7px no-repeat;
+    }
+    .methode-figure { --cartouche: 3.5rem; }
+    .methode-figure .coupe-cartouche { grid-template-columns: minmax(0, 1fr) minmax(0, 19rem); }
+    .methode-figure .coupe-case {
+      min-height: 3.5rem;
+      padding: 0.5rem 1.25rem;
+    }
+    .methode-figure .coupe-case + .coupe-case {
+      border-top: 0;
+      border-left: 1px solid var(--r-ligne);
+    }
+    .methode-etape {
+      grid-template-columns: minmax(0, 1fr) 10rem;
+      column-gap: 1.5rem;
+      padding: 2rem 1.75rem;
+    }
+  }
+
+  /* ------------------------------------------- Dès 1 101 px : deux colonnes
+     Les étapes à gauche, la coupe à droite. C'est la liste qui fait la hauteur de la
+     planche : la coupe, plus courte, reste collée pendant toute la lecture. */
+  @media (width >= 68.8125rem) {
+    .methode {
+      display: grid;
+      grid-template-columns: minmax(30rem, 5fr) minmax(0, 7fr);
+    }
+    .methode-etapes {
+      grid-column: 1;
+      grid-row: 1;
+      border-right: 1px solid var(--r-ligne);
+    }
+    .methode-etape {
+      grid-template-columns: minmax(0, 1fr) clamp(8.5rem, 12.5vw, 12.5rem);
+      column-gap: 1.75rem;
+      padding: 2.25rem 2rem;
+    }
+    /* Le papier, sans photo, garde la hauteur des autres étapes : la liste garde son
+       pas, et la coupe est encore collée quand il est lu. Son lien se cale en bas, là
+       où les autres étapes disent la nature de leur photo. */
+    .methode-etape-nue {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(clamp(8.5rem, 12.5vw, 12.5rem) * 1.25 + 4.5rem);
+    }
+    .methode-suite {
+      margin-top: auto;
+      padding-top: 0.75rem;
+    }
+    /* Collée sans attendre le script : à droite des étapes, elle ne couvre rien. Elle
+       se tient au milieu de la hauteur libre sous l'en-tête, en face de l'étape lue :
+       le script donne sa hauteur (--methode-figure). Jamais plus haut que 16 px sous
+       l'en-tête. Son dernier filet se pose sur celui du cadre, en bas de la planche. */
+    .methode-figure,
+    .methode[data-vivante] .methode-figure {
+      grid-column: 2;
+      grid-row: 1;
+      align-self: start;
+      position: sticky;
+      top: max(var(--spacing-header) + 1rem, (100vh + var(--spacing-header) - var(--methode-figure, 34rem)) / 2);
+      top: max(var(--spacing-header) + 1rem, (100svh + var(--spacing-header) - var(--methode-figure, 34rem)) / 2);
+      z-index: auto;
+      margin-bottom: -1px;
+      border-bottom-color: var(--r-ligne);
+    }
+    /* Le dessin prend la colonne, tant que la figure tient entre l'en-tête et le bas
+       de l'écran. */
+    .methode-figure .coupe-dessin {
+      width: min(100%, (100vh - var(--spacing-header) - 2.5rem - var(--cartouche)) * var(--rapport));
+      width: min(100%, (100svh - var(--spacing-header) - 2.5rem - var(--cartouche)) * var(--rapport));
+    }
+  }
+}

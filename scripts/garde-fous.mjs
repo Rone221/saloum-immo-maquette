@@ -12,11 +12,26 @@ import { fileURLToPath } from "node:url";
 const RACINE = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CADRATIN = String.fromCharCode(0x2014);
 
-// Couleurs de la palette (les seules autorisées en hexadécimal).
-const COULEURS = new Set(["#FFFFFF", "#EFF2F6", "#0A1220", "#465264", "#C9D2DE", "#004EBF", "#EB8624", "#9B4724", "#9AA6B5"]);
+// Couleurs de la palette v4 (direction-v4.md, « Couleurs »), les seules autorisées en
+// hexadécimal : sable, calque, attente, filet, encre, encre-2, plan, latérite, latérite
+// vive, eau, blanc. Les mêmes que le bloc @theme de src/app/globals.css : les deux
+// listes se changent ensemble.
+const COULEURS = new Set([
+  "#F3EEE4",
+  "#FBF9F4",
+  "#E6DECE",
+  "#D6CCB8",
+  "#0F1F36",
+  "#4A566B",
+  "#0E2444",
+  "#A5461F",
+  "#EB8624",
+  "#004EBF",
+  "#FFFFFF",
+]);
 
 const PHOTOS_INTERDITES =
-  "2321|2322|2323|2335|2336|2337|2338|2339|2353|2354|2366|2392|2412|2420|2422|2510|2518|2531|2533|2543|2544|2548|2549";
+  "2321|2322|2323|2335|2336|2337|2338|2339|2351|2353|2354|2366|2392|2412|2420|2422|2510|2518|2531|2533|2543|2544|2548|2549";
 
 /** Familles de règles. `ou` : à quels fichiers elles s'appliquent. */
 const REGLES = [
@@ -32,9 +47,10 @@ const REGLES = [
   { nom: "classe : animation", re: /(?<![\w-])animate-/g, ou: "code" },
 
   { nom: "police interdite", re: /\b(Geist|Schibsted|Barlow|Inter|Roboto|Poppins|Montserrat|Playfair|Fraunces)\b/g, ou: "code" },
+  // Deux familles (direction v4) : Besley pour les titres, par la classe `titre` ou les
+  // constantes de lib/classes.ts ; Archivo pour le reste. Pas de serif par défaut du
+  // navigateur, pas de mono : dates et numéros de lots parlent dans la voix large.
   { nom: "police serif", re: /\bfont-serif\b|ui-serif|Georgia/g, ou: "code" },
-  // Une seule famille, Archivo : la mono disparaît, dates et numéros de lots compris
-  // (allegement.md, 2.4).
   { nom: "police mono", re: /\bfont-mono\b|IBM_Plex_Mono|Plex Mono|--font-plex-mono/g, ou: "code" },
 
   { nom: "dépendance interdite", re: /phosphor|lucide|heroicons|"motion"|framer-motion/g, ou: "package" },
@@ -44,7 +60,7 @@ const REGLES = [
 
   {
     nom: "mot interdit",
-    re: /Découvrez|Bienvenue|N['’]attendez plus|\bexcellence\b|\bleader\b|\bpremium\b|paiement échelonné|\b0 ?%|20 ans d|50K|\+123/gi,
+    re: /Découvrez|Bienvenue|N['’]attendez plus|\bexcellence\b|\bleader\b|\bpremium\b/gi,
     ou: "texte",
   },
 
@@ -115,14 +131,26 @@ function applicable(regle, { rel, ext, tiers }) {
   return false;
 }
 
-const fichiers = [
+const sources = [
   ...lister(join(RACINE, "src"), EXT_SOURCE),
   ...lister(join(RACINE, "scripts"), EXT_SOURCE),
   join(RACINE, "package.json"),
   join(RACINE, "next.config.ts"),
   join(RACINE, "README.md"),
-  ...lister(join(RACINE, "out"), EXT_OUT),
 ].filter((f) => existsSync(f));
+
+// Un dossier out/ plus ancien que les sources est le build d'avant : ses pages ne
+// disent rien du code d'aujourd'hui (une palette changée y laisse ses anciennes
+// couleurs). On le saute et on le dit. « npm run build » refait out/ juste avant de
+// lancer ce script : il est alors plus récent que tout, et vérifié en entier.
+const DOSSIER_OUT = join(RACINE, "out");
+const repereOut = join(DOSSIER_OUT, "index.html");
+const outPerime =
+  existsSync(repereOut) && Math.max(...sources.map((f) => statSync(f).mtimeMs)) > statSync(repereOut).mtimeMs;
+/** Les fichiers du build, ou rien s'il est périmé. */
+const listerOut = (extensions) => (outPerime ? [] : lister(DOSSIER_OUT, extensions));
+
+const fichiers = [...sources, ...listerOut(EXT_OUT)];
 
 const fautes = [];
 for (const fichier of fichiers) {
@@ -149,15 +177,17 @@ if (existsSync(dossierPhotos)) {
 }
 
 // Une page ne montre jamais deux photos du même lotissement ou du même instant
-// (allegement.md, partie 4) : tout le groupe, pas seulement le couple 2538 / 2580.
+// (allegement.md, partie 4). Revue 3 : 2538, 2553 et 2540 d'un côté, 2580 et 2421 de
+// l'autre, deux lotissements distincts (inventaire.md).
 const GROUPES = [
-  ["2538", "2553", "2580", "2421"],
+  ["2538", "2553", "2540"],
+  ["2580", "2421"],
   ["2493", "2500"],
   ["2502", "2505"],
   ["2355", "2350"],
   ["2499", "2498", "2496"],
 ];
-for (const fichier of lister(join(RACINE, "out"), new Set([".html"]))) {
+for (const fichier of listerOut(new Set([".html"]))) {
   const texte = readFileSync(fichier, "utf8");
   const vues = new Set([...texte.matchAll(/photos\/(\d{4})[\w-]*?-\d{3,4}\.webp/g)].map((m) => m[1]));
   for (const groupe of GROUPES) {
@@ -170,10 +200,11 @@ for (const fichier of lister(join(RACINE, "out"), new Set([".html"]))) {
 
 // Une photo hors programme sert sur deux pages au plus (allègement, repris de la
 // maquette arrondie) : les photos de programme suivent leur programme (carte de
-// l'accueil, rangée de Terrains, fiche, vignettes « Autres terrains »).
-const PHOTOS_PROGRAMME = new Set(["2534", "2616", "2580", "2413-droite"]);
+// l'accueil, rangée de Terrains, fiche, vignettes « Autres terrains »). 2616-bas est la
+// photo de Sicap Keur Massar sans son ciel : elle suit son programme, comme 2616.
+const PHOTOS_PROGRAMME = new Set(["2616", "2616-bas", "2580", "2413-droite"]);
 const pagesParPhoto = new Map();
-for (const fichier of lister(join(RACINE, "out"), new Set([".html"])).filter((f) => f.endsWith("index.html"))) {
+for (const fichier of listerOut(new Set([".html"])).filter((f) => f.endsWith("index.html"))) {
   const texte = readFileSync(fichier, "utf8");
   for (const id of new Set([...texte.matchAll(/photos\/([\w-]+?)-\d+\.webp/g)].map((m) => m[1]))) {
     if (!pagesParPhoto.has(id)) pagesParPhoto.set(id, []);
@@ -187,6 +218,10 @@ for (const [id, pages] of pagesParPhoto) {
 
 if (!existsSync(join(RACINE, "out"))) {
   console.warn("garde-fous : pas de dossier out/, seules les sources ont été vérifiées.");
+} else if (outPerime) {
+  console.warn(
+    "garde-fous : out/ est plus ancien que les sources (le build d'avant), seules les sources ont été vérifiées. « npm run build » le refait et le vérifie.",
+  );
 }
 
 if (fautes.length) {

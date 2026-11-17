@@ -1,124 +1,127 @@
-import { VIDEOS, type CleVideo } from "@/content/videos";
-import { PHOTOS, type PhotoId } from "@/content/photos";
+import { VIDEOS, metaVideo, type CleVideo } from "@/content/videos";
+import { type PhotoId } from "@/content/photos";
 import { cx } from "@/lib/base";
 import { typo } from "@/lib/format";
-import { Photo, sizesRecadree } from "./photo";
+import { LegendePhoto, Photo, cadreNaturel, sizesRecadree } from "./photo";
+import { Fleche } from "./text-link";
 
 /**
- * Couverture d'une carte vidéo : une de nos photos, jamais une vignette tirée de la
- * plateforme. Sans couverture, un relevé : le quadrillage d'un plan et une parcelle
- * bornée (PlanParcelle). Pas de titre écrit dessus, il est juste dessous.
+ * Couverture d'une carte vidéo : une image tirée de la vidéo elle-même, ou une de nos
+ * photos, jamais une vignette de la plateforme. `naturel` : le cadre prend le format du
+ * fichier et son plafond de largeur (l'image n'est ni recadrée ni agrandie) ; sinon,
+ * un cadre 4:3.
  */
-export type Couverture = { photo: PhotoId; position?: string };
+export type Couverture = { photo: PhotoId; position?: string; naturel?: boolean };
+
+/** Le titre d'une vidéo : un lien de texte, souligné ; le trait s'épaissit au survol de la carte. */
+const TITRE = "font-semibold leading-snug underline decoration-1 underline-offset-4 group-hover:decoration-2";
 
 /**
- * Quatre parcelles de plan, dessinées pour un cadre 4:3 (viewBox 400 × 300). Le bouton
- * lecture tombe au centre, dans la parcelle. Décor seulement : aucun lieu, aucune cote.
- */
-const PARCELLES: { contour: [number, number][]; division?: [number, number][]; voie?: [number, number][] }[] = [
-  { contour: [[78, 62], [302, 44], [336, 226], [96, 252]] },
-  { contour: [[64, 58], [336, 58], [336, 242], [64, 242]], division: [[200, 58], [200, 242]] },
-  { contour: [[86, 92], [226, 42], [338, 116], [302, 250], [104, 236]] },
-  { contour: [[52, 88], [348, 70], [348, 206], [52, 226]], voie: [[30, 262], [370, 240]] },
-];
-
-/**
- * La parcelle de chaque vidéo. Deux vidéos voisines sur une page n'ont jamais la même :
- * Diaspora (présentation, interview, lots), accueil (reel, interview, NICAD), Foncier
- * (interview, NICAD), fiche Lac Town (lancement, visite).
- */
-const PLAN_PAR_VIDEO: Record<CleVideo, number> = {
-  presentation: 0,
-  interviewDG: 1,
-  lotsSKM: 2,
-  reelLotsSKM: 2,
-  nicad: 3,
-  visiteSakina: 3,
-  lancementLacTown: 0,
-  visiteLacTown: 3,
-  terrassementKounoune: 1,
-  realisations2026: 2,
-};
-
-function PlanParcelle({ cle }: { cle: CleVideo }) {
-  const { contour, division, voie } = PARCELLES[PLAN_PAR_VIDEO[cle] % PARCELLES.length];
-  const points = (l: [number, number][]) => l.map(([x, y]) => `${x},${y}`).join(" ");
-  return (
-    <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full">
-      {voie ? (
-        <polyline points={points(voie)} className="fill-none stroke-sol" strokeWidth="2" strokeDasharray="10 8" vectorEffect="non-scaling-stroke" />
-      ) : null}
-      <polygon points={points(contour)} className="fill-trait/6 stroke-trait" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-      {division ? (
-        <polyline points={points(division)} className="fill-none stroke-trait" strokeWidth="1.5" strokeDasharray="6 6" vectorEffect="non-scaling-stroke" />
-      ) : null}
-      {/* Les bornes aux sommets, en carrés orange, comme partout sur le site. */}
-      {contour.map(([x, y]) => (
-        <rect key={`${x}-${y}`} x={x - 5} y={y - 5} width="10" height="10" className="fill-borne" />
-      ))}
-    </svg>
-  );
-}
-
-/**
- * Carte vidéo (revue 2) : la couverture, le bouton lecture, le titre, la plateforme
- * et la durée quand elle est connue. Toute la carte est le lien ; la vidéo s'ouvre
- * sur sa plateforme, dans le même onglet. Survol et focus clavier : la couverture
- * grossit, le bouton passe au bleu.
+ * Vidéo du client, dans ses habits v4. Elle s'écrit partout de la même façon : le
+ * titre, souligné, puis la plateforme et la durée en étiquette (« YouTube · 1 min 58 »).
+ * Elle s'ouvre sur sa plateforme, dans le même onglet.
  *
- * Plafonds : le cadre ne dépasse pas 324 px de haut, soit 598 px de large pour
- * 2413-droite (600 px au plus), et une photo plafonnée ne grossit pas.
- * `sizes` : les largeurs du cadre ; celles de la photo, recadrée en 4:3, en sont déduites.
+ * Sans couverture : une ligne entre deux filets, avec sa flèche. Avec une couverture :
+ * l'image nue dans son cadre (rien posé dessus, pas de bouton lecture), sa légende à
+ * deux colonnes si `legende`, puis le titre et l'étiquette. Toute la carte se clique :
+ * le lien est le titre, étendu à la carte. L'image garde son texte alternatif.
+ * Au survol, le titre prend la couleur d'accent, avec sa flèche ; rien d'autre ne bouge.
  */
 export function CarteVideo({
   cle,
   couverture,
   sizes = "(min-width: 1101px) 437px, 416px",
+  legende = false,
   className,
 }: {
   cle: CleVideo;
   couverture?: Couverture;
+  /** Largeur du cadre de la couverture (voir Photo). */
   sizes?: string;
+  /** La légende à deux colonnes sous la couverture : ce qu'on voit, la nature de l'image. */
+  legende?: boolean;
   className?: string;
 }) {
   const v = VIDEOS[cle];
-  const meta = [v.plateforme, "duree" in v ? v.duree : null].filter(Boolean).join(" · ");
-  const zoom = couverture ? !PHOTOS[couverture.photo].largeurMax : false;
-  return (
-    <a href={v.href} className={cx("group flex w-full flex-col", className)}>
-      <span className="relative block aspect-[4/3] max-h-[324px] overflow-hidden border border-rule bg-paper-2 transition-colors duration-300 group-hover:border-trait group-focus-visible:border-trait">
-        {couverture ? (
-          <Photo
-            id={couverture.photo}
-            fill
-            decorative
-            position={couverture.position}
-            sizes={sizesRecadree(couverture.photo, 4 / 3, sizes)}
-            className={cx(
-              "object-cover",
-              zoom && "transition-transform duration-700 ease-out group-hover:scale-[1.05] group-focus-visible:scale-[1.05]",
-            )}
-          />
-        ) : (
-          <span
-            aria-hidden="true"
-            className="quadrillage absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-[1.03] group-focus-visible:scale-[1.03]"
-          >
-            <PlanParcelle cle={cle} />
-          </span>
+  const meta = <span className="etiquette mt-1.5 block text-doux">{typo(metaVideo(cle))}</span>;
+
+  if (!couverture) {
+    return (
+      // Au survol, le titre et la flèche prennent la couleur d'accent ; l'étiquette garde la sienne.
+      // Le titre est au ton fort de la surface : sur le plan, un titre ne reste pas au
+      // blanc adouci du texte courant.
+      <a
+        href={v.href}
+        className={cx(
+          "group flex items-start justify-between gap-x-4 border-t border-ligne py-3.5 text-fort transition-surface hover:text-accent",
+          className,
         )}
-        {/* Bouton lecture, au centre : un carré, un triangle en bordures CSS. */}
+      >
+        <span className="min-w-0">
+          <span className={cx(TITRE, "block")}>{typo(v.titre)}</span>
+          {/* Lue d'un trait par un lecteur d'écran : « titre, plateforme · durée ». */}
+          <span className="sr-only">, </span>
+          {meta}
+        </span>
+        <Fleche className="mt-1" />
+      </a>
+    );
+  }
+
+  const { photo, position, naturel } = couverture;
+  return (
+    <div className={cx("group relative flex w-full flex-col", className)} style={naturel ? { maxWidth: cadreNaturel(photo).maxWidth } : undefined}>
+      <figure className="m-0">
         <span
-          aria-hidden="true"
-          className="absolute top-1/2 left-1/2 z-[1] inline-flex size-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center bg-ink transition-colors duration-300 group-hover:bg-trait group-focus-visible:bg-trait"
+          className={cx("relative block overflow-hidden bg-attente", !naturel && "aspect-[4/3] max-h-[324px]")}
+          style={naturel ? cadreNaturel(photo) : undefined}
         >
-          <span className="ml-1 border-y-[9px] border-l-[15px] border-y-transparent border-l-white" />
+          <Photo
+            id={photo}
+            fill
+            position={position}
+            sizes={naturel ? sizes : sizesRecadree(photo, 4 / 3, sizes)}
+            className="object-cover"
+          />
+        </span>
+        {legende ? <LegendePhoto id={photo} /> : null}
+      </figure>
+      {/* Le lien couvre la carte (::after) : l'image et sa légende se cliquent aussi. */}
+      <a href={v.href} className={cx(TITRE, "mt-4 block text-fort transition-surface group-hover:text-accent after:absolute after:inset-0")}>
+        {typo(v.titre)}
+      </a>
+      {meta}
+    </div>
+  );
+}
+
+/**
+ * Une vidéo en lien nu, sans filet ni carte : dans une case de cartouche, sous un
+ * chapeau, au pied d'une date. Écrite comme partout : le titre, souligné, puis la
+ * plateforme et la durée en étiquette. Un seul lien pour les deux lignes : le contour
+ * du focus les entoure toutes les deux, il ne passe pas entre elles. 44 px de haut au
+ * moins. La flèche ne quitte pas le dernier mot du titre : quand le titre passe à la
+ * ligne, elle ne reste pas seule sur la sienne. Au survol, le titre et sa flèche
+ * prennent la couleur d'accent ; l'étiquette garde la sienne.
+ */
+export function LienVideo({ cle, className }: { cle: CleVideo; className?: string }) {
+  const titre = typo(VIDEOS[cle].titre);
+  const coupe = titre.lastIndexOf(" ");
+  return (
+    <a
+      href={VIDEOS[cle].href}
+      className={cx("group flex min-h-11 w-fit flex-col justify-center text-fort transition-surface hover:text-accent", className)}
+    >
+      <span className="leading-snug font-semibold underline decoration-1 underline-offset-4 group-hover:decoration-2">
+        {titre.slice(0, coupe + 1)}
+        <span className="whitespace-nowrap">
+          {titre.slice(coupe + 1)}
+          <Fleche className="ml-2 inline-block align-[-0.2em]" />
         </span>
       </span>
-      <span className="mt-4 block font-semibold leading-snug transition-colors group-hover:text-trait group-focus-visible:text-trait">
-        {typo(v.titre)}
-      </span>
-      <span className="mt-1 block text-small text-ink-2">{typo(meta)}</span>
+      {/* Lue d'un trait par un lecteur d'écran : « titre, plateforme · durée ». */}
+      <span className="sr-only">, </span>
+      <span className="etiquette mt-1.5 block text-doux">{typo(metaVideo(cle))}</span>
     </a>
   );
 }

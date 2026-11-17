@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { archivo } from "./fonts";
+import { archivo, besley } from "./fonts";
+import { Gestes } from "@/components/gestes";
 import { Pied } from "@/components/pied";
 import { SiteHeader } from "@/components/site-header";
+import { Traits } from "@/components/traits";
+import { VoieLecture } from "@/components/voie-lecture";
 import { asset } from "@/lib/base";
 import { typo } from "@/lib/format";
 import { IMAGE_PARTAGE, ORIGINE } from "@/lib/meta";
@@ -37,6 +40,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: "light",
+  // La barre du navigateur prend la couleur de l'en-tête posé : le calque.
+  themeColor: "#FBF9F4",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -45,14 +50,22 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     // changement de page sans cet attribut. Sans lui, un lien interne cliqué en haut
     // d'une page arrivait loin sous le H1 de la suivante (les scrollIntoView de Next
     // s'enchaînaient en défilement doux). Le défilement doux reste pour les ancres (5).
-    <html lang="fr" data-scroll-behavior="smooth" className={archivo.variable}>
+    <html lang="fr" data-scroll-behavior="smooth" className={`${archivo.variable} ${besley.variable}`}>
       <body>
         <a href="#contenu" className="skip">
           Aller au contenu
         </a>
         <SiteHeader />
+        {/* La voie de lecture : sous l'en-tête sur mobile, dans la gouttière gauche dès
+            1 101 px. Elle se retire seule de l'espace client (/admin/). */}
+        <VoieLecture />
         <main id="contenu">{children}</main>
         <Pied />
+        {/* Les traits qui se tirent une fois en entrant à l'écran. */}
+        <Traits />
+        {/* Les deux gestes liés au pointeur fin : l'aimant du bouton principal et la
+            bascule des grandes photos. Un seul écouteur pour tout le site. */}
+        <Gestes />
       </body>
     </html>
   );

@@ -1,10 +1,9 @@
 // Comprendre le foncier : les trois documents, la liste « Avant d'acheter,
 // vérifiez avec nous » et l'avertissement. Ces blocs vivent sur la page Foncier
-// seulement (allegement.md, 2.2) ; l'accueil n'en garde que les trois documents en
-// cartes, avec leur niveau et leur définition (revue 2).
+// seulement (allegement.md, 2.2) ; l'accueil n'en garde que les trois documents, avec
+// leur niveau et leur définition, dans la même échelle (components/echelle-papiers.tsx).
 //
-// Sources : carrousel publié par Saloum Immo sur Instagram le 8 juillet 2026 (signé
-// « Saloum Immo Consulting », nom absent de contenu-maquette.md : il ne s'affiche pas)
+// Sources : carrousel publié par Saloum Immo sur Instagram le 8 juillet 2026
 // pour les définitions et les niveaux ; légende de l'interview du DG (8 juin 2026) pour
 // la liste ; TikTok du 15 octobre 2025 pour le notaire.
 // C'est une vérification proposée, pas une garantie : ne jamais écrire
@@ -60,7 +59,7 @@ export type Document = {
   chezNous: Fait;
 };
 
-const SOURCE_CARROUSEL = "Carrousel Instagram DaiftQ_iBJd, 08.07.2026 (signé Saloum Immo Consulting)";
+const SOURCE_CARROUSEL = "Carrousel Instagram DaiftQ_iBJd, 08.07.2026";
 const PUBLIE = { date: "2026-07-08" };
 
 export const DOCUMENTS: Document[] = [
@@ -106,7 +105,12 @@ export const DOCUMENTS: Document[] = [
   },
 ];
 
-/** Seule occurrence du site : page Foncier, en gras. */
+/**
+ * Seule occurrence du site : page Foncier, en grand, sur l'aplat de latérite. La phrase
+ * nomme les trois documents en minuscules, tels que DOCUMENTS les nomme : la page les y
+ * repère pour poser chacun sur le trait de son document (app/foncier/page.tsx,
+ * Avertissement). Un nom changé d'un côté seulement, et la phrase sort sans ses traits.
+ */
 export const AVERTISSEMENT_STATUT =
   "Pour tout autre terrain, chez nous ou ailleurs, demandez le statut exact avant de verser quoi que ce soit : délibération, bail ou titre foncier.";
 

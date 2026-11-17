@@ -1,7 +1,7 @@
 // Post-build pour GitHub Pages.
 // L'export range les fichiers de préchargement en sous-dossiers
-// (terrains/kounoune-2/__next.terrains/$d$slug/__PAGE__.txt), mais le navigateur
-// les demande à plat (terrains/kounoune-2/__next.terrains.$d$slug.__PAGE__.txt).
+// (terrains/lac-town/__next.terrains/$d$slug/__PAGE__.txt), mais le navigateur
+// les demande à plat (terrains/lac-town/__next.terrains.$d$slug.__PAGE__.txt).
 // Sans hébergeur qui réécrit les URLs, on crée les copies à plat.
 import { copyFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";

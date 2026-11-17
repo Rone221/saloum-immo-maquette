@@ -6,7 +6,10 @@
 // liste change (npm run photos), et son résultat est versionné.
 //
 // Seules les photos publiées sont traitées (recherche/allegement.md, « Photos par
-// page »). Aucune photo interdite ne figure dans la liste.
+// page »). Aucune photo interdite ne figure dans la liste. Revue 3 : 2493 (un
+// tee-shirt imprimé) et 2534 (un panneau publicitaire) n'y sont plus. 2351 (la vitrine
+// et ses affiches) non plus : aucune page ne la montrait. Ni 2529, ni la capture entière
+// de l'interview (son buste recadré, lui, est publié).
 
 import sharp from "sharp";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -16,32 +19,56 @@ import { fileURLToPath } from "node:url";
 const RACINE = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SOURCE = resolve(process.env.PHOTOS_SOURCE ?? join(RACINE, "../recherche/web"));
 const SORTIE = join(RACINE, "public/photos");
-const LARGEURS = [320, 480, 800, 1200, 1600, 2000];
+// 2560 : les vues drone d'origine, dessinées en pleine largeur.
+const LARGEURS = [320, 480, 800, 1200, 1600, 2000, 2560];
 const QUALITE = 80;
 
 // id publié, fichier source, recadrage éventuel en pixels de l'original.
-// Une entrée par photo publiée (src/content/photos.ts). 2538 et 2421 ne servent
-// plus : même lotissement que 2580 (allegement.md, 2.8).
+// Une entrée par photo publiée (src/content/photos.ts). Revue 3 : 2538 et 2580 sont
+// deux lotissements différents (inventaire.md) ; les vues drone viennent des
+// originaux de 2 560 px (les fichiers « -2560 »).
 const PHOTOS = [
-  // Accueil : ouverture, puis les cartes des programmes.
-  { id: "2493", fichier: "2493.jpg" },
-  { id: "2534", fichier: "2534.jpg" },
+  // Accueil : l'ouverture (vue d'en haut d'un lotissement), puis les programmes.
+  { id: "2538", fichier: "2538-2560.png" },
   { id: "2616", fichier: "2616.jpg" },
-  { id: "2580", fichier: "2580.jpg" },
-  { id: "2542", fichier: "2542.jpg" },
+  { id: "2580", fichier: "2580-2560.png" },
+  { id: "2542", fichier: "2542-2560.jpg" },
+  // Planche des gestes du chantier (accueil) : la borne, les bordures, et l'image à
+  // 27 s du film de présentation (chargeuse qui déverse la latérite), sans le logo
+  // incrusté (x < 140) ni le sous-titre (y > 405).
+  { id: "2528", fichier: "2528.jpg" },
+  { id: "2501", fichier: "2501.jpg" },
+  { id: "ig-DbLzsuzO_wN-27s", fichier: "ig/extras/2026-07-24_DbLzsuzO_wN_t27s.jpg", recadrage: { left: 140, top: 0, width: 759, height: 405 } },
+  // Le document montré dans la vidéo sur le NICAD (image à 20 s), sans le logo incrusté.
+  { id: "ig-DexPGrbBztC-20s", fichier: "ig/extras/2026-10-21_DexPGrbBztC_t20s.jpg", recadrage: { left: 90, top: 0, width: 449, height: 304 } },
+  // Diaspora : une visite sur le terrain.
+  { id: "2333", fichier: "2333.jpg" },
+  // Pages intérieures (revue 3). Aménager : terrassement, électricité, la vue d'ensemble
+  // d'un lotissement (même lotissement que 2538 : jamais sur la même page).
+  { id: "2495", fichier: "2495.jpg" },
+  { id: "2517", fichier: "2517.jpg" },
+  { id: "2519", fichier: "2519.jpg" },
+  { id: "2540", fichier: "2540-2560.png" },
+  // Diaspora : des visites sur le terrain, avec des acheteurs (visages : petit).
+  { id: "2388", fichier: "2388.jpg" },
+  { id: "2491", fichier: "2491.jpg" },
+  { id: "2509", fichier: "2509.jpg" },
+  // Sicap Keur Massar en hauteur : 2616 sans son grand ciel (y < 480).
+  { id: "2616-bas", fichier: "2616.jpg", recadrage: { left: 0, top: 480, width: 2000, height: 784 } },
+  // Babacar Ndiaye : le buste, sans le logo incrusté (x < 250) ni le capot de
+  // l'ordinateur au premier plan (y > 405).
+  { id: "ig-DZUeyGKPdj_-buste", fichier: "ig/2026-06-08_DZUeyGKPdj_.jpg", recadrage: { left: 250, top: 0, width: 540, height: 405 } },
   // Fiche Sakina City : la photo de droite de la planche, sans logo ni titre incrusté.
   { id: "2413-droite", fichier: "2413.jpg", recadrage: { left: 962, top: 278, width: 846, height: 458 } },
   // Captures : interview du DG (accueil, À propos), collaboratrice (Diaspora).
-  { id: "ig-DZUeyGKPdj_", fichier: "ig/2026-06-08_DZUeyGKPdj_.jpg" },
   { id: "ig-DfAoxMkAbKR", fichier: "ig/2026-10-27_DfAoxMkAbKR.jpg" },
-  // Aménager : les étapes (2493 plus haut).
+  // Aménager : les étapes.
   { id: "2502", fichier: "2502.jpg" },
-  { id: "2529", fichier: "2529.jpg" },
   { id: "2355", fichier: "2355.jpg" },
   { id: "2516", fichier: "2516.jpg" },
   // À propos
   { id: "2499", fichier: "2499.jpg" },
-  { id: "2537", fichier: "2537.jpg" },
+  { id: "2537", fichier: "2537-2560.png" },
   // Accueil et Contact : 2352 coupée au-dessus de l'affiche de la vitrine (y 670) :
   // ses numéros ne sont pas publiés.
   { id: "2352-haut", fichier: "2352.jpg", recadrage: { left: 0, top: 0, width: 1080, height: 650 } },

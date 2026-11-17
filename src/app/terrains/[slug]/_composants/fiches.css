@@ -1,0 +1,291 @@
+/* Les fiches (direction v4, section 6 : Sakina City, Sicap Keur Massar, Lac Town,
+   Recasement AIBD). Importé par les composants de ce dossier.
+
+   Quatre pièces, chacune dans sa fiche :
+   - la planche : un cadre borné sur le bleu de plan (le papier, les lots) ;
+   - le papier : le nom du document, au corps qu'il a dans l'échelle des papiers ;
+   - la vue : la photo au drone de Lac Town et le tracé de ses axes ;
+   - la frise : le calendrier de Lac Town, ses dates bornées sur un trait.
+   Les couleurs passent par les rôles de la surface (--r-fond, --r-fort, --r-doux,
+   --r-ligne, --r-accent) : chaque pièce prend les habits de la section où on la pose.
+
+   L'ordre des couches est redit ici : si cette feuille arrivait avant celle du site, la
+   couche des composants ne doit pas passer devant celle de la base. */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* ------------------------------------------------------------- La planche
+     La même que celle de la méthode (components/methode.css) : une feuille unie, sans
+     croisillons (dessous, il y a du texte), un cadre d'un filet. Sur téléphone, elle va
+     d'un bord de l'écran à l'autre : ses côtés sont les bords de l'écran. */
+  .fiche-planche {
+    position: relative;
+    margin-inline: calc(var(--spacing-gutter) * -1);
+    border-block: 1px solid var(--r-ligne);
+    background: var(--r-fond);
+  }
+  @media (width >= 47.5625rem) {
+    .fiche-planche {
+      margin-inline: 0;
+      border: 1px solid var(--r-ligne);
+    }
+    /* Quatre bornes aux angles du cadre, à cheval sur son filet : la planche est bornée,
+       comme une parcelle sur son plan. 7 px, face blanche, filet d'encre. */
+    .fiche-planche::before {
+      --face: linear-gradient(var(--color-blanc), var(--color-blanc));
+      --tour: linear-gradient(var(--color-encre), var(--color-encre));
+      content: "";
+      position: absolute;
+      inset: -4px;
+      z-index: 3;
+      pointer-events: none;
+      background:
+        var(--face) 1px 1px / 5px 5px no-repeat,
+        var(--face) calc(100% - 1px) 1px / 5px 5px no-repeat,
+        var(--face) 1px calc(100% - 1px) / 5px 5px no-repeat,
+        var(--face) calc(100% - 1px) calc(100% - 1px) / 5px 5px no-repeat,
+        var(--tour) 0 0 / 7px 7px no-repeat,
+        var(--tour) 100% 0 / 7px 7px no-repeat,
+        var(--tour) 0 100% / 7px 7px no-repeat,
+        var(--tour) 100% 100% / 7px 7px no-repeat;
+    }
+  }
+
+  /* Les cases d'une planche : la clé en étiquette, la valeur dessous, un filet entre
+     deux cases. Empilées ; en rang dès 1 101 px quand la planche le demande. */
+  .fiche-cases {
+    display: grid;
+    margin: 0;
+    border-top: 1px solid var(--r-ligne);
+  }
+  .fiche-case { padding: 1rem var(--spacing-gutter) 1.125rem; }
+  .fiche-case + .fiche-case { border-top: 1px solid var(--r-ligne); }
+  .fiche-case > dd { margin: 0.375rem 0 0; }
+  @media (width >= 47.5625rem) {
+    .fiche-case { padding: 1.125rem 1.75rem 1.25rem; }
+  }
+  @media (width >= 68.8125rem) {
+    .fiche-case { padding: 1.25rem 2rem 1.5rem; }
+    .fiche-cases[data-sens="rang"] { grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 4fr); }
+    .fiche-cases[data-sens="rang"] > .fiche-case + .fiche-case {
+      border-top: 0;
+      border-left: 1px solid var(--r-ligne);
+    }
+  }
+
+  /* --------------------------------------------------------------- Le papier
+     Le titre de la section est la pièce : son amorce en petit, puis le nom du document
+     au corps qu'il a dans l'échelle des papiers (components/echelle-papiers.tsx). Le
+     corps dit le niveau : le titre foncier est le plus grand. Dessous, sa ligne de base. */
+  .fiche-papier-haut {
+    display: grid;
+    row-gap: 1.5rem;
+    padding: 2rem var(--spacing-gutter) 2.25rem;
+  }
+  .fiche-papier-bloc {
+    width: fit-content;
+    max-width: 100%;
+  }
+  .fiche-papier-nom {
+    display: block;
+    margin-top: 0.125em;
+    font-size: var(--fiche-papier-corps);
+    line-height: 1;
+  }
+  .fiche-papier-nom[data-papier="delib"] { --fiche-papier-corps: 1.75rem; }
+  .fiche-papier-nom[data-papier="bail"] { --fiche-papier-corps: 2.75rem; }
+  .fiche-papier-nom[data-papier="tf"] { --fiche-papier-corps: clamp(2.75rem, 14.4vw, 3.75rem); }
+  @media (width >= 47.5625rem) {
+    .fiche-papier-haut { padding: 2.5rem 1.75rem 2.75rem; }
+  }
+  @media (width >= 68.8125rem) {
+    /* Le document à gauche, sa définition à droite, posée sur la même ligne de pied. */
+    .fiche-papier-haut {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 25.5rem);
+      align-items: end;
+      column-gap: 3rem;
+      padding: 3rem 2rem 3.25rem;
+    }
+    .fiche-papier-nom[data-papier="delib"] { --fiche-papier-corps: clamp(1.75rem, 2.2vw, 2rem); }
+    .fiche-papier-nom[data-papier="bail"] { --fiche-papier-corps: clamp(3.25rem, 4.7vw, 4.25rem); }
+    .fiche-papier-nom[data-papier="tf"] { --fiche-papier-corps: clamp(5rem, 7.4vw, 6.75rem); }
+  }
+
+  /* ----------------------------------------------------------------- Les lots
+     Sicap Keur Massar : le tableau des lots à gauche, ce que vaut leur papier à droite. */
+  @media (width >= 68.8125rem) {
+    .fiche-lots {
+      display: grid;
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+    /* La colonne de droite : ses cases en haut, la dernière (la disponibilité et son
+       bouton) calée au pied du cadre, en face des derniers lots. */
+    .fiche-lots > .fiche-cases {
+      display: flex;
+      flex-direction: column;
+      border-top: 0;
+      border-left: 1px solid var(--r-ligne);
+    }
+    .fiche-lots > .fiche-cases > .fiche-case:last-child { margin-top: auto; }
+  }
+
+  /* ------------------------------------------------------------------- La vue
+     Lac Town : la photo au drone 2580 et, dessus, les axes de ses voies.
+     Le cadre découpe ; la feuille (la photo, puis le tracé) garde le ratio de l'original
+     (2 560 × 1 430) : le dessin tombe sur la photo au pixel près, et la lunette
+     (components/lunette.tsx) lit sa boîte pour savoir ce qu'elle vise.
+     Sous 761 px : cadre 4:3, et la feuille plus grande que lui (1,4 fois sa hauteur),
+     calée en bas et centrée sur le lotissement (47,5 % de sa largeur) : les voies se
+     lisent au téléphone, le haut de la ville sort du cadre.
+     De 761 à 1 100 px : le cadre au ratio de la photo, la feuille entière.
+     Dès 1 101 px : cadre 2:1, la feuille calée en bas (le haut du ciel sort du cadre). */
+  .fiche-vue-cadre {
+    position: relative;
+    isolation: isolate;
+    /* `clip`, et non `hidden` : un cadre qui cache ce qui dépasse devient le repère du
+       défilement de ce qu'il contient. Les axes mesureraient alors leur entrée dans le
+       cadre, qui ne défile pas, et resteraient à moitié tracés. */
+    overflow: hidden;
+    overflow: clip;
+    aspect-ratio: 4 / 3;
+    background: var(--color-attente);
+  }
+  .fiche-vue-feuille {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: auto;
+    max-width: none;
+    height: 140%;
+    aspect-ratio: 2560 / 1430;
+    translate: -47.5% 0;
+  }
+  @media (width >= 47.5625rem) {
+    .fiche-vue-cadre { aspect-ratio: 2560 / 1430; }
+    .fiche-vue-feuille {
+      left: 0;
+      width: 100%;
+      height: 100%;
+      translate: none;
+    }
+  }
+  @media (width >= 68.8125rem) {
+    .fiche-vue-cadre { aspect-ratio: 2 / 1; }
+    .fiche-vue-feuille { height: auto; }
+  }
+
+  /* La lunette (components/lunette.tsx, components/ouverture-plan.css) nomme ce qu'elle
+     vise sous son disque. Ici, les voies sont au pied de la photo : sous le disque, le
+     nom sortirait du cadre. Il passe au-dessus, où la photo a toute la place. */
+  .fiche-vue-cadre .lunette-rappel {
+    top: auto;
+    bottom: var(--r);
+  }
+  .fiche-vue-cadre .lunette-nom {
+    top: auto;
+    bottom: calc(var(--r) + 12px);
+  }
+
+  /* La feuille du tracé est un conteneur : la course de chaque axe se compte en
+     centièmes de sa largeur (cqw), elle suit donc la taille de la photo. */
+  .fiche-vue-dessin { container-type: inline-size; }
+
+  /* Le tracé : un dessin par axe, posé sur la boîte de son axe (en parts de la feuille).
+     Chaque dessin a donc sa propre entrée à l'écran : son axe se trace quand il arrive. */
+  .fiche-vue-trace {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--l);
+    height: var(--h);
+    overflow: visible;
+    pointer-events: none;
+  }
+  /* Le trait mixte du site (tiret long, point), à l'écran et non dans le repère de la
+     photo : la même épaisseur à toutes les échelles. */
+  .fiche-vue-axe {
+    fill: none;
+    stroke: var(--color-blanc);
+    stroke-width: 1.5px;
+    stroke-dasharray: 14 4 2 4;
+    vector-effect: non-scaling-stroke;
+  }
+  /* Le masque d'un axe : un trait large, à pathLength="1", qui le découvre d'un bout à
+     l'autre. Au repos, l'axe est entier : c'est l'état sans mouvement. */
+  .fiche-vue-axe-masque {
+    fill: none;
+    stroke: var(--color-blanc);
+    stroke-width: 90;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+  /* Ce qui se trace va à vitesse constante : l'axe suit le défilement, pendant que son
+     dessin entre à l'écran (--portee : sur quelle course, voir vue.tsx). La plage
+     commence à l'entrée du dessin : rien n'est encore visible, rien ne clignote. Sans
+     remplissage : avant et après, l'axe est entier. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .fiche-vue-trace { view-timeline-name: --fiche-vue-axe; }
+      .fiche-vue-axe-masque {
+        animation: tracer-axe linear;
+        animation-timeline: --fiche-vue-axe;
+        animation-range: entry 0px entry var(--portee, 340px);
+      }
+    }
+  }
+
+  /* ----------------------------------------------------------------- La frise
+     Le calendrier de Lac Town : ses dates bornées sur un trait plein (ce qui est daté
+     est acquis). Sous 1 101 px, le trait descend le long des dates. Dès 1 101 px, il
+     court à l'horizontale, et l'écart entre deux bornes suit le nombre de jours qui les
+     sépare (--fiche-frise-colonnes, compté sur les dates du contenu : calendrier.tsx). */
+  .fiche-frise {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .fiche-frise-date {
+    position: relative;
+    padding: 0 0 2.5rem 2rem;
+  }
+  .fiche-frise-date:last-child { padding-bottom: 0; }
+  /* La borne : vue d'en haut, face blanche, filet d'encre. */
+  .fiche-frise-borne {
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    z-index: 1;
+    width: 11px;
+    height: 11px;
+    border: 1.5px solid var(--color-encre);
+    background: var(--color-blanc);
+  }
+  /* Le trait, d'une borne à la suivante. Après la dernière, rien : on n'en sait pas plus. */
+  .fiche-frise-trait {
+    position: absolute;
+    left: 4.5px;
+    top: 0.5rem;
+    bottom: -0.5rem;
+    width: 2px;
+    background: var(--r-fort);
+  }
+  .fiche-frise-date:last-child > .fiche-frise-trait { display: none; }
+
+  @media (width >= 68.8125rem) {
+    .fiche-frise {
+      grid-template-columns: var(--fiche-frise-colonnes);
+      column-gap: 2.5rem;
+    }
+    .fiche-frise-date { padding: 2.75rem 0 0; }
+    .fiche-frise-borne { top: 0; }
+    .fiche-frise-trait {
+      left: 0;
+      right: -2.5rem;
+      top: 4.5px;
+      bottom: auto;
+      width: auto;
+      height: 2px;
+    }
+  }
+}
