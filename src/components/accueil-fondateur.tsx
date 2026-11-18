@@ -36,11 +36,19 @@ const IMAGE = "m-0 max-w-[20.25rem] desk:col-start-1";
 const TEXTE = "desk:col-start-2";
 
 /**
+ * Le buste sous 761 px : un cadre carré qui prend la largeur de la colonne, 405 px au
+ * plus (l'image y est dessinée à 540 px au plus, sa largeur). Puis le 4:5 de 324 px.
+ */
+const IMAGE_BUSTE = "m-0 max-w-[25.3125rem] tab:max-w-[20.25rem] desk:col-start-1";
+const SIZES_BUSTE = `${sizesRecadree(BUSTE, 4 / 5, "(min-width: 761px) 324px")}, ${sizesRecadree(BUSTE, 1, "90vw")}`;
+
+/**
  * Accueil, Babacar Ndiaye et l'agence. À gauche, les images ; à droite, les textes.
  * 1. Son nom et sa fonction, le buste tiré de son interview, puis son parcours en
  *    registre, les dates en marge dans la voix des mesures. La dernière ligne mène à
  *    l'interview. Le buste tient dans un cadre 4:5 de 324 px de large au plus : l'image
- *    y est dessinée à 540 px, sa largeur. Sur mobile, le nom vient avant le buste.
+ *    y est dessinée à 540 px, sa largeur. Sur mobile, le nom vient avant le buste, dans
+ *    un cadre carré à la largeur de la colonne.
  * 2. L'agence : son enseigne en gros plan, et son adresse en ligne de cartouche. Le
  *    lien mène à la page À propos.
  */
@@ -73,14 +81,9 @@ export function AccueilFondateur({
           <p className={cx(CHAPEAU, "mt-3")}>{typo(FONDATEUR.role.texte)}</p>
         </div>
 
-        <figure className={cx("apparait self-start desk:row-span-2 desk:row-start-1", IMAGE)}>
-          <span className="relative block aspect-[4/5] overflow-hidden bg-attente">
-            <Photo
-              id={BUSTE}
-              fill
-              sizes={sizesRecadree(BUSTE, 4 / 5, "(min-width: 761px) 324px, 90vw")}
-              className="object-cover"
-            />
+        <figure className={cx("apparait self-start desk:row-span-2 desk:row-start-1", IMAGE_BUSTE)}>
+          <span className="relative block aspect-square overflow-hidden bg-attente tab:aspect-[4/5]">
+            <Photo id={BUSTE} fill sizes={SIZES_BUSTE} className="object-cover" />
             {/* Le buste se clique aussi, à la souris : le lien de l'interview est dans le
                 registre. Celui-ci le double, sans rien ajouter au clavier ni à un
                 lecteur d'écran. */}

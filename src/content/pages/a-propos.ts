@@ -30,9 +30,8 @@ export type LigneParcours = { quand: string; texte: Fait };
 
 /**
  * Le parcours publié par Babacar Ndiaye sur son site, une phrase par étape : la liste
- * de site.ts, la même que sur l'accueil. Les années de la source en marge ; « Au départ » et « Ensuite » quand elle n'en donne pas.
- * Une étape datée porte sa date dans son fait : la page trace sa cote en trait plein.
- * Sans date, la cote est en pointillé (ce qu'on ignore se montre, direction v4).
+ * de site.ts, la même que sur l'accueil. Les années de la source en marge ; « Au
+ * départ » et « Ensuite » quand elle n'en donne pas.
  */
 export const PARCOURS: LigneParcours[] = FONDATEUR.parcours;
 
@@ -44,11 +43,6 @@ export const PARCOURS_SECTION = {
   nom: "Le parcours",
   titre: f("De l’aéroport au foncier", "contenu-maquette §2 (aéroport Léopold Sédar Senghor, puis Saloum Immo)"),
   mot: "foncier",
-  /**
-   * La légende des deux cotes, au bas du registre : trait plein sous une année que la
-   * source donne, pointillé sous « Au départ » et « Ensuite », qu'elle ne date pas.
-   */
-  legende: { datee: "Année publiée", sansDate: "Sans année publiée" },
 };
 
 /** Sous le registre, en note : d'où vient le parcours. */
@@ -96,12 +90,11 @@ export const EQUIPE = {
  * Millennium City : un titre qui dit l'ouvrage, la photo 2537 en grand, puis la phrase
  * d'attribution de registre.ts, entière. Jamais « notre programme », jamais l'aire de
  * jeux. Le nom de la section est celui que contenu-maquette §5 demande : « travaux
- * réalisés ». La quantité compte l'ouvrage attribué, pas les dates : ce sont celles du
- * projet, pas de la pose.
+ * réalisés ». L'en-tête n'a pas de quantité : compter un ouvrage ne dit rien, et les
+ * dates de la phrase sont celles du projet, pas de la pose.
  */
 export const MILLENNIUM = {
   nom: "Travaux réalisés",
-  quantite: f("1 réseau de canalisation", "contenu-maquette §5 (réseau de canalisation conçu et posé par Saloum Immo)"),
   titre: "La canalisation de Millennium City",
   mot: "canalisation",
   /**

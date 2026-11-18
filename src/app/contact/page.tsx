@@ -3,9 +3,12 @@
 // bleu et le pied) :
 // 01. L'ouverture, sur le sable à croisillons : le numéro tient le titre, en très
 //     grand, dans la voix des mesures, sur sa cote. C'est lui qu'on vient chercher.
-//     Puis ce qu'on en fait, le fixe et l'e-mail en cartouche.
+//     Puis ce qu'on en fait et ses deux boutons (écrire, appeler), le fixe et l'e-mail
+//     en cartouche.
 // 02. Sur WhatsApp, sur le calque : les trois messages préparés, leur texte affiché
 //     (seule page qui les montre). Une ligne par situation : qui, le message, son bouton.
+//     Le message des propriétaires a deux trous : ils deviennent deux champs, la phrase
+//     à trous d'Aménager, écrite en entier (components/phrase-a-trous.tsx).
 // 03. Par écrit, sur la planche au bleu : la fiche de demande, une feuille de calque
 //     posée sur le plan. Une maquette : rien ne part (components/formulaire-demande.tsx).
 // 04. L'agence, sur le sable : son enseigne en gros plan, l'adresse, sur rendez-vous.
@@ -18,15 +21,18 @@
 
 import type { Metadata } from "next";
 import { Fragment } from "react";
-import { BoutonWhatsApp } from "@/components/boutons";
+import { BoutonAppel, BoutonWhatsApp } from "@/components/boutons";
 import { CaseCartouche, Cartouche } from "@/components/cartouche";
 import { EnTeteSection } from "@/components/en-tete-section";
 import { FormulaireDemande } from "@/components/formulaire-demande";
 import { LigneCartouche } from "@/components/ligne-cartouche";
 import { TitreCote } from "@/components/mot-cote";
 import { LegendePhoto, Photo } from "@/components/photo";
+import { PhraseATrous } from "@/components/phrase-a-trous";
 import { PhraseMesuree } from "@/components/phrase-mesuree";
 import { Section } from "@/components/section";
+import { LIBELLES, MESSAGES } from "@/content/messages";
+import { PROPRIETAIRES } from "@/content/pages/amenager";
 import { AGENCE_PAGE, COMPTES, FORMULAIRE, MESSAGES_PRETS, OUVERTURE, RESEAUX_PAGE, USAGE } from "@/content/pages/contact";
 import { type PhotoId } from "@/content/photos";
 import { EMAIL, FIXE, MOBILE, RELEVE_RESEAUX, RESEAUX } from "@/content/site";
@@ -53,6 +59,15 @@ const ENSEIGNE: PhotoId = "2352-haut";
 /** Un lien de coordonnée : 44 px de haut, souligné, la couleur d'accent au survol. */
 const LIEN =
   "inline-flex min-h-11 items-center underline decoration-1 underline-offset-4 transition-surface hover:text-accent hover:decoration-2";
+
+/** Un message prêt, en grand : le corps de sa ligne. */
+const MESSAGE = "max-w-[36rem] text-[1.375rem] leading-snug text-fort tab:text-[1.625rem] desk:text-[1.75rem]";
+
+/**
+ * Le bloc du bouton, au bout de la ligne. Au bureau, le bouton se cale à droite, au
+ * niveau de la première ligne du message.
+ */
+const ACTION = "mt-2 desk:col-span-4 desk:-mt-1.5 desk:flex desk:justify-end";
 
 /**
  * Le texte d'un message, entre guillemets. Les « … » d'un message à compléter
@@ -128,7 +143,15 @@ export default function Contact() {
           </a>
         </h1>
         <div className="mt-7 grid gap-y-8 tab:mt-9 desk:mt-10 desk:grid-cols-12 desk:items-start desk:gap-x-6">
-          <p className={cx(CHAPEAU, "desk:col-span-5")}>{typo(USAGE.texte)}</p>
+          {/* Ce qu'on fait du numéro, puis les deux gestes : écrire, appeler. Sous 761 px,
+              un bouton par ligne, sur toute la largeur. */}
+          <div className="desk:col-span-5">
+            <p className={CHAPEAU}>{typo(USAGE.texte)}</p>
+            <div className="mt-6 flex flex-col gap-3 tab:flex-row desk:mt-7">
+              <BoutonWhatsApp label={LIBELLES.question} message={MESSAGES.question.texte} />
+              <BoutonAppel />
+            </div>
+          </div>
           <Cartouche aria-label={OUVERTURE.cartouche} className="tab:grid-cols-2 desk:col-span-6 desk:col-start-7">
             <CaseCartouche cle={OUVERTURE.cles.fixe} className="pb-1.5 desk:pb-2">
               <a href={FIXE.href} className={cx(LIEN, "mesure -mt-1 text-[1.375rem]")}>
@@ -160,35 +183,55 @@ export default function Contact() {
           <p className={cx(CHAPEAU, "max-w-[36rem] desk:col-span-4 desk:col-start-9")}>{typo(MESSAGES_PRETS.chapeau)}</p>
         </div>
         <ol className="m-0 mt-10 list-none border-t border-fort p-0 desk:mt-14">
-          {MESSAGES_PRETS.situations.map((s, i) => (
-            <li
-              key={s.id}
-              className={cx(
-                "apparait grid gap-y-4 border-b border-ligne py-7 desk:grid-cols-12 desk:gap-x-6 desk:py-9",
-                i === 1 && "[--rang:1]",
-                i === 2 && "[--rang:2]",
-              )}
-            >
-              <h3 className={cx(T3, "desk:col-span-3 desk:pt-0.5")}>{typo(s.qui)}</h3>
-              <div className="desk:col-span-5">
-                <p className="max-w-[36rem] text-[1.375rem] leading-snug text-fort tab:text-[1.625rem] desk:text-[1.75rem]">
-                  <TexteMessage texte={s.message.texte} />
-                </p>
-                {s.message.gabarit ? <p className={cx(NOTE, "mt-3")}>{typo(MESSAGES_PRETS.aCompleter)}</p> : null}
-              </div>
-              {/* Au bureau, le bouton se cale à droite, au niveau de la première ligne. Les
-                  trois ont la largeur du plus long libellé, sur une ligne : une colonne,
-                  pas un escalier. À 1 101 px, il mord de 20 px sur la gouttière voisine. */}
-              <div className="mt-2 desk:col-span-4 desk:-mt-1.5 desk:flex desk:justify-end">
-                <BoutonWhatsApp
-                  variante="contour"
-                  label={s.bouton}
-                  message={s.message.texte}
-                  className="desk:w-[21.5rem] desk:flex-none desk:self-start desk:whitespace-nowrap"
-                />
-              </div>
-            </li>
-          ))}
+          {MESSAGES_PRETS.situations.map((s, i) => {
+            // Les trois boutons ont la largeur du plus long libellé, sur une ligne : une
+            // colonne, pas un escalier. À 1 101 px, il mord de 20 px sur la gouttière voisine.
+            const bouton = (
+              <BoutonWhatsApp
+                variante="contour"
+                label={s.bouton}
+                message={s.message.texte}
+                className="desk:w-[21.5rem] desk:flex-none desk:self-start desk:whitespace-nowrap"
+              />
+            );
+            return (
+              <li
+                key={s.id}
+                className={cx(
+                  "apparait grid gap-y-4 border-b border-ligne py-7 desk:grid-cols-12 desk:gap-x-6 desk:py-9",
+                  i === 1 && "[--rang:1]",
+                  i === 2 && "[--rang:2]",
+                )}
+              >
+                <h3 className={cx(T3, "desk:col-span-3 desk:pt-0.5")}>{typo(s.qui)}</h3>
+                {s.message.gabarit && PROPRIETAIRES.phrase ? (
+                  // Le message à compléter : ses deux trous deviennent deux champs, et le
+                  // bouton emporte la phrase remplie. Le formulaire reprend les colonnes du
+                  // message et du bouton (sous-grille), comme les deux autres lignes.
+                  <PhraseATrous
+                    phrase={PROPRIETAIRES.phrase}
+                    nom={s.bouton}
+                    entier
+                    className="grid gap-y-4 desk:col-span-9 desk:grid-cols-subgrid"
+                    classePhrase={cx(MESSAGE, "desk:col-span-5")}
+                    classeAction={ACTION}
+                  >
+                    {bouton}
+                  </PhraseATrous>
+                ) : (
+                  <>
+                    <div className="desk:col-span-5">
+                      <p className={MESSAGE}>
+                        <TexteMessage texte={s.message.texte} />
+                      </p>
+                      {s.message.gabarit ? <p className={cx(NOTE, "mt-3")}>{typo(MESSAGES_PRETS.aCompleter)}</p> : null}
+                    </div>
+                    <div className={ACTION}>{bouton}</div>
+                  </>
+                )}
+              </li>
+            );
+          })}
         </ol>
       </Section>
 
@@ -209,7 +252,8 @@ export default function Contact() {
 
       {/* 04. L'agence : l'enseigne et sa devise, l'adresse, sur rendez-vous. */}
       <Section labelledBy="t-agence">
-        <EnTeteSection numero="04" nom={AGENCE_PAGE.nom} quantite={AGENCE_PAGE.repere.texte} />
+        {/* Pas de quantité : le lieu est écrit dans l'adresse, plus bas. La limite va au bord. */}
+        <EnTeteSection numero="04" nom={AGENCE_PAGE.nom} />
         <div className={cx("grid gap-y-8 desk:grid-cols-12 desk:items-start desk:gap-x-6", SOUS_BORNE)}>
           {/* 2352-haut agrandie 1,4 fois sur l'enseigne (x 230 à 1 000, y 0 à 310 du
               fichier) : la vitrine sort du cadre. Dessinée à 1,4 fois la largeur du cadre :

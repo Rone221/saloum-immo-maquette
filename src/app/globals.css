@@ -627,6 +627,24 @@
     height: 7px;
     background: var(--color-encre);
   }
+  /* Au clavier, le cran pris dit où il mène : la plaque de calque du bureau, sous la
+     barre. Elle glisse d'autant que le cran est loin à droite (--s, de 0 à 1) : collée
+     au bord gauche pour le premier, au bord droit pour le dernier, jamais hors de
+     l'écran. Au doigt, les crans ne se prennent pas : la voie laisse passer le toucher. */
+  @media (width < 68.8125rem) {
+    .voie-carrefours a:focus-visible .voie-nom {
+      display: block;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      translate: calc(var(--s) * -100%) 0;
+      padding: 7px 10px;
+      border: 1px solid var(--color-encre);
+      background: var(--color-calque);
+      color: var(--color-encre);
+      white-space: nowrap;
+    }
+  }
 
   @media (width >= 68.8125rem) {
     .voie {

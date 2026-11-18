@@ -99,15 +99,19 @@ export function EchellePapiers({
             <Nom className="titre text-(length:--t) leading-none desk:mb-[calc((var(--t-tf)-var(--t))*0.09)]">{typo(d.nom)}</Nom>
           </div>
           <LigneDeBase cle={d.cle} dernier={i === DOCUMENTS.length - 1} />
-          <dl className="m-0 mt-4 desk:mt-5">
-            <dt className="etiquette text-doux">{typo("Niveau de sécurité")}</dt>
-            <dd className="m-0 mt-1 font-semibold text-fort">{typo(d.niveau.texte)}</dd>
-          </dl>
-          <p className="mt-4 max-w-[26rem]">{typo(d.definition.texte)}</p>
-          {complet ? <p className="mt-3 max-w-[26rem]">{typo(d.aSavoir.texte)}</p> : null}
-          <p className="mt-4 max-w-[26rem] text-small">
-            <span className="font-semibold">{typo("Chez Saloum Immo :")}</span> <PhraseMesuree texte={d.chezNous.texte} />
-          </p>
+          {/* Le texte porte le fond de sa surface : les croix du plan ne passent pas sous
+              un paragraphe (direction v4). Seuls le nom et sa ligne restent sur la trame. */}
+          <div className="mt-4 bg-fond desk:mt-5">
+            <dl className="m-0">
+              <dt className="etiquette text-doux">{typo("Niveau de sécurité")}</dt>
+              <dd className="m-0 mt-1 font-semibold text-fort">{typo(d.niveau.texte)}</dd>
+            </dl>
+            <p className="mt-4 max-w-[26rem]">{typo(d.definition.texte)}</p>
+            {complet ? <p className="mt-3 max-w-[26rem]">{typo(d.aSavoir.texte)}</p> : null}
+            <p className="mt-4 max-w-[26rem] text-small">
+              <span className="font-semibold">{typo("Chez Saloum Immo :")}</span> <PhraseMesuree texte={d.chezNous.texte} />
+            </p>
+          </div>
         </li>
       ))}
     </ol>

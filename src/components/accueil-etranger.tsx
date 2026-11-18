@@ -115,12 +115,14 @@ export function AccueilEtranger({
               </li>
             ))}
           </ul>
-          {/* 2333 montre des visages : en petit partout, 260 px de large sur mobile. */}
+          {/* 2333 montre des visages : jamais en grand. Sur mobile, la largeur de la
+              colonne (350 px à 390), comme les deux pièces du dessus : un cadre plus
+              étroit, calé à gauche, laissait un vide qu'on lisait comme un oubli. */}
           <CadrePhoto
             id="2333"
             texteLegende={LEGENDE_VISITE}
-            sizes="(min-width: 1440px) 318px, (min-width: 1101px) 23vw, (min-width: 761px) 46vw, 260px"
-            className="apparait max-w-[16.25rem] [--rang:2] [&_figcaption]:text-balance tab:col-span-6 tab:max-w-none desk:col-span-3 desk:col-start-10"
+            sizes="(min-width: 1440px) 318px, (min-width: 1101px) 23vw, (min-width: 761px) 46vw, calc(100vw - 40px)"
+            className="apparait [--rang:2] [&_figcaption]:text-balance tab:col-span-6 desk:col-span-3 desk:col-start-10"
           />
         </div>
       </div>

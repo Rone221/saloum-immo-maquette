@@ -96,11 +96,10 @@ export const FORMULAIRE = {
 /**
  * L'agence : le titre dit « sur rendez-vous » (pas d'horaires publiés), l'adresse
  * suit, puis la visite, là où la photo de l'agence la place (analyse.md, point 8).
- * `repere` : le lieu, à droite de l'en-tête de section.
+ * L'en-tête de section ne redit pas le lieu : l'adresse le donne.
  */
 export const AGENCE_PAGE = {
   nom: "L’agence",
-  repere: fv("Sicap Keur Massar", "contenu-maquette §3 (adresse à valider)"),
   titre: "L’agence reçoit sur rendez-vous",
   mot: "rendez-vous",
   cles: { adresse: "Adresse", visite: "Visites" },

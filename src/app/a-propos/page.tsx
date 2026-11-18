@@ -6,8 +6,7 @@
 //     fondateur), le chapeau, l'interview en lien. En face, le buste tiré de cette
 //     interview.
 // 02. Le parcours, sur le calque : un registre. Le moment en marge, dans la voix des
-//     mesures, sur sa cote : trait plein quand la source donne l'année, pointillé quand
-//     elle ne la donne pas (ce qu'on ignore se montre).
+//     mesures. Sans cote : sous un mot qui n'est pas une mesure, elle ne mesurait rien.
 // 03. L'entreprise, sur le sable : la phrase de l'équipe en titre, la photo des gilets,
 //     et le cartouche de la société, comme au bas d'un plan. La raison sociale en grand.
 // 04. Millennium City, sur la planche au bleu : la photo en grand, puis la phrase
@@ -16,7 +15,9 @@
 //
 // Photos : ig-DZUeyGKPdj_-buste (aussi sur l'accueil : deux pages, pas une de plus),
 // 2499 (seule de son groupe), 2537. Le buste fait 540 × 405 : cadre 4:5 de 324 px au
-// plus (dessiné à 540 px). 2499 fait 810 px de large : cadre de 340 px au plus.
+// plus dès 761 px (dessiné à 540 px) ; dessous, un cadre carré qui prend la colonne,
+// 405 px au plus (dessiné à 540 px au plus). 2499 fait 810 px de large : cadre de
+// 340 px au plus dès 761 px, la colonne dessous.
 
 import type { Metadata } from "next";
 import { AppelFinal } from "@/components/appel-final";
@@ -54,20 +55,10 @@ const EQUIPE_PHOTO: PhotoId = "2499";
 const sansPoint = (texte: string) => texte.replace(/\.$/, "");
 
 /**
- * La cote d'un moment du parcours : un trait de 1,5 px et ses deux butées, qui se tire
- * une fois. Trait plein sous une année que la source donne (ce qui est acquis),
- * pointillé sous « Au départ » et « Ensuite », qu'elle ne date pas : la convention du
- * plan pour ce qu'on ignore. Les mots le disent déjà, la cote n'est que pour l'œil.
+ * Le buste : un cadre carré sous 761 px, qui prend la largeur de la colonne (405 px au
+ * plus, dessiné à 540), puis le 4:5 de 324 px. Le carré n'agrandit jamais le fichier.
  */
-function CoteMoment({ datee }: { datee: boolean }) {
-  return (
-    <span aria-hidden="true" className="se-tire mt-2.5 flex items-center text-accent">
-      <span className="h-[11px] w-[1.5px] flex-none bg-current" />
-      <span className={cx("h-[1.5px] flex-1", datee ? "bg-current" : "pointille")} />
-      <span className="h-[11px] w-[1.5px] flex-none bg-current" />
-    </span>
-  );
-}
+const SIZES_BUSTE = `${sizesRecadree(BUSTE, 4 / 5, "(min-width: 761px) 324px")}, ${sizesRecadree(BUSTE, 1, "90vw")}`;
 
 export default function APropos() {
   const interview = VIDEOS.interviewDG;
@@ -94,15 +85,9 @@ export default function APropos() {
             <LienVideo cle="interviewDG" className="mt-4 desk:mt-5" />
           </div>
 
-          <figure className="m-0 max-w-[20.25rem]">
-            <span className="relative block aspect-[4/5] overflow-hidden bg-attente">
-              <Photo
-                id={BUSTE}
-                fill
-                preload
-                sizes={sizesRecadree(BUSTE, 4 / 5, "(min-width: 761px) 324px, 90vw")}
-                className="object-cover"
-              />
+          <figure className="m-0 max-w-[25.3125rem] tab:max-w-[20.25rem]">
+            <span className="relative block aspect-square overflow-hidden bg-attente tab:aspect-[4/5]">
+              <Photo id={BUSTE} fill preload sizes={SIZES_BUSTE} className="object-cover" />
               {/* Le buste se clique aussi, à la souris : le lien de l'interview est à
                   côté, en texte. Celui-ci le double, sans rien ajouter au clavier ni à un
                   lecteur d'écran. */}
@@ -129,34 +114,15 @@ export default function APropos() {
                 i % 2 === 1 && "[--rang:1]",
               )}
             >
-              <dt className="desk:col-span-4">
-                {/* La cote prend la largeur du moment, pas celle de la colonne. */}
-                <span className="inline-flex flex-col">
-                  <span className="mesure text-[1.625rem] leading-none whitespace-nowrap text-fort desk:text-[2rem]">
-                    {typo(l.quand)}
-                  </span>
-                  <CoteMoment datee={Boolean(l.texte.date)} />
-                </span>
+              <dt className="mesure text-[1.625rem] leading-none whitespace-nowrap text-fort desk:col-span-4 desk:text-[2rem]">
+                {typo(l.quand)}
               </dt>
               <dd className="m-0 max-w-[40rem] text-chapeau desk:col-span-8">{typo(l.texte.texte)}</dd>
             </div>
           ))}
         </dl>
-        {/* Au bas du registre, comme au bas d'un plan : la source, puis la légende des
-            deux traits. */}
-        <div className="mt-4 flex flex-col gap-y-3 tab:flex-row tab:items-baseline tab:justify-between tab:gap-x-8">
-          <p className={NOTE}>{typo(SOURCE_PARCOURS.texte)}</p>
-          <ul className="etiquette m-0 flex list-none flex-wrap gap-x-6 gap-y-1.5 p-0 text-doux">
-            <li className="flex items-center gap-x-2.5">
-              <span aria-hidden="true" className="h-[1.5px] w-7 flex-none bg-accent" />
-              {typo(PARCOURS_SECTION.legende.datee)}
-            </li>
-            <li className="flex items-center gap-x-2.5">
-              <span aria-hidden="true" className="pointille h-[1.5px] w-7 flex-none text-accent" />
-              {typo(PARCOURS_SECTION.legende.sansDate)}
-            </li>
-          </ul>
-        </div>
+        {/* Au bas du registre, comme au bas d'un plan : la source. */}
+        <p className={cx(NOTE, "mt-4")}>{typo(SOURCE_PARCOURS.texte)}</p>
       </Section>
 
       {/* 03. L'entreprise. La phrase de l'équipe en titre ; la photo des gilets à gauche,
@@ -181,7 +147,7 @@ export default function APropos() {
             ratio="aspect-[3/4]"
             sizes="(min-width: 761px) 340px, 90vw"
             texteLegende={EQUIPE.legendeCourte}
-            className="apparait max-w-[21.25rem] [&_figcaption]:text-balance desk:col-start-1 desk:row-span-2 desk:row-start-1"
+            className="apparait tab:max-w-[21.25rem] [&_figcaption]:text-balance desk:col-start-1 desk:row-span-2 desk:row-start-1"
           />
 
           {/* Au bureau, le pied du cartouche est celui de la photo : la marge du bas vaut la
@@ -222,7 +188,9 @@ export default function APropos() {
           le cadre 4:3 est moins large que la photo (3:2) : elle y est dessinée par sa
           hauteur, à 113 % de l'écran. */}
       <Section surface="plan" labelledBy="t-millennium" croisillons>
-        <EnTeteSection numero="04" nom={MILLENNIUM.nom} quantite={MILLENNIUM.quantite.texte} />
+        {/* Pas de quantité : compter un ouvrage ne dit rien, et les dates de la phrase
+            sont celles du projet, pas de la pose. La limite va au bord. */}
+        <EnTeteSection numero="04" nom={MILLENNIUM.nom} />
         <h2 id="t-millennium" className={cx(T2, SOUS_BORNE, "max-w-[14em]")}>
           <TitreCote texte={MILLENNIUM.titre} mot={MILLENNIUM.mot} />
         </h2>

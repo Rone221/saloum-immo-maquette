@@ -212,12 +212,17 @@ export function OuverturePlan() {
           </p>
           <div className="ouv-actions">
             <Bouton href="/terrains/">{OUVERTURE.bouton}</Bouton>
-            <p className="flex flex-col">
+            {/* L'étiquette et le numéro dans un seul lien, 44 px de haut au moins : le
+                doigt prend l'un ou l'autre, et le contour du focus entoure les deux. Lu
+                d'un trait, comme sur la page Depuis l'étranger : « WhatsApp et appel,
+                +221 77 400 75 75 ». */}
+            <a href={MOBILE.href} className="group flex min-h-11 flex-col justify-center">
               <span className="etiquette text-doux">{typo(CLE_NUMERO)}</span>
-              <a href={MOBILE.href} className="mesure text-chapeau text-fort transition-surface hover:text-accent">
+              <span className="sr-only">, </span>
+              <span className="mesure text-chapeau whitespace-nowrap text-fort underline decoration-1 underline-offset-[0.2em] transition-surface group-hover:text-accent group-hover:decoration-2">
                 {typo(MOBILE.long)}
-              </a>
-            </p>
+              </span>
+            </a>
           </div>
         </div>
 
